@@ -1,11 +1,9 @@
 ﻿using DocumentManagement.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace DocumentManagement.Controllers
 {
-    [Authorize(Roles = "Admin,Staff,User")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
