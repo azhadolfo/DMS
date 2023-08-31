@@ -28,6 +28,7 @@ namespace DocumentManagement.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(IdentityRole model)
         {
             //avoid duplicate role
