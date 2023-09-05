@@ -51,12 +51,15 @@
                                 <span class="visually-hidden">(current)</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        @* <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="AppRoles" asp-action="Index">Roles</a>
-                        </li>
+                        </li> *@
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Employees" asp-action="Index">Employees</a>
+                            <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Index">Employees</a>
                         </li>
+                      @*   <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                        </li> *@
                        @*  <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li> *@
@@ -75,7 +78,7 @@
                         <input class="form-control me-sm-2" type="search" placeholder="Search">
                         <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
                     </form> *@
-                    <partial name="_LoginPartial" />
+                  @*   <partial name="_LoginPartial" /> *@
                 </div>             
             </div>
             
