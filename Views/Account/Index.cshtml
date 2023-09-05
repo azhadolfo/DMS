@@ -1,0 +1,59 @@
+﻿@model IEnumerable<DocumentManagement.Models.Register>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary rounded-3">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-primary">
+                @Html.DisplayNameFor(model => model.EmployeeNumber)
+            </th>
+            <th class="text-primary">
+                @Html.DisplayNameFor(model => model.FirstName)
+            </th>
+            <th class="text-primary">
+                @Html.DisplayNameFor(model => model.LastName)
+            </th>
+            <th class="text-primary">
+                @Html.DisplayNameFor(model => model.Username)
+            </th>
+            <th class="text-primary">
+                @Html.DisplayNameFor(model => model.Role)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model) {
+        <tr>
+            <td>
+                @user.EmployeeNumber
+            </td>
+            <td>
+                @user.FirstName
+            </td>
+            <td>
+                @user.LastName
+            </td>
+            <td>
+                @user.Username
+            </td>
+            <td>
+                @user.Role
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-secondary">Edit</a> |
+                   @*  <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-secondary">Details</a> | *@
+                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-secondary">Delete</a>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>

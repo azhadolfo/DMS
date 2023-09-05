@@ -8,11 +8,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace DocumentManagement.Migrations
+namespace Document_Management.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230826065619_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230904071022_Add Role Attributes in Register")]
+    partial class AddRoleAttributesinRegister
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,13 +24,17 @@ namespace DocumentManagement.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DocumentManagement.Models.Employee", b =>
+            modelBuilder.Entity("DocumentManagement.Models.Register", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConfirmPassword")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("EmployeeNumber")
                         .HasColumnType("integer");
@@ -43,9 +47,17 @@ namespace DocumentManagement.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Employees");
+                    b.ToTable("Account");
                 });
 #pragma warning restore 612, 618
         }
