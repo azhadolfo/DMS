@@ -19,6 +19,14 @@ namespace DocumentManagement.Models
         [Display(Name = "Last Name")]
         public string LastName { get; set; } = null!;
         [Required]
+
+
+        //testing
+        [Display(Name = "Middle Name")]
+        public string Middlename { get; set; } = null!;
+        [Required]
+
+
         public string Username { get; set; } = null!;
         [Required]
         [DataType(DataType.Password)]
