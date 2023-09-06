@@ -21,10 +21,7 @@ namespace DocumentManagement.Models
         [Required]
 
 
-        //testing
-        [Display(Name = "Middle Name")]
-        public string Middlename { get; set; } = null!;
-        [Required]
+     
 
 
         public string Username { get; set; } = null!;
