@@ -3,6 +3,8 @@ using DocumentManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace Document_Management.Controllers
 {
@@ -16,8 +18,17 @@ namespace Document_Management.Controllers
         //Action for Account/Index
         public async Task<IActionResult> Index()
         {
-            var users = await _dbcontext.Account.ToListAsync();
-            return View(users);
+            var userId = HttpContext.Session.GetInt32("userid");
+            if (userId.HasValue)
+            {
+                var users = await _dbcontext.Account.ToListAsync();
+                return View(users);
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
+              
         }
 
         //Passing the dbcontext in to another variable
@@ -39,6 +50,7 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
+                user.Password = HashPassword(user.Password);
                 _dbcontext.Add(user);
                 _dbcontext.SaveChanges();
                 return RedirectToAction("Index", "Account");
@@ -61,8 +73,9 @@ namespace Document_Management.Controllers
             if (ModelState.IsValid)
             {
                 var user = _dbcontext.Account.FirstOrDefault(u => u.Username == username);
-                if(user!=null && user.Password == password)
+                if(user!=null && user.Password == HashPassword(password))
                 {
+                    HttpContext.Session.SetInt32("userid", user.Id); // Store user ID in session
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -142,5 +155,14 @@ namespace Document_Management.Controllers
             await _dbcontext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        // Hash the password using a salt
+        public static string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
+        }
+
     }
 }
