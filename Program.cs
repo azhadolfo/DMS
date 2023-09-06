@@ -1,4 +1,5 @@
 using DocumentManagement.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,20 @@ builder.Services.AddControllersWithViews();
 //New added middleware
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+//add authentication middle ware
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme; // Set the default scheme
+})
+.AddCookie(options =>
+{
+    options.LoginPath = "/Account/Login"; // Specify the login page URL
+    options.AccessDeniedPath = "/Account/AccessDenied"; // Specify the access denied page URL
+});
+
+
 
 var app = builder.Build();
 
@@ -25,6 +40,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

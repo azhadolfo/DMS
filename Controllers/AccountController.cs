@@ -3,16 +3,54 @@ using DocumentManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace Document_Management.Controllers
 {
-    
+   
     public class AccountController : Controller
     {
         
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
+        //Get for Action Account/Login
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        //Post for Action Account/Login
+        [HttpPost]
+        public IActionResult Login(string username, string password)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = _dbcontext.Account.FirstOrDefault(u => u.Username == username);
+                if (user != null && user.Password == HashPassword(password))
+                {
+                    return RedirectToAction("Index", "Account");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Invalid username or password");
+                }
+            }
+
+            return View();
+        }
+
+        // Hash the password using a salt
+        public static string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
+        }
+
+        
         //Action for Account/Index
         public async Task<IActionResult> Index()
         {
@@ -39,39 +77,13 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
+                user.Password = HashPassword(user.Password);
                 _dbcontext.Add(user);
                 _dbcontext.SaveChanges();
                 return RedirectToAction("Index", "Account");
             }
 
             return View(user);
-        }
-
-        //Get for Action Account/Login
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        //Post for Action Account/Login
-        [HttpPost]
-        public IActionResult Login(string username, string password)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = _dbcontext.Account.FirstOrDefault(u => u.Username == username);
-                if(user!=null && user.Password == password)
-                {
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    ModelState.AddModelError("","Invalid username or password");
-                }
-            }
-
-            return View();
         }
 
         //Get for the Action Account/Edit
