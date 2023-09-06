@@ -76,7 +76,7 @@ namespace Document_Management.Controllers
                 if(user!=null && user.Password == HashPassword(password))
                 {
                     HttpContext.Session.SetInt32("userid", user.Id); // Store user ID in session
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Account");
                 }
                 else
                 {
