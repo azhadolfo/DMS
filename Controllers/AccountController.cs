@@ -18,8 +18,17 @@ namespace Document_Management.Controllers
         //Action for Account/Index
         public async Task<IActionResult> Index()
         {
-            var users = await _dbcontext.Account.ToListAsync();
-            return View(users);
+            var userId = HttpContext.Session.GetInt32("userid");
+            if (userId.HasValue)
+            {
+                var users = await _dbcontext.Account.ToListAsync();
+                return View(users);
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
+              
         }
 
         //Passing the dbcontext in to another variable
@@ -64,8 +73,9 @@ namespace Document_Management.Controllers
             if (ModelState.IsValid)
             {
                 var user = _dbcontext.Account.FirstOrDefault(u => u.Username == username);
-                if(user!=null && user.Password == password)
+                if(user!=null && user.Password == HashPassword(password))
                 {
+                    HttpContext.Session.SetInt32("userid", user.Id); // Store user ID in session
                     return RedirectToAction("Index", "Home");
                 }
                 else
