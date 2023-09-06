@@ -3,6 +3,8 @@ using DocumentManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace Document_Management.Controllers
 {
@@ -39,6 +41,7 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
+                user.Password = HashPassword(user.Password);
                 _dbcontext.Add(user);
                 _dbcontext.SaveChanges();
                 return RedirectToAction("Index", "Account");
@@ -142,5 +145,14 @@ namespace Document_Management.Controllers
             await _dbcontext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        // Hash the password using a salt
+        public static string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
+        }
+
     }
 }
