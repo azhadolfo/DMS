@@ -1,8 +1,8 @@
 ﻿@model Document_Management.Models.Register
 
-<h2>Login</h2>
+<h1 class="text-center mt-lg-1">Login</h1>
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-4 mx-auto">
         <form asp-action="Login">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -15,9 +15,11 @@
                 <input asp-for="Password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
+            <br />
             <div class="form-group">
-                <input type="submit" value="Login" class="btn btn-primary" />
+                <input type="submit" value="Login" class="btn btn-primary rounded col-md-12" />
             </div>
         </form>
     </div>
 </div>
+

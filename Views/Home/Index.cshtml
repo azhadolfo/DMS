@@ -1,4 +1,8 @@
 ﻿@{
+    var username = Context.Session.GetString("username");
+}
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -8,8 +12,11 @@
         <p class="lead text-muted">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse posuere, metus id tempor egestas, est est consectetur enim, nec sodales nisl urna eu nulla. Nunc aliquam velit nec est rhoncus, a commodo nulla rutrum. Sed eu orci nec purus lobortis consequat. Sed ultricies sapien eget faucibus ullamcorper. Fusce consequat imperdiet nunc ac vestibulum. Cras condimentum lorem a dolor dictum, rutrum dapibus neque imperdiet. Praesent sed quam non nulla placerat posuere. Aenean nec purus sit amet arcu sollicitudin elementum. In hac habitasse platea dictumst.
         </p>
-        <p>
-            <a class="btn btn-primary rounded my-2" asp-controller="Account" asp-action="Login">Login to your account</a>
-        </p>
+        @if (string.IsNullOrEmpty(username))
+        {
+            <p>
+                <a class="btn btn-primary rounded my-2" asp-controller="Account" asp-action="Login">Login to your account</a>
+            </p>
+        }       
     </div>
 </section>
