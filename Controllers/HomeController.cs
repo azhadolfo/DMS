@@ -1,8 +1,8 @@
-﻿using DocumentManagement.Models;
+﻿using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace DocumentManagement.Controllers
+namespace Document_Management.Controllers
 {
     public class HomeController : Controller
     {
