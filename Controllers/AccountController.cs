@@ -51,6 +51,7 @@ namespace Document_Management.Controllers
             if (ModelState.IsValid)
             {
                 user.Password = HashPassword(user.Password);
+                user.ConfirmPassword = HashPassword(user.ConfirmPassword);
                 _dbcontext.Add(user);
                 _dbcontext.SaveChanges();
                 return RedirectToAction("Index", "Account");
@@ -75,7 +76,8 @@ namespace Document_Management.Controllers
                 var user = _dbcontext.Account.FirstOrDefault(u => u.Username == username);
                 if(user!=null && user.Password == HashPassword(password))
                 {
-                    HttpContext.Session.SetString("username", user.Username); // Store user ID in session
+                    HttpContext.Session.SetString("username", user.Username); // Store username in session
+                    HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -122,13 +124,19 @@ namespace Document_Management.Controllers
         // GET: Account/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            var username = HttpContext.Session.GetString("userrole")?.ToLower();
+            if (!(username == "admin"))
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact MIS Department.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
             if (id == null || _dbcontext.Account == null)
             {
                 return NotFound();
             }
 
-            var employee = await _dbcontext.Account
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var employee = await _dbcontext.Account.FirstOrDefaultAsync(m => m.Id == id);
             if (employee == null)
             {
                 return NotFound();
@@ -136,6 +144,7 @@ namespace Document_Management.Controllers
 
             return View(employee);
         }
+
 
         // POST: Account/Delete/5
         [HttpPost, ActionName("Delete")]

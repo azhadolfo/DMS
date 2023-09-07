@@ -6,7 +6,7 @@
 @if (!string.IsNullOrEmpty(username))
 {
     <li class="nav-item">
-        <a id="manage" class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @username !</a>
+        <a id="manage" class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @username!</a>
     </li>
     <li class="nav-item">
         <a href="javascript:void(0);" class="nav-link" onclick="confirmLogout()">Logout</a>
@@ -14,10 +14,10 @@
 }
 </ul>
 
-    <script>
-        function confirmLogout() {
-            if (confirm("Are you sure you want to log out?")) {
-                window.location.href = "@Url.Action("Logout", "Account")";
-            }
+<script>
+    function confirmLogout() {
+        if (confirm("Are you sure you want to log out?")) {
+            window.location.href = "@Url.Action("Logout", "Account")";
         }
-    </script>
+    }
+</script>
