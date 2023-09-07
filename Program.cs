@@ -1,4 +1,4 @@
-using DocumentManagement.Data;
+using Document_Management.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

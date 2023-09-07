@@ -1,7 +1,7 @@
-﻿using DocumentManagement.Models;
+﻿using Document_Management.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DocumentManagement.Data
+namespace Document_Management.Data
 {
     public class ApplicationDbContext : DbContext
     {
@@ -10,5 +10,7 @@ namespace DocumentManagement.Data
         }
 
         public DbSet<Register> Account { get; set; }
+
+        public DbSet<RequestGatepass> Gatepass { get; set; }
     }
 }

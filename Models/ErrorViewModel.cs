@@ -1,4 +1,4 @@
-namespace DocumentManagement.Models
+namespace Document_Management.Models
 {
     public class ErrorViewModel
     {
