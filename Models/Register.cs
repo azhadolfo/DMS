@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DocumentManagement.Models
+namespace Document_Management.Models
 {
     public class Register
     {
