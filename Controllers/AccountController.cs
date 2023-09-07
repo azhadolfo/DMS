@@ -18,8 +18,8 @@ namespace Document_Management.Controllers
         //Action for Account/Index
         public async Task<IActionResult> Index()
         {
-            var userId = HttpContext.Session.GetInt32("userid");
-            if (userId.HasValue)
+            var username = HttpContext.Session.GetString("username");
+            if (!string.IsNullOrEmpty(username))
             {
                 var users = await _dbcontext.Account.ToListAsync();
                 return View(users);
@@ -75,7 +75,7 @@ namespace Document_Management.Controllers
                 var user = _dbcontext.Account.FirstOrDefault(u => u.Username == username);
                 if(user!=null && user.Password == HashPassword(password))
                 {
-                    HttpContext.Session.SetInt32("userid", user.Id); // Store user ID in session
+                    HttpContext.Session.SetString("username", user.Username); // Store user ID in session
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -155,6 +155,17 @@ namespace Document_Management.Controllers
             await _dbcontext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        //Action for Account/Logout and remove the session 
+        public IActionResult Logout()
+        {
+            // Clear the session
+            HttpContext.Session.Clear();
+
+            // Redirect to the login page or any other appropriate page
+            return RedirectToAction("Index","Home");
+        }
+
 
         // Hash the password using a salt
         public static string HashPassword(string password)
