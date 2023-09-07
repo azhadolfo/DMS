@@ -52,7 +52,7 @@ namespace Document_Management.Controllers
             {
                 user.Password = HashPassword(user.Password);
                 user.ConfirmPassword = HashPassword(user.ConfirmPassword);
-                _dbcontext.Add(user);
+                _dbcontext.Account.Add(user);
                 _dbcontext.SaveChanges();
                 return RedirectToAction("Index", "Account");
             }
