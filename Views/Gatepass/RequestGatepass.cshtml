@@ -1,77 +1,54 @@
-﻿@{
+﻿@model DocumentManagement.Models.RequestGatepassForm
+
+@{
     ViewData["Title"] = "Request Gatepass";
 }
 
-@* <table class="table table-bordered">
-    <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
-            <th scope="col">Handle</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>mdo</td>
-        </tr>
-        <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>fat</td>
-        </tr>
-        <tr>
-            <th scope="row">3</th>
-            <td>Larry the Bird</td>
-            <td></td>
-            <td>twitter</td>
-        </tr>
-    </tbody>
-</table> *@
-
-
-
-<input type="text" name="Id" id="" placeholder="Id" /> 
-
-<input type="text" name="Fname" id="" placeholder="First Name" />
-
-<input type="text" name="Mname" id="" placeholder="Middle Name" />
-
-<input type="text" name="Lname" id="" placeholder="Last Name" />
-
-<input type="number" name="Contact" id="" placeholder="Contact" />
-
-<input type="text" name="DateTime" id="" placeholder="Date & Time" /> 
-
-<input type="text" name="Purpose" id="" placeholder="Purpose" />
-
-<input type="text" name="Reason" id="" placeholder="Reason" />
-
-
-
 <div class="container mt-5">
-    <h1>Fill-Up Form</h1>
+    <h1>Gatepass Form</h1>
     <form>
         <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name" placeholder="Enter your name">
+            <label for="id" class="form-label">ID No.</label>
+            <div class="col col-lg-4">
+            <input type="number" name="id" class="form-control" id="id" placeholder="Your ID No." />
         </div>
+        </div>
+
         <div class="mb-3">
+            <label for="fullname" class="form-label">Full Name</label>
+            <div class="row">
+                <div class="col">
+                    <input asp-for="LastName" type="text" name="lname" class="form-control" id="lname" placeholder="Last Name" />
+                </div>
+                <div class="col">
+                    <input asp-for="FirstName" type="text" name="fname" class="form-control" id="fname" placeholder="First Name" />
+                </div>
+                <div class="col">
+                    <input asp-for="MiddleName" type="text" name="mname" class="form-control" id="mname" placeholder="Middle Name" />
+                </div>
+                </div> 
+        </div>
+
+        @* <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" class="form-control" id="email" placeholder="Enter your email">
-        </div>
+        </div> *@
+       
         <div class="mb-3">
-            <label for="message" class="form-label">Message</label>
-            <textarea class="form-control" id="message" rows="4" placeholder="Enter your message"></textarea>
+            <label asp-for="Contact" for="contact" class="form-label">Contact</label>
+            <input asp-for="Contact" type="number" name="number" class="form-control" id="" placeholder="Contact Number ex. 09..." />
         </div>
+
+        <div class="mb-3">
+            <label asp-for="ScheduleDate" for="date" class="form-label">Schedule date</label>
+            <input asp-for="ScheduleDate" type="datetime-local" name="number" class="form-control" id="" placeholder="Contact Number ex. 09..." />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Purpose" for="purpose" class="form-label">Purpose</label>
+            <textarea asp-for="Purpose" class="form-control" id="purpose" rows="4" placeholder="Enter your purpose"></textarea>
+        </div>
+
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
-
-<!-- Include Bootstrap JavaScript and jQuery (optional) from a CDN -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.5.0/dist/js/bootstrap.bundle.min.js"></script>
