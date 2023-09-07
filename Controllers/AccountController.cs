@@ -1,5 +1,5 @@
-﻿using DocumentManagement.Data;
-using DocumentManagement.Models;
+﻿using Document_Management.Data;
+using Document_Management.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
