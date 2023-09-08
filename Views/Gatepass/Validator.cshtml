@@ -34,8 +34,8 @@
                 <td>@user.ScheduleDate</td>
                 <td>@user.Purpose</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-secondary">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-secondary">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-secondary">Approved</a> |
+                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-danger">Disapproved</a>
                 </td>
             </tr>
         }
