@@ -10,9 +10,10 @@ namespace Document_Management.Data
         }
 
         public DbSet<Register> Account { get; set; }
-        public DbSet<FileDocument> FileDocuments { get; } 
+        public DbSet<FileDocument> FileDocuments { get; set; } 
 
         public DbSet<RequestGP> Gatepass { get; set; }
+
 
     }
 }
