@@ -36,12 +36,6 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Assuming you have a string representation of the date in "yyyy-MM-dd" format.
-                /*string dateTimeInput = RequestGP;*/ // Example date and time in "yyyy-MM-dd HH:mm:ss" format
-                //DateTime scheduleDate = DateTime.ParseExact(gpInfo.ScheduleDate, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime();
-
-                // Assign the scheduleDate to the ScheduleDate property of the gpInfo object.
-                //gpInfo.ScheduleDate = scheduleDate;
 
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
