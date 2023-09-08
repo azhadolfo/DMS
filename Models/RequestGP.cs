@@ -24,7 +24,7 @@ namespace Document_Management.Models
         public int Contact { get; set; }
 
         [Required]
-        [Display(Name = "Employee ID")]
+        [Display(Name = "Gatepass Id No.")]
         public int GatepassId { get; set; }
 
         [Required]

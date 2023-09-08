@@ -36,12 +36,7 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (gpInfo.GatepassId != 0)
-                {
-                    gpInfo.GatepassId = GenerateRandomNumber();
-                }
-
-                // representation of the date in "yyyy-MM-dd" format.
+                // Assuming you have a string representation of the date in "yyyy-MM-dd" format.
                 string dateInput = "2023-09-08";
                 DateTime scheduleDate = DateTime.ParseExact(dateInput, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime();
 
@@ -55,11 +50,7 @@ namespace Document_Management.Controllers
 
             return View(gpInfo);
         }
-        private int GenerateRandomNumber()
-        {
-            Random random = new Random();
-            return random.Next(1000, 10000); // Generate a random number between 1000 and 9999 (adjust as needed)
-        }
+
 
     }
 }
