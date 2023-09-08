@@ -51,6 +51,11 @@ namespace Document_Management.Controllers
             return View(gpInfo);
         }
 
+        public IActionResult Validator()
+        {   
+            ViewBag.users = _dbcontext.Gatepass.ToList();
+            return View();
+        }
 
     }
 }
