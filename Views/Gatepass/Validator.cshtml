@@ -1,0 +1,44 @@
+﻿@model IEnumerable<Document_Management.Models.RequestGP>
+
+@{
+    ViewData["Title"] = "Validator";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@* <p>
+    <a asp-action="Create" class="btn btn-primary rounded-3">Create New</a>
+</p> *@
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-primary">@Html.DisplayNameFor(model => model.LastName)</th>
+            <th class="text-primary">@Html.DisplayNameFor(model => model.FirstName)</th>
+          @*   <th class="text-primary">@Html.DisplayNameFor(model => model.MiddleName)</th> *@
+            <th class="text-primary">@Html.DisplayNameFor(model => model.Contact)</th>
+            <th class="text-primary">@Html.DisplayNameFor(model => model.GatepassId)</th>
+            <th class="text-primary">@Html.DisplayNameFor(model => model.ScheduleDate)</th>
+            <th class="text-primary">@Html.DisplayNameFor(model => model.Purpose)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in (List <Document_Management.Models.RequestGP>)ViewBag.users)
+        {
+            <tr class="align-middle">
+                <td>@user.LastName</td>
+                <td>@user.FirstName</td>
+         @*        <td>@user.MiddleName</td> *@
+                <td>@user.Contact</td>
+                <td>@user.GatepassId</td>
+                <td>@user.ScheduleDate</td>
+                <td>@user.Purpose</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-secondary">Approved</a> |
+                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-danger">Disapproved</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

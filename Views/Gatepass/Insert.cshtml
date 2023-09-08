@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Request Gatepass";
+    int randomGatepassId = new Random().Next(10000, 100000);
 }
 
 <div class="container mt-5">
@@ -9,9 +10,8 @@
     <form asp-action="Insert">
        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3">
-            <label asp-for="GatepassId" class="form-label"></label>
             <div class="col">
-                <input asp-for="GatepassId" type="number" class="form-control" placeholder="Gatepass ID No." />
+                <input asp-for="GatepassId" type="hidden" class="form-control" value="@randomGatepassId" />
             </div>
         </div>
 
@@ -42,12 +42,12 @@
 
         <div class="mb-3">
             <label asp-for="ScheduleDate" class="form-label"></label>
-            <input asp-for="ScheduleDate" type="date" class="form-control" />
+            <input asp-for="ScheduleDate" type="datetime-local" class="form-control" />
         </div>
 
         <div class="mb-3">
             <label asp-for="Purpose" class="form-label"></label>
-            <textarea asp-for="Purpose" class="form-control rows-4" placeholder="Enter your purpose"></textarea>
+            <textarea asp-for="Purpose" class="form-control" rows="10" placeholder="Enter your purpose"></textarea>
         </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>
