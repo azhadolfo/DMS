@@ -23,5 +23,15 @@ namespace Document_Management.Models
         public DateTime DateUploaded { get; set; }
         [Required]
         public string Username { get; set; } = null!;
+
+        public FileDocument(string name, string location, string department, string description, DateTime dateuploaded, string username)
+        {
+            Name = name;
+            Location = location;
+            Department = department;
+            Description = description;
+            DateUploaded = dateuploaded;
+            Username = username;
+        }
     }
 }
