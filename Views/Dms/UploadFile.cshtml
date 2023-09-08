@@ -1,0 +1,48 @@
+﻿@model Document_Management.Models.FileDocument;
+
+<h1>Upload File</h1>
+
+<div class="container mt-5">
+    <form asp-action="UploadFile">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="Name" class="control-label"></label>
+            <div class="col-6">
+                <input asp-for="Name" type="file" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Location" class="control-label"></label>
+            <div class="col">
+                <input asp-for="Location" type="text" class="form-control" placeholder="Location path" />
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Department" class="control-label"></label>
+            <div class="col">
+                <select asp-for="Department" class="form-control">
+                    <option selected value="">Choose the Department</option>
+                    <option value="Accounting">Accounting</option>
+                    <option value="MIS">MIS</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Finance">Finance</option>
+                </select>
+                <span asp-validation-for="Department" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <div class="col">
+                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter the description."></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary rounded">Upload</button>
+    </form>
+</div>
