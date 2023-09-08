@@ -1,0 +1,55 @@
+﻿@model Document_Management.Models.RequestGP
+
+@{
+    ViewData["Title"] = "Request Gatepass";
+}
+
+<div class="container mt-5">
+    <h1>@ViewData["Title"]</h1>
+    <form asp-action="Insert">
+       <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="GatepassId" class="form-label"></label>
+            <div class="col">
+                <input asp-for="GatepassId" type="number" class="form-control" placeholder="Gatepass ID No." />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <div class="row">
+                <div class="col">
+                    <input asp-for="LastName" type="text" class="form-control" placeholder="Last Name" />               
+                </div>
+                <div class="col">
+                    <input asp-for="FirstName" type="text" class="form-control" placeholder="First Name" />
+                </div>
+                <div class="col">
+                    <input asp-for="MiddleName" type="text" class="form-control" placeholder="Middle Name" />
+                </div>
+            </div>
+        </div>
+
+        @* <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" placeholder="Enter your email">
+        </div> *@
+
+        <div class="mb-3">
+            <label asp-for="Contact" class="form-label"></label>
+            <input asp-for="Contact" type="number" class="form-control" placeholder="Contact Number ex. 09..." />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ScheduleDate" class="form-label"></label>
+            <input asp-for="ScheduleDate" type="date" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Purpose" class="form-label"></label>
+            <textarea asp-for="Purpose" class="form-control rows-4" placeholder="Enter your purpose"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
