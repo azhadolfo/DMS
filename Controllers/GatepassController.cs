@@ -51,26 +51,47 @@ namespace Document_Management.Controllers
             return View();
         }
 
-        public IActionResult Details()
+
+        //public IActionResult Details()
+        //{
+        //    ViewBag.users = _dbcontext.Gatepass.ToList();
+        //    return View();
+        //}
+
+
+        [HttpGet]
+        public IActionResult Approved(int id) 
         {
-            ViewBag.users = _dbcontext.Gatepass.ToList();
-            return View();
+            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id); 
+
+            if (requestGP == null)
+            {
+                return NotFound(); 
+            }
+
+            return View(requestGP);
         }
 
-        public IActionResult Modal()
+
+        [HttpGet]
+        public IActionResult Disapproved(int id)
         {
-            return Content("This is the modal content.");
+            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
+
+            if (requestGP == null)
+            {
+                return NotFound();
+            }
+
+            return View(requestGP);
         }
 
-        public IActionResult Approved()
-        {
-            ViewBag.users = _dbcontext.Gatepass.ToList();
-            return View();
-        }
 
+        [HttpPost]
         public IActionResult Disapproved()
         {
-            ViewBag.users = _dbcontext.Gatepass.ToList();
+           
+           
             return View();
         }
 
