@@ -51,5 +51,28 @@ namespace Document_Management.Controllers
             return View();
         }
 
+        public IActionResult Details()
+        {
+            ViewBag.users = _dbcontext.Gatepass.ToList();
+            return View();
+        }
+
+        public IActionResult Modal()
+        {
+            return Content("This is the modal content.");
+        }
+
+        public IActionResult Approved()
+        {
+            ViewBag.users = _dbcontext.Gatepass.ToList();
+            return View();
+        }
+
+        public IActionResult Disapproved()
+        {
+            ViewBag.users = _dbcontext.Gatepass.ToList();
+            return View();
+        }
+
     }
 }
