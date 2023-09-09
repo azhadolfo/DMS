@@ -51,5 +51,49 @@ namespace Document_Management.Controllers
             return View();
         }
 
+
+        //public IActionResult Details()
+        //{
+        //    ViewBag.users = _dbcontext.Gatepass.ToList();
+        //    return View();
+        //}
+
+
+        [HttpGet]
+        public IActionResult Approved(int id) 
+        {
+            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id); 
+
+            if (requestGP == null)
+            {
+                return NotFound(); 
+            }
+
+            return View(requestGP);
+        }
+
+
+        [HttpGet]
+        public IActionResult Disapproved(int id)
+        {
+            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
+
+            if (requestGP == null)
+            {
+                return NotFound();
+            }
+
+            return View(requestGP);
+        }
+
+
+        [HttpPost]
+        public IActionResult Disapproved()
+        {
+           
+           
+            return View();
+        }
+
     }
 }

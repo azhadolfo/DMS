@@ -1,6 +1,10 @@
 ﻿@model IEnumerable<Document_Management.Models.RequestGP>
 
 @{
+    var usersCount = (ViewBag.users as List<Document_Management.Models.RequestGP>)?.Count ?? 0;
+}
+
+@{
     ViewData["Title"] = "Validator";
 }
 
@@ -9,36 +13,32 @@
 @* <p>
     <a asp-action="Create" class="btn btn-primary rounded-3">Create New</a>
 </p> *@
-<table class="table">
+
+<table class="table table-responsive">
     <thead>
         <tr>
-            <th class="text-primary">@Html.DisplayNameFor(model => model.LastName)</th>
-            <th class="text-primary">@Html.DisplayNameFor(model => model.FirstName)</th>
-          @*   <th class="text-primary">@Html.DisplayNameFor(model => model.MiddleName)</th> *@
-            <th class="text-primary">@Html.DisplayNameFor(model => model.Contact)</th>
-            <th class="text-primary">@Html.DisplayNameFor(model => model.GatepassId)</th>
-            <th class="text-primary">@Html.DisplayNameFor(model => model.ScheduleDate)</th>
-            <th class="text-primary">@Html.DisplayNameFor(model => model.Purpose)</th>
+            <th class="text-primary ">Full Name</th>
+            <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
+            <th class="text-primary ">@Html.DisplayNameFor(model => model.GatepassId)</th>
+            <th class="text-primary ">@Html.DisplayNameFor(model => model.ScheduleDate)</th>
+        @*     <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> *@
             <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var user in (List <Document_Management.Models.RequestGP>)ViewBag.users)
         {
-            <tr class="align-middle">
-                <td>@user.LastName</td>
-                <td>@user.FirstName</td>
-         @*        <td>@user.MiddleName</td> *@
+                <tr class="align-middle text-wrap">
+                <td class="w-50">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
                 <td>@user.Contact</td>
                 <td>@user.GatepassId</td>
                 <td>@user.ScheduleDate</td>
-                <td>@user.Purpose</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-secondary">Approved</a> |
-                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-danger">Disapproved</a>
+               @*  <td>@user.Purpose</td> *@
+                <td class="w-50">
+                    <a asp-action="Approved" asp-route-id="@user.Id" class="btn btn-secondary">Approved</a> |
+                    <a asp-action="Disapproved" asp-route-id="@user.Id" class="btn btn-danger">Disapproved</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-
