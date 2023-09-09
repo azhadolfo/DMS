@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Document_Management.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230907092045_Create table for RequestGP")]
+    [Migration("20230908073244_Create table for RequestGP")]
     partial class CreatetableforRequestGP
     {
         /// <inheritdoc />

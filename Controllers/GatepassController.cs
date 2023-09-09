@@ -36,12 +36,6 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Assuming you have a string representation of the date in "yyyy-MM-dd" format.
-                string dateInput = "2023-09-08";
-                DateTime scheduleDate = DateTime.ParseExact(dateInput, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToUniversalTime();
-
-                // Assign the scheduleDate to the ScheduleDate property of the gpInfo object.
-                gpInfo.ScheduleDate = scheduleDate;
 
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
@@ -51,6 +45,55 @@ namespace Document_Management.Controllers
             return View(gpInfo);
         }
 
+        public IActionResult Validator()
+        {   
+            ViewBag.users = _dbcontext.Gatepass.ToList();
+            return View();
+        }
+
+
+        //public IActionResult Details()
+        //{
+        //    ViewBag.users = _dbcontext.Gatepass.ToList();
+        //    return View();
+        //}
+
+
+        [HttpGet]
+        public IActionResult Approved(int id) 
+        {
+            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id); 
+
+            if (requestGP == null)
+            {
+                return NotFound(); 
+            }
+
+            return View(requestGP);
+        }
+
+
+        [HttpGet]
+        public IActionResult Disapproved(int id)
+        {
+            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
+
+            if (requestGP == null)
+            {
+                return NotFound();
+            }
+
+            return View(requestGP);
+        }
+
+
+        [HttpPost]
+        public IActionResult Disapproved()
+        {
+           
+           
+            return View();
+        }
 
     }
 }
