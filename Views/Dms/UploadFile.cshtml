@@ -3,24 +3,18 @@
 <h1>Upload File</h1>
 
 <div class="container mt-5">
-    <form asp-action="UploadFile">
+    <div class="alert">
+        @ViewBag.message
+    </div>
+    <form asp-action="UploadFile" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3">
             <label asp-for="Name" class="control-label"></label>
             <div class="col-6">
-                <input asp-for="Name" type="file" class="form-control" />
+                <input name="file" type="file" class="form-control" accept=".pdf"/>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
-
-        <div class="mb-3">
-            <label asp-for="Location" class="control-label"></label>
-            <div class="col">
-                <input asp-for="Location" type="text" class="form-control" placeholder="Location path" />
-                <span asp-validation-for="Location" class="text-danger"></span>
-            </div>
-        </div>
-
         <div class="mb-3">
             <label asp-for="Department" class="control-label"></label>
             <div class="col">
@@ -43,6 +37,14 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary rounded">Upload</button>
+        <button type="submit" class="btn btn-primary rounded" onclick="uploadSubmit()">Upload</button>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        function uploadSubmit() {
+            Swal.fire('Uploaded','Successfully','success')
+        }
+    </script>
+}
