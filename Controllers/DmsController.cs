@@ -22,42 +22,16 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult UploadFile()
         {
-            return View(new FileDocument());
+            var username = HttpContext.Session.GetString("username");
+            if (!string.IsNullOrEmpty(username))
+            {
+                return View(new FileDocument());
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
         }
-
-        //Post for the Action Dms/Upload
-        //[HttpPost]
-        //public IActionResult UploadFile(FileDocument fileDocument, IFormFile file)
-        //{
-        //    try
-        //    {
-        //        if (ModelState.IsValid && file != null && file.Length > 0)
-        //        {
-        //            //var username = HttpContext.Session.GetString("username");
-        //            fileDocument.DateUploaded = DateTime.Now;
-        //            //fileDocument.Username = username;
-        //            fileDocument.Username = "test";
-
-        //            var filename = file.FileName;
-        //            filename = Path.GetFileName(filename);
-        //            var uploadFilePath = Path.Combine(_hostingEnvironment.WebRootPath, "UploadedFiles");
-        //            var stream = new FileStream(uploadFilePath, FileMode.Create);
-        //            file.CopyToAsync(stream);
-        //            fileDocument.Name = filename;
-        //            _dbcontext.FileDocuments.Add(fileDocument);
-        //            _dbcontext.SaveChanges();
-        //            ViewBag.message = "File uploaded successfully";
-        //            return RedirectToAction("UploadFile");
-        //        }
-
-        //    }   
-        //    catch (Exception ex)
-        //    {
-        //        ViewBag.message = "Error: " + ex.Message.ToString();
-        //    }
-
-        //    return View(fileDocument);
-        //}
 
         [HttpPost]
         public IActionResult UploadFile(FileDocument fileDocument, IFormFile file)
