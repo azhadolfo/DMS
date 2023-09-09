@@ -66,10 +66,12 @@ namespace Document_Management.Controllers
             {
                 if (ModelState.IsValid && file != null && file.Length > 0)
                 {
-                    //var username = HttpContext.Session.GetString("username");
+                    var username = HttpContext.Session.GetString("username");
                     fileDocument.DateUploaded = DateTime.Now;
-                    //fileDocument.Username = username;
-                    fileDocument.Username = "test";
+                    fileDocument.Username = username;
+
+                    //Uncomment this for test data
+                    //fileDocument.Username = "test";
 
                     var filename = Path.GetFileName(file.FileName);
                     var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
