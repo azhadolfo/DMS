@@ -16,6 +16,7 @@ namespace Document_Management.Controllers
         {
             _hostingEnvironment = hostingEnvironment;
             _dbcontext = context;
+            
         }
 
         //Get for the Action Dms/Upload
@@ -73,18 +74,18 @@ namespace Document_Management.Controllers
                     _dbcontext.FileDocuments.Add(fileDocument);
                     _dbcontext.SaveChanges();
 
-                    ViewBag.Success = "File uploaded successfully";
+                    TempData["success"] = "File uploaded successfully";
 
                     return RedirectToAction("UploadFile");
                 }
                 else
                 {
-                    ViewBag.message = "Please select a valid file to upload.";
+                    TempData["error"] = "Please fill out all the required data.";
                 }
             }
             catch (Exception ex)
             {
-                ViewBag.message = "Error: " + ex.Message.ToString();
+                TempData["error"] = "Contact MIS: " + ex.Message.ToString();
             }
 
             return View(fileDocument);

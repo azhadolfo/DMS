@@ -1,16 +1,16 @@
 ﻿@model Document_Management.Models.FileDocument;
 
+<partial name="_Notification" />
+
 <h1>Upload File</h1>
+<hr />
 
 <div class="container mt-5">
-    <div class="alert">
-        @ViewBag.message
-    </div>
     <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div> 
         <div class="mb-3">
             <label asp-for="Name" class="control-label"></label>
-            <div class="col-6">
+            <div class="col">
                 <input name="file" type="file" class="form-control" accept=".pdf"/>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
@@ -32,19 +32,11 @@
         <div class="mb-3">
             <label asp-for="Description" class="form-label"></label>
             <div class="col">
-                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter the description."></textarea>
+                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or phrases that will help us find the file later."></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary rounded" onclick="uploadSubmit()">Upload</button>
+        <button type="submit" class="btn btn-primary rounded">Upload</button>
     </form>
 </div>
-
-@section Scripts {
-    <script>
-        function uploadSubmit() {
-            Swal.fire('Uploaded','Successfully','success')
-        }
-    </script>
-}
