@@ -29,8 +29,15 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Insert()
         {
-
-            return View();
+            var username = HttpContext.Session.GetString("username");
+            if (!string.IsNullOrEmpty(username))
+            {
+                return View();
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
         }
 
         [HttpPost]
@@ -53,8 +60,14 @@ namespace Document_Management.Controllers
 
         public IActionResult Validator()
         {
-           
-                ViewBag.users = _dbcontext.Gatepass.ToList();
+            var username = HttpContext.Session.GetString("userrole")?.ToLower();
+            if(!(username == "validator"))
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact MIS Department.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
+            ViewBag.users = _dbcontext.Gatepass.ToList();
             
             return View();
         }
@@ -81,14 +94,19 @@ namespace Document_Management.Controllers
                 return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
             }
             var client = await _dbcontext.Gatepass.FindAsync(id);
+            //if (client != null)
+            //{
+            //    _dbcontext.Gatepass.Remove(client);
+            //}
+
             if (client != null)
             {
-                _dbcontext.Gatepass.Remove(client);
+                client.Status = "Approved";
+                await _dbcontext.SaveChangesAsync();
             }
-
-            await _dbcontext.SaveChangesAsync();
             return RedirectToAction(nameof(Validator));
         }
+
 
 
         [HttpGet]
@@ -113,12 +131,16 @@ namespace Document_Management.Controllers
                 return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
             }
             var client = await _dbcontext.Gatepass.FindAsync(id);
+            //if (client != null)
+            //{
+            //    _dbcontext.Gatepass.Remove(client);
+            //}
+
             if (client != null)
             {
-                _dbcontext.Gatepass.Remove(client);
+                client.Status = "Disapproved";
+                await _dbcontext.SaveChangesAsync();
             }
-
-            await _dbcontext.SaveChangesAsync();
             return RedirectToAction(nameof(Validator));
         }
 
