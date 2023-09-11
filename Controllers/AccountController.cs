@@ -54,6 +54,7 @@ namespace Document_Management.Controllers
                 user.ConfirmPassword = HashPassword(user.ConfirmPassword);
                 _dbcontext.Account.Add(user);
                 _dbcontext.SaveChanges();
+                TempData["success"] = "User created successfully";
                 return RedirectToAction("Index", "Account");
             }
 
@@ -114,7 +115,7 @@ namespace Document_Management.Controllers
                 user.Role = model.Role;
 
                 await _dbcontext.SaveChangesAsync();
-
+                TempData["success"] = "User updated successfully";
                 return RedirectToAction("Index");
             }
 
@@ -159,6 +160,7 @@ namespace Document_Management.Controllers
             if (employee != null)
             {
                 _dbcontext.Account.Remove(employee);
+                TempData["success"] = "User deleted successfully";
             }
 
             await _dbcontext.SaveChangesAsync();
