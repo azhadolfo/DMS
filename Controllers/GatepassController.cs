@@ -36,9 +36,11 @@ namespace Document_Management.Controllers
         [HttpPost]
         public IActionResult Insert(RequestGP gpInfo)
         {
+            
+
             if (ModelState.IsValid)
             {
-
+          
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 return RedirectToAction("Insert");
@@ -47,16 +49,21 @@ namespace Document_Management.Controllers
             return View(gpInfo);
         }
 
+
+
         public IActionResult Validator()
-        {   
-            ViewBag.users = _dbcontext.Gatepass.ToList();
+        {
+           
+                ViewBag.users = _dbcontext.Gatepass.ToList();
+            
             return View();
         }
 
         [HttpGet]
-        public IActionResult Approved(int id) 
+        public IActionResult Approved(int? id) 
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id); 
+            
 
             if (requestGP == null)
             {
@@ -66,12 +73,21 @@ namespace Document_Management.Controllers
             return View(requestGP);
         }
 
-        [HttpPost]
-        public IActionResult Approved()
+        [HttpPost, ActionName("Approved")]
+        public async Task<IActionResult> Approved(int id)
         {
+            if (_dbcontext.Gatepass == null)
+            {
+                return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
+            }
+            var client = await _dbcontext.Gatepass.FindAsync(id);
+            if (client != null)
+            {
+                _dbcontext.Gatepass.Remove(client);
+            }
 
-
-            return View();
+            await _dbcontext.SaveChangesAsync();
+            return RedirectToAction(nameof(Validator));
         }
 
 

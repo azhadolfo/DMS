@@ -6,7 +6,6 @@ namespace Document_Management.Models
     public class RequestGP
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]
@@ -27,7 +26,7 @@ namespace Document_Management.Models
 
         [Required]
         [Display(Name = "Gatepass Id No.:")]
-        public int GatepassId { get; set; }
+        public int GatepassId { get; set; } 
 
         [Required]
         [Display(Name = "Schedule Date:")]
@@ -36,5 +35,7 @@ namespace Document_Management.Models
         [Required]
         [Display(Name = "Purpose:")]
         public string Purpose { get; set; } = null!;
+
+        public string Status { get; set; } = "";
     }
 }
