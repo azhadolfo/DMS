@@ -37,7 +37,7 @@
 
         <div class="mb-3">
             <label asp-for="Contact" class="form-label"></label>
-            <input asp-for="Contact" type="number" class="form-control" placeholder="Contact Number ex. 09..." />
+            <input asp-for="Contact" type="number" class="form-control" id="myInput" onclick="limitInputLength(this, 10)" placeholder="Contact Number ex. 09..." />
         </div>
 
         <div class="mb-3">
@@ -53,3 +53,22 @@
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
+@section Scripts{
+    <script>
+function limitInputLength(input, maxLength) {
+  var currentLength = input.value.length;
+  var maxLength = maxLength || 10;
+
+  if (currentLength > maxLength) {
+    input.value = input.value.substring(0, maxLength);
+  }
+}
+
+// Example usage
+var input = document.getElementById("myInput");
+
+input.addEventListener("keyup", function() {
+  limitInputLength(input, 10);
+});
+</script>
+}
