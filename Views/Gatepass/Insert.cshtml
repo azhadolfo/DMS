@@ -59,7 +59,7 @@ function limitInputLength(input, maxLength) {
   var currentLength = input.value.length;
   var maxLength = maxLength || 10;
 
-  if (currentLength = maxLength) {
+  if (currentLength > maxLength) {
     input.value = input.value.substring(0, maxLength);
   }
 }
@@ -70,5 +70,5 @@ var input = document.getElementById("myInput");
 input.addEventListener("keyup", function() {
   limitInputLength(input, 10);
 });
-    </script>
+</script>
 }

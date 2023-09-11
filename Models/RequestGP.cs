@@ -21,7 +21,6 @@ namespace Document_Management.Models
         public string MiddleName { get; set; } = null!;
 
         [Required]
-        [MinLength(10)]
         [Display(Name = "Contact:")]
         public int Contact { get; set; }
 

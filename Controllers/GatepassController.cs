@@ -45,7 +45,7 @@ namespace Document_Management.Controllers
         {
             
 
-            if (ModelState.IsValid)
+            if (ModelState.IsValid || gpInfo.Status == "")
             {
           
                 _dbcontext.Gatepass.Add(gpInfo);
