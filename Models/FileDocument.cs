@@ -9,7 +9,6 @@ namespace Document_Management.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Display(Name = "File Name")]
-        [Required]
         public string? Name { get; set; }
         [Display(Name = "File Location")]
         public string? Location { get; set; }
