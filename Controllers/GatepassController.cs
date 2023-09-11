@@ -51,14 +51,6 @@ namespace Document_Management.Controllers
             return View();
         }
 
-
-        //public IActionResult Details()
-        //{
-        //    ViewBag.users = _dbcontext.Gatepass.ToList();
-        //    return View();
-        //}
-
-
         [HttpGet]
         public IActionResult Approved(int id) 
         {
