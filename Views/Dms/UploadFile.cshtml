@@ -6,7 +6,7 @@
     <div class="alert">
         @ViewBag.message
     </div>
-    <form asp-action="UploadFile" enctype="multipart/form-data">
+    <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3">
             <label asp-for="Name" class="control-label"></label>

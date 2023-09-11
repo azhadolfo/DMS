@@ -44,32 +44,37 @@ namespace Document_Management.Controllers
                     fileDocument.DateUploaded = DateTime.Now;
                     fileDocument.Username = username;
 
-                    //Uncomment this for test data
-                    //fileDocument.Username = "test";
-
                     var filename = Path.GetFileName(file.FileName);
                     var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
                     filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
 
-                    var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
-                    var filePath = Path.Combine(uploadFolderPath, filename);
+                    // Determine the subdirectory based on the selected department
+                    var departmentSubdirectory = Path.Combine("Files", fileDocument.Department);
 
-                    // Ensure the "Files" directory exists
+                    // Combine the subdirectory with the web root path
+                    var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
+
+                    // Ensure the department-specific subdirectory exists
                     if (!Directory.Exists(uploadFolderPath))
                     {
                         Directory.CreateDirectory(uploadFolderPath);
                     }
 
+                    var filePath = Path.Combine(uploadFolderPath, filename);
+
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         file.CopyTo(stream); // Copy the file to the server
                     }
-                    ViewBag.message = "File uploaded successfully";
+
+                    
                     fileDocument.Name = filename;
                     fileDocument.Location = filePath;
                     _dbcontext.FileDocuments.Add(fileDocument);
                     _dbcontext.SaveChanges();
-                    
+
+                    ViewBag.Success = "File uploaded successfully";
+
                     return RedirectToAction("UploadFile");
                 }
                 else
@@ -82,10 +87,61 @@ namespace Document_Management.Controllers
                 ViewBag.message = "Error: " + ex.Message.ToString();
             }
 
-
             return View(fileDocument);
         }
 
+
+        //[HttpGet]
+        //public IActionResult DownloadFile()
+        //{
+        //    string filesDirectory = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
+
+        //    // Get the subdirectories (folders) in the "Files" directory
+        //    string[] subdirectories = Directory.GetDirectories(filesDirectory);
+
+        //    // Create a list to store folder names and their corresponding PDF files
+        //    List<FolderWithFiles> foldersWithFiles = new List<FolderWithFiles>();
+
+        //    foreach (var subdirectory in subdirectories)
+        //    {
+        //        // Get the folder name from the path
+        //        string folderName = Path.GetFileName(subdirectory);
+
+        //        // Get PDF files within the current subdirectory
+        //        string[] pdfFiles = Directory.GetFiles(subdirectory, "*.pdf")
+        //                                       .Select(Path.GetFileName)
+        //                                       .ToArray();
+
+        //        // Create a view model for the folder with its PDF files
+        //        FolderWithFiles folderViewModel = new FolderWithFiles
+        //        {
+        //            FolderName = folderName,
+        //            PdfFiles = pdfFiles
+        //        };
+
+        //        foldersWithFiles.Add(folderViewModel);
+        //    }
+
+        //    return View(foldersWithFiles);
+        //}
+
+        [HttpGet]
+        public IActionResult DownloadFile()
+        {
+            // Retrieve the files from the database and project them into FileViewModel
+            var fileViewModels = _dbcontext.FileDocuments
+                .Select(file => new FileDocument
+                {
+                    Name = file.Name,
+                    Location = file.Location,
+                    DateUploaded = file.DateUploaded,
+                    Description = file.Description,
+                    Department = file.Department
+                })
+                .ToList();
+
+            return View(fileViewModels);
+        }
 
     }
 }
