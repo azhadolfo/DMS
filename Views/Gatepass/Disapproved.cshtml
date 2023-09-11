@@ -55,6 +55,9 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Confirm" asp-route-id="@Model?.Id">Confirm</a> |
-    <a asp-action="Validator">Back to List</a>
+    <form asp-action="Disapproved">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Confirm Disapproved" class="btn btn-danger" /> |
+        <a asp-action="Validator">Back to List</a>
+    </form>
 </div>

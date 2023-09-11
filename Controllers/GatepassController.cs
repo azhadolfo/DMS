@@ -1,8 +1,10 @@
 ﻿using Document_Management.Data;
 using Document_Management.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Globalization;
+using System.Text;
+using System.Security.Cryptography;
 
 
 namespace Document_Management.Controllers
@@ -64,9 +66,17 @@ namespace Document_Management.Controllers
             return View(requestGP);
         }
 
+        [HttpPost]
+        public IActionResult Approved()
+        {
+
+
+            return View();
+        }
+
 
         [HttpGet]
-        public IActionResult Disapproved(int id)
+        public IActionResult Disapproved(int? id)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
@@ -78,14 +88,25 @@ namespace Document_Management.Controllers
             return View(requestGP);
         }
 
-
-        [HttpPost]
-        public IActionResult Disapproved()
+ 
+        [HttpPost, ActionName("Disapproved")]
+        public async Task<IActionResult> Disapproved(int id)
         {
-           
-           
-            return View();
+            if (_dbcontext.Gatepass == null)
+            {
+                return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
+            }
+            var client = await _dbcontext.Gatepass.FindAsync(id);
+            if (client != null)
+            {
+                _dbcontext.Gatepass.Remove(client);
+            }
+
+            await _dbcontext.SaveChangesAsync();
+            return RedirectToAction(nameof(Validator));
         }
+
+       
 
     }
 }
