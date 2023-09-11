@@ -16,6 +16,7 @@ namespace Document_Management.Controllers
         {
             _hostingEnvironment = hostingEnvironment;
             _dbcontext = context;
+            
         }
 
         //Get for the Action Dms/Upload
@@ -44,48 +45,69 @@ namespace Document_Management.Controllers
                     fileDocument.DateUploaded = DateTime.Now;
                     fileDocument.Username = username;
 
-                    //Uncomment this for test data
-                    //fileDocument.Username = "test";
-
                     var filename = Path.GetFileName(file.FileName);
                     var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
                     filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
 
-                    var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
-                    var filePath = Path.Combine(uploadFolderPath, filename);
+                    // Determine the subdirectory based on the selected department
+                    var departmentSubdirectory = Path.Combine("Files", fileDocument.Department);
 
-                    // Ensure the "Files" directory exists
+                    // Combine the subdirectory with the web root path
+                    var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
+
+                    // Ensure the department-specific subdirectory exists
                     if (!Directory.Exists(uploadFolderPath))
                     {
                         Directory.CreateDirectory(uploadFolderPath);
                     }
 
+                    var filePath = Path.Combine(uploadFolderPath, filename);
+
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         file.CopyTo(stream); // Copy the file to the server
                     }
-                    ViewBag.message = "File uploaded successfully";
+
+                    
                     fileDocument.Name = filename;
                     fileDocument.Location = filePath;
                     _dbcontext.FileDocuments.Add(fileDocument);
                     _dbcontext.SaveChanges();
-                    
+
+                    TempData["success"] = "File uploaded successfully";
+
                     return RedirectToAction("UploadFile");
                 }
                 else
                 {
-                    ViewBag.message = "Please select a valid file to upload.";
+                    TempData["error"] = "Please fill out all the required data.";
                 }
             }
             catch (Exception ex)
             {
-                ViewBag.message = "Error: " + ex.Message.ToString();
+                TempData["error"] = "Contact MIS: " + ex.Message.ToString();
             }
-
 
             return View(fileDocument);
         }
 
+        [HttpGet]
+        public IActionResult DownloadFile()
+        {
+            // Retrieve the files from the database and project them into FileViewModel
+            var fileViewModels = _dbcontext.FileDocuments
+                .Select(file => new FileDocument
+                {
+                    Name = file.Name,
+                    Location = file.Location,
+                    DateUploaded = file.DateUploaded,
+                    Description = file.Description,
+                    Department = file.Department
+                })
+                .ToList();
+
+            return View(fileViewModels);
+        }
 
     }
 }
