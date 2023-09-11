@@ -90,41 +90,6 @@ namespace Document_Management.Controllers
             return View(fileDocument);
         }
 
-
-        //[HttpGet]
-        //public IActionResult DownloadFile()
-        //{
-        //    string filesDirectory = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
-
-        //    // Get the subdirectories (folders) in the "Files" directory
-        //    string[] subdirectories = Directory.GetDirectories(filesDirectory);
-
-        //    // Create a list to store folder names and their corresponding PDF files
-        //    List<FolderWithFiles> foldersWithFiles = new List<FolderWithFiles>();
-
-        //    foreach (var subdirectory in subdirectories)
-        //    {
-        //        // Get the folder name from the path
-        //        string folderName = Path.GetFileName(subdirectory);
-
-        //        // Get PDF files within the current subdirectory
-        //        string[] pdfFiles = Directory.GetFiles(subdirectory, "*.pdf")
-        //                                       .Select(Path.GetFileName)
-        //                                       .ToArray();
-
-        //        // Create a view model for the folder with its PDF files
-        //        FolderWithFiles folderViewModel = new FolderWithFiles
-        //        {
-        //            FolderName = folderName,
-        //            PdfFiles = pdfFiles
-        //        };
-
-        //        foldersWithFiles.Add(folderViewModel);
-        //    }
-
-        //    return View(foldersWithFiles);
-        //}
-
         [HttpGet]
         public IActionResult DownloadFile()
         {

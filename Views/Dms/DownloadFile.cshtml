@@ -3,37 +3,45 @@
 <h1 class="h1">List of Folders and PDF Files</h1>
 
 
-<div class="form-group">
+@* <div class="form-group">
     <label for="searchInput">Search:</label>
     <input type="text" id="searchInput" class="form-control" placeholder="Search by Name or Description">
-</div>
+</div> *@
+
+<form class="d-flex">
+    <input id="searchInput" class="form-control me-sm-2" type="text" placeholder="Search by Name or Description">
+</form>
+
 <br />
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Department</th>
-            <th>File Name</th>
-            <th>Date Uploaded</th>
-            <th>Description</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var file in Model)
-        {
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
             <tr>
-                <td>@file.Department</td>
-                <td>@file.Name</td>
-                <td>@file.DateUploaded</td>
-                <td>@file.Description</td>
-                <td>
-                    <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-primary">Download</a>
-                </td>
+                <th>Department</th>
+                <th>File Name</th>
+                <th>Date Uploaded</th>
+                <th>Description</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var file in Model)
+            {
+                <tr>
+                    <td>@file.Department</td>
+                    <td>@file.Name</td>
+                    <td>@file.DateUploaded</td>
+                    <td>@file.Description</td>
+                    <td>
+                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-primary">Download</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
 
 @section Scripts {
     <script>
