@@ -7,7 +7,7 @@ namespace Document_Management.Controllers
 {
     public class DmsController : Controller
     {
-        private string _username;
+        private string? _username;
 
         private readonly IWebHostEnvironment _hostingEnvironment;
         //Database Context

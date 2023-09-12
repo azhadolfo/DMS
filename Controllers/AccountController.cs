@@ -12,8 +12,8 @@ namespace Document_Management.Controllers
     public class AccountController : Controller
     {
         //root variable to store users session
-        private string _username;
-        private string _userrole;
+        private string? _username;
+        private string? _userrole;
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
