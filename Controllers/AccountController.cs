@@ -27,15 +27,15 @@ namespace Document_Management.Controllers
             var username = HttpContext.Session.GetString("username");
             if (!string.IsNullOrEmpty(username))
             {
-                var users = await _dbcontext.Account.ToListAsync();
+                var users = await _dbcontext.Account.OrderBy(u => u.EmployeeNumber).ToListAsync();
                 return View(users);
             }
             else
             {
                 return RedirectToAction("Login", "Account");
             }
-              
         }
+
 
         //Get for the Action Account/Create
         [HttpGet]
@@ -134,6 +134,7 @@ namespace Document_Management.Controllers
                     user.EmployeeNumber = model.EmployeeNumber; 
                     user.FirstName = model.FirstName;
                     user.LastName = model.LastName;
+                    user.Department = model.Department;
                     user.Username = model.Username;
                     user.Password = model.Password;
                     user.Role = model.Role;

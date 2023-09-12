@@ -16,7 +16,7 @@ namespace Document_Management.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            var logs = await _dbcontext.Logs.ToListAsync();
+            var logs = await _dbcontext.Logs.OrderByDescending(u => u.Date).ToListAsync();
             return View(logs);
         }
     }

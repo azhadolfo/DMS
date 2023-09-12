@@ -8,6 +8,12 @@
 
     <h1>Index</h1>
 
+    <div class="d-flex justify-content-end">
+        <form class="form-inline">
+            <input id="searchInput" class="form-control mr-sm-2" type="text" placeholder="Search">
+        </form>
+    </div>
+
     <p>
         <a asp-action="Create" class="btn btn-primary rounded-3">Create New</a>
     </p>
@@ -17,8 +23,8 @@
             <thead>
                 <tr>
                     <th class="text-primary">Employee Number</th>
-                    <th class="text-primary">First Name</th>
-                    <th class="text-primary">Last Name</th>
+                    <th class="text-primary">Full Name</th>
+                    <th class="text-primary">Department</th>
                     <th class="text-primary">Username</th>
                     <th class="text-primary">Role</th>
                     <th></th>
@@ -29,8 +35,8 @@
                 {
                     <tr>
                         <td>@user.EmployeeNumber</td>
-                        <td>@user.FirstName</td>
-                        <td>@user.LastName</td>
+                        <td>@user.FirstName @user.LastName</td>
+                        <td>@user.Department</td>
                         <td>@user.Username</td>
                         <td>@user.Role</td>
                         <td>
@@ -42,3 +48,22 @@
             </tbody>
         </table>
     </div>
+
+    @section Scripts {
+        <script>
+            $(document).ready(function () {
+                $("#searchInput").on("keyup", function () {
+                    var searchText = $(this).val().toLowerCase();
+
+                    $("tbody tr").each(function () {
+                        var row = $(this).text().toLowerCase();
+                        if (row.includes(searchText)) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                });
+            });
+        </script>
+    }
