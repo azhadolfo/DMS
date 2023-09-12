@@ -11,9 +11,15 @@ namespace Document_Management.Controllers
     
     public class AccountController : Controller
     {
-        
+
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
+
+        //Passing the dbcontext in to another variable
+        public AccountController(ApplicationDbContext context)
+        {
+            _dbcontext = context;
+        }
 
         //Action for Account/Index
         public async Task<IActionResult> Index()
@@ -21,21 +27,15 @@ namespace Document_Management.Controllers
             var username = HttpContext.Session.GetString("username");
             if (!string.IsNullOrEmpty(username))
             {
-                var users = await _dbcontext.Account.ToListAsync();
+                var users = await _dbcontext.Account.OrderBy(u => u.EmployeeNumber).ToListAsync();
                 return View(users);
             }
             else
             {
                 return RedirectToAction("Login", "Account");
             }
-              
         }
 
-        //Passing the dbcontext in to another variable
-        public AccountController(ApplicationDbContext context)
-        {
-            _dbcontext = context;
-        }
 
         //Get for the Action Account/Create
         [HttpGet]
@@ -50,12 +50,26 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
-                user.Password = HashPassword(user.Password);
-                user.ConfirmPassword = HashPassword(user.ConfirmPassword);
-                _dbcontext.Account.Add(user);
-                _dbcontext.SaveChanges();
-                TempData["success"] = "User created successfully";
-                return RedirectToAction("Index", "Account");
+                var username = HttpContext.Session.GetString("username");
+
+                if (!string.IsNullOrEmpty(username))
+                {
+                    user.Password = HashPassword(user.Password);
+                    user.ConfirmPassword = HashPassword(user.ConfirmPassword);
+                    _dbcontext.Account.Add(user);
+
+                    //Implementing the logs 
+                    LogsModel logs = new(username, Environment.MachineName, $"Add new user: {user.Username}");
+                    _dbcontext.Logs.Add(logs);
+
+                    _dbcontext.SaveChanges();
+                    TempData["success"] = "User created successfully";
+                    return RedirectToAction("Index", "Account");
+                }
+                else
+                {
+                    return RedirectToAction("Login", "Account");
+                }
             }
 
             return View(user);
@@ -79,12 +93,17 @@ namespace Document_Management.Controllers
                 {
                     HttpContext.Session.SetString("username", user.Username); // Store username in session
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
+
+
+
                     return RedirectToAction("Index", "Home");
                 }
                 else
                 {
                     ModelState.AddModelError("","Invalid username or password");
                 }
+
+
             }
 
             return View();
@@ -104,20 +123,30 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> Edit(Register model)
         {
             var user = await _dbcontext.Account.FindAsync(model.Id);
-            
-            if (user != null)
-            {
-                user.EmployeeNumber = model.EmployeeNumber; 
-                user.FirstName = model.FirstName;
-                user.LastName = model.LastName;
-                user.Username = model.Username;
-                user.Password = model.Password;
-                user.Role = model.Role;
+            var username = HttpContext.Session.GetString("username");
 
-                await _dbcontext.SaveChangesAsync();
-                TempData["success"] = "User updated successfully";
-                return RedirectToAction("Index");
+            if (string.IsNullOrEmpty(username))
+            { 
+               return RedirectToAction("Login", "Account");
             }
+                if (user != null)
+                {
+                    user.EmployeeNumber = model.EmployeeNumber; 
+                    user.FirstName = model.FirstName;
+                    user.LastName = model.LastName;
+                    user.Department = model.Department;
+                    user.Username = model.Username;
+                    user.Password = HashPassword(model.Password);
+                    user.Role = model.Role;
+
+                    //Implementing the logs 
+                    LogsModel logs = new(username, Environment.MachineName, $"Update user: {user.Username}");
+                    _dbcontext.Logs.Add(logs);
+
+                    await _dbcontext.SaveChangesAsync();
+                    TempData["success"] = "User updated successfully";
+                    return RedirectToAction("Index");
+                }
 
             return RedirectToAction("Index");
         }
@@ -125,8 +154,8 @@ namespace Document_Management.Controllers
         // GET: Account/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var username = HttpContext.Session.GetString("userrole")?.ToLower();
-            if (!(username == "admin"))
+            var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
+            if (!(userrole == "admin"))
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact MIS Department.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
@@ -156,10 +185,25 @@ namespace Document_Management.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
             }
+
+            var username = HttpContext.Session.GetString("username");
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var employee = await _dbcontext.Account.FindAsync(id);
             if (employee != null)
             {
                 _dbcontext.Account.Remove(employee);
+
+                //Implementing the logs 
+                LogsModel logs = new(username, Environment.MachineName, $"Delete user: {employee.Username}");
+                _dbcontext.Logs.Add(logs);
+
+                await _dbcontext.SaveChangesAsync();
+
                 TempData["success"] = "User deleted successfully";
             }
 
