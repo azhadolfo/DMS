@@ -43,11 +43,11 @@ namespace Document_Management.Controllers
         [HttpPost]
         public IActionResult Insert(RequestGP gpInfo)
         {
-            
 
-            if (ModelState.IsValid || gpInfo.Status == "")
+
+            if (ModelState.IsValid)
             {
-          
+
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 return RedirectToAction("Insert");
@@ -61,26 +61,26 @@ namespace Document_Management.Controllers
         public IActionResult Validator()
         {
             var username = HttpContext.Session.GetString("userrole")?.ToLower();
-            if(!(username == "validator"))
+            if (!(username == "validator"))
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact MIS Department.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
             ViewBag.users = _dbcontext.Gatepass.ToList();
-            
+
             return View();
         }
 
         [HttpGet]
-        public IActionResult Approved(int? id) 
+        public IActionResult Approved(int? id)
         {
-            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id); 
-            
+            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
+
 
             if (requestGP == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             return View(requestGP);
@@ -122,7 +122,7 @@ namespace Document_Management.Controllers
             return View(requestGP);
         }
 
- 
+
         [HttpPost, ActionName("Disapproved")]
         public async Task<IActionResult> Disapproved(int id)
         {
@@ -144,7 +144,20 @@ namespace Document_Management.Controllers
             return RedirectToAction(nameof(Validator));
         }
 
-       
+        public IActionResult RecievedGP()
+        {
+
+            var username = HttpContext.Session.GetString("username");
+            if (!string.IsNullOrEmpty(username))
+            {
+                return View();
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
+        }
+
 
     }
 }
