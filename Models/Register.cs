@@ -30,6 +30,8 @@ namespace Document_Management.Models
         public string ConfirmPassword { get; set; } = null!;
         [Required]
         public string Role { get; set; } = null!;
+        [Required]
+        public string Department { get; set; } = null!;
 
     }
 }

@@ -7,6 +7,7 @@ namespace Document_Management.Controllers
 {
     public class DmsController : Controller
     {
+
         private readonly IWebHostEnvironment _hostingEnvironment;
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
@@ -42,6 +43,12 @@ namespace Document_Management.Controllers
                 if (ModelState.IsValid && file != null && file.Length > 0)
                 {
                     var username = HttpContext.Session.GetString("username");
+
+                    if (string.IsNullOrEmpty(username))
+                    {
+                        return RedirectToAction("Login", "Account");
+                    }
+
                     fileDocument.DateUploaded = DateTime.Now;
                     fileDocument.Username = username;
 
@@ -72,6 +79,11 @@ namespace Document_Management.Controllers
                     fileDocument.Name = filename;
                     fileDocument.Location = filePath;
                     _dbcontext.FileDocuments.Add(fileDocument);
+
+                    //Implementing the logs 
+                    LogsModel logs = new(username, Environment.MachineName, $"Upload new file in {fileDocument.Department} Department");
+                    _dbcontext.Logs.Add(logs);
+
                     _dbcontext.SaveChanges();
 
                     TempData["success"] = "File uploaded successfully";
@@ -92,10 +104,10 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult DownloadFile()
+        public async Task<IActionResult> DownloadFile()
         {
             // Retrieve the files from the database and project them into FileViewModel
-            var fileViewModels = _dbcontext.FileDocuments
+            var fileViewModels = await _dbcontext.FileDocuments
                 .Select(file => new FileDocument
                 {
                     Name = file.Name,
@@ -104,7 +116,7 @@ namespace Document_Management.Controllers
                     Description = file.Description,
                     Department = file.Department
                 })
-                .ToList();
+                .OrderBy(u => u.Department).ToListAsync();
 
             return View(fileViewModels);
         }

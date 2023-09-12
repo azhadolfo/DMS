@@ -17,7 +17,7 @@
 <div class="table-responsive">
     <table class="table table-hover">
         <thead>
-            <tr>
+            <tr class="table-dark">
                 <th>Department</th>
                 <th>File Name</th>
                 <th>Date Uploaded</th>
@@ -34,7 +34,7 @@
                     <td>@file.DateUploaded</td>
                     <td>@file.Description</td>
                     <td>
-                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-primary">Download</a>
+                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-primary rounded">Download</a>
                     </td>
                 </tr>
             }
