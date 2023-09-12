@@ -1,0 +1,25 @@
+﻿@model List<LogsModel>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Computer</th>
+                <th>Activity</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var logs in Model)
+            {
+                <tr>
+                    <td>@logs.Username</td>
+                    <td>@logs.Computer</td>
+                    <td>@logs.Activity</td>
+                    <td>@logs.Date</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

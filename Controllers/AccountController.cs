@@ -11,7 +11,10 @@ namespace Document_Management.Controllers
     
     public class AccountController : Controller
     {
-        
+        //root variable to store users session
+        private string _username;
+        private string _userrole;
+
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
@@ -24,8 +27,9 @@ namespace Document_Management.Controllers
         //Action for Account/Index
         public async Task<IActionResult> Index()
         {
-            var username = HttpContext.Session.GetString("username");
-            if (!string.IsNullOrEmpty(username))
+            _username = HttpContext.Session.GetString("username");
+            _userrole = HttpContext.Session.GetString("userrole")?.ToLower();
+            if (!string.IsNullOrEmpty(_username))
             {
                 var users = await _dbcontext.Account.ToListAsync();
                 return View(users);
@@ -53,6 +57,11 @@ namespace Document_Management.Controllers
                 user.Password = HashPassword(user.Password);
                 user.ConfirmPassword = HashPassword(user.ConfirmPassword);
                 _dbcontext.Account.Add(user);
+
+                //Implementing the logs 
+                LogsModel logs = new LogsModel(user.Username,Environment.MachineName,$"Add new employee: {user.EmployeeNumber}");
+                _dbcontext.Logs.Add(logs);
+
                 _dbcontext.SaveChanges();
                 TempData["success"] = "User created successfully";
                 return RedirectToAction("Index", "Account");
@@ -79,13 +88,20 @@ namespace Document_Management.Controllers
                 {
                     HttpContext.Session.SetString("username", user.Username); // Store username in session
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
+
+
+
                     return RedirectToAction("Index", "Home");
                 }
                 else
                 {
                     ModelState.AddModelError("","Invalid username or password");
                 }
+
+
             }
+
+           
 
             return View();
         }
@@ -114,6 +130,10 @@ namespace Document_Management.Controllers
                 user.Password = model.Password;
                 user.Role = model.Role;
 
+                //Implementing the logs 
+                LogsModel logs = new LogsModel(user.Username, Environment.MachineName, $"Update employee: {user.EmployeeNumber}");
+                _dbcontext.Logs.Add(logs);
+
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "User updated successfully";
                 return RedirectToAction("Index");
@@ -125,8 +145,7 @@ namespace Document_Management.Controllers
         // GET: Account/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var username = HttpContext.Session.GetString("userrole")?.ToLower();
-            if (!(username == "admin"))
+            if (!(_userrole == "admin"))
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact MIS Department.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action

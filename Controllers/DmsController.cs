@@ -7,6 +7,8 @@ namespace Document_Management.Controllers
 {
     public class DmsController : Controller
     {
+        private string _username;
+
         private readonly IWebHostEnvironment _hostingEnvironment;
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
@@ -23,8 +25,8 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult UploadFile()
         {
-            var username = HttpContext.Session.GetString("username");
-            if (!string.IsNullOrEmpty(username))
+            _username = HttpContext.Session.GetString("username");
+            if (!string.IsNullOrEmpty(_username))
             {
                 return View(new FileDocument());
             }
@@ -41,9 +43,8 @@ namespace Document_Management.Controllers
             {
                 if (ModelState.IsValid && file != null && file.Length > 0)
                 {
-                    var username = HttpContext.Session.GetString("username");
                     fileDocument.DateUploaded = DateTime.Now;
-                    fileDocument.Username = username;
+                    fileDocument.Username = _username;
 
                     var filename = Path.GetFileName(file.FileName);
                     var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
