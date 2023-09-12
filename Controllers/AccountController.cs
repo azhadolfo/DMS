@@ -136,7 +136,7 @@ namespace Document_Management.Controllers
                     user.LastName = model.LastName;
                     user.Department = model.Department;
                     user.Username = model.Username;
-                    user.Password = model.Password;
+                    user.Password = HashPassword(model.Password);
                     user.Role = model.Role;
 
                     //Implementing the logs 

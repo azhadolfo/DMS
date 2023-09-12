@@ -1,4 +1,4 @@
-﻿@model List<LogsModel>
+﻿@model PaginatedList<LogsModel>
 
 <div class="table-responsive">
     <table class="table table-hover">
@@ -11,7 +11,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var logs in Model)
+            @foreach (var logs in Model.Items)
             {
                 <tr>
                     <td>@logs.Username</td>
@@ -22,4 +22,35 @@
             }
         </tbody>
     </table>
+</div>
+
+<div class="pagination">
+    <ul class="pagination">
+        @if (Model.HasPreviousPage)
+        {
+            <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+            <li class="page-item"><a class="page-link" href="?page=@(Model.PageIndex - 1)">Previous</a></li>
+        }
+        else
+        {
+            <li class="page-item disabled"><span class="page-link">First</span></li>
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        }
+
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.PageIndex ? "active" : "")"><a class="page-link" href="?page=@i">@i</a></li>
+        }
+
+        @if (Model.HasNextPage)
+        {
+            <li class="page-item"><a class="page-link" href="?page=@(Model.PageIndex + 1)">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page=@Model.TotalPages">Last</a></li>
+        }
+        else
+        {
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+            <li class="page-item disabled"><span class="page-link">Last</span></li>
+        }
+    </ul>
 </div>
