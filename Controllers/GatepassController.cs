@@ -43,12 +43,15 @@ namespace Document_Management.Controllers
         [HttpPost]
         public IActionResult Insert(RequestGP gpInfo)
         {
-
+            var username = HttpContext.Session.GetString("username");
 
             if (ModelState.IsValid)
             {
-
-                _dbcontext.Gatepass.Add(gpInfo);
+                if (username != null)
+                {
+                    gpInfo.Username = username;
+                    }
+                    _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 return RedirectToAction("Insert");
             }
@@ -144,12 +147,15 @@ namespace Document_Management.Controllers
             return RedirectToAction(nameof(Validator));
         }
 
+        [HttpGet]
         public IActionResult RecievedGP()
         {
 
             var username = HttpContext.Session.GetString("username");
+
             if (!string.IsNullOrEmpty(username))
             {
+                ViewBag.users = _dbcontext.Gatepass.ToList();
                 return View();
             }
             else
