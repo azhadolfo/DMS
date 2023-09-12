@@ -15,6 +15,12 @@ namespace Document_Management.Controllers
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
+        //Passing the dbcontext in to another variable
+        public AccountController(ApplicationDbContext context)
+        {
+            _dbcontext = context;
+        }
+
         //Action for Account/Index
         public async Task<IActionResult> Index()
         {
@@ -29,12 +35,6 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
               
-        }
-
-        //Passing the dbcontext in to another variable
-        public AccountController(ApplicationDbContext context)
-        {
-            _dbcontext = context;
         }
 
         //Get for the Action Account/Create
