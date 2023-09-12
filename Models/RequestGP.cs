@@ -37,5 +37,7 @@ namespace Document_Management.Models
         public string Purpose { get; set; } = null!;
 
         public string Status { get; set; } = "";
+
+        public string Username { get; set; } = "";
     }
 }
