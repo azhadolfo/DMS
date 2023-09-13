@@ -129,6 +129,12 @@ namespace Document_Management.Controllers
 
         public IActionResult DownloadFile()
         {
+            var username = HttpContext.Session.GetString("username");
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             var folders = Directory.GetDirectories(wwwrootPath).Select(Path.GetFileName);
             return View(folders);
