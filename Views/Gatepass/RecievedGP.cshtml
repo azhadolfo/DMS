@@ -3,10 +3,11 @@
 @{
     var usersCount = (ViewBag.users as List<Document_Management.Models.RequestGP>)?.Count ?? 0;
     var username = Context.Session.GetString("username");
+    var userrole = Context.Session.GetString("userrole")?.ToLower();
 }
 
 @{
-    ViewData["Title"] = "Validator";
+    ViewData["Title"] = "Recieved Gatepass";
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -22,6 +23,8 @@
             <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
             <th class="text-primary w-25">@Html.DisplayNameFor(model => model.GatepassId)</th>
             <th class="text-primary ">@Html.DisplayNameFor(model => model.ScheduleDate)</th>
+            <th class="text-primary ">Remarks</th>
+            <th class="text-primary ">Username</th>
             <th class="text-primary ">Action</th>
             @*     <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> *@
 
@@ -30,26 +33,47 @@
     <tbody>
         @foreach (var user in (List<Document_Management.Models.RequestGP>)ViewBag.users)
         {
-          
-            <tr class="align-middle text-wrap">
 
 
-                @if (user.Username == username && user.Status == "Approved")
-                {
+            if (userrole == "validator" && user.Status == "Approved")
+            {
+               
+                    <tr class="align-middle text-wrap">
+                        <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
+                        <td>@user.Contact</td>
+                        <td>@user.GatepassId</td>
+                        <td>@user.ScheduleDate</td>
+                        <td>@user.Status</td>
+                        <td>@user.Username</td>
+
+
+                        <td class="w-50">
+                            <a asp-action="Print" asp-route-id="@user.Id" class="btn btn-secondary">Print</a>
+                        </td>
+                    </tr>
+                
+            }
+
+            @if (user.Username == username && user.Status == "Approved" && userrole != "validator")
+                {<tr class="align-middle text-wrap">
                     
                         <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
                         <td>@user.Contact</td>
                         <td>@user.GatepassId</td>
                         <td>@user.ScheduleDate</td>
+                        <td>@user.Status</td>
+                        <td>@user.Username</td>
 
 
                         <td class="w-50">
                             <a asp-action="Print" asp-route-id="@user.Id" class="btn btn-secondary">Print</a> 
                     </td>
-                    
-                }
+                    </tr>
+                
 
-            </tr>
+                }  
+
+           
         }
     </tbody>
 </table>
