@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="~/css/bootswatchTheme.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DocumentManagement.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 </head>
 <body>
     <header>
@@ -128,6 +129,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <!-- Add this link in your HTML to include SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
