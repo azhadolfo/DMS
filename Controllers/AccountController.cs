@@ -100,6 +100,7 @@ namespace Document_Management.Controllers
                 {
                     HttpContext.Session.SetString("username", user.Username); // Store username in session
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
+                    HttpContext.Session.SetString("userdepartment", user.Department); // Store user role in session
 
 
 
