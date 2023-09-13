@@ -22,13 +22,20 @@ namespace Document_Management.Controllers
         }
 
         //Action for Account/Index
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
             var username = HttpContext.Session.GetString("username");
             if (!string.IsNullOrEmpty(username))
             {
-                var users = await _dbcontext.Account.OrderBy(u => u.EmployeeNumber).ToListAsync();
-                return View(users);
+
+                int pageSize = 10; // Number of items per page
+                int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
+
+                var users = _dbcontext.Account.OrderBy(u => u.EmployeeNumber);
+
+                var model = await PaginatedList<Register>.CreateAsync(users, pageIndex, pageSize);
+
+                return View(model);
             }
             else
             {
