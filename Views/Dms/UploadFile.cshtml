@@ -1,5 +1,9 @@
 ﻿@model Document_Management.Models.FileDocument;
 
+@{
+    ViewData["Title"] = "Upload";
+}
+
 <partial name="_Notification" />
 
 <h1>Upload File</h1>
@@ -40,3 +44,10 @@
         <button type="submit" class="btn btn-primary rounded">Upload</button>
     </form>
 </div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

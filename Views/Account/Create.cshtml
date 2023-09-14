@@ -1,7 +1,7 @@
 ﻿@model Document_Management.Models.Register
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Register";
 }
 
 <h1>Create User</h1>
@@ -52,12 +52,20 @@
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
             <div class="mb-3">
+                <label class="form-label">Access Folders:</label>
+                @foreach (var department in new List<string> { "Accounting", "Finance", "Marketing", "MIS" })
+                {
+                    <div>
+                        <input type="checkbox" name="AccessFolders" value="@department" /> @department
+                    </div>
+                }
+            </div>
+            <div class="mb-3">
                 <label asp-for="Role" class="form-label"></label>
                 <select class="form-control" asp-for="Role">
                     <option value="Admin">Admin</option>
                     <option value="User">User</option>
-                    <option value="User">Staff</option>
-                    <option value="User">Validator</option>
+                    <option value="Validator">Validator</option>
                 </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>

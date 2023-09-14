@@ -1,5 +1,9 @@
 ﻿@model Document_Management.Models.Register
 
+@{
+    ViewData["Title"] = "Log In";
+}
+
 <h1 class="text-center mt-lg-1">Login</h1>
 <div class="row">
     <div class="col-md-4 mx-auto">
@@ -27,3 +31,8 @@
     </div>
 </div>
 
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
