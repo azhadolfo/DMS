@@ -1,0 +1,77 @@
+﻿@model Document_Management.Models.RequestGP
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Approved</h1>
+
+<div>
+    <h4>Details</h4>  
+</div>
+<hr />
+<div>
+    <table class="table table-responsive table-borderless">
+        <thead>
+            <tr class="">
+                <th class="text-primary ">Full Name</th>
+                <td>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</td>
+            </tr>
+            <tr>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
+                <td>@Html.DisplayFor(model => model.Contact)</td>
+        </tr>
+            <tr>
+                <th class="text-primary w-25">@Html.DisplayNameFor(model => model.GatepassId)</th>
+                <td>@Html.DisplayFor(model => model.GatepassId)</td>
+        </tr>
+            <tr>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.ScheduleDate)</th>
+                <td>@Html.DisplayFor(model => model.ScheduleDate)</td>
+        </tr>
+            <tr>
+                <th class="text-primary ">Purpose</th>
+                <td>@Html.DisplayFor(model => model.Purpose)</td>
+        </tr>
+            <tr>
+                <th class="text-primary ">Status</th>
+                <td>@Html.DisplayFor(model => model.Status)</td>
+        </tr>
+                @*     <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> *@
+
+            
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+    <a class="btn btn-secondary" onclick="printPage()" id="printButton">Print</a>
+        <a asp-action="RecievedGP" id="otherButton">Back</a>
+</div>
+@section Scripts{
+    <script>
+        function printPage() {
+            var printButton = document.getElementById("printButton");
+            var otherButton = document.getElementById("otherButton");
+
+            // Hide the buttons before printing
+            if (printButton) {
+                printButton.style.visibility = "hidden";
+            }
+            if (otherButton) {
+                otherButton.style.visibility = "hidden";
+            }
+
+            // Call the print function
+            window.print();
+
+            // Restore the buttons' visibility after printing (optional)
+            if (printButton) {
+                printButton.style.visibility = "visible";
+            }
+            if (otherButton) {
+                otherButton.style.visibility = "visible";
+            }
+        }
+    </script>
+}
