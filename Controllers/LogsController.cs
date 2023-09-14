@@ -17,6 +17,14 @@ namespace Document_Management.Controllers
         }
         public async Task<IActionResult> Index(int? page)
         {
+            var userrole = HttpContext.Session.GetString("userrole");
+
+            if (!(userrole == "Admin"))
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
             int pageSize = 10; // Number of items per page
             int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
 
