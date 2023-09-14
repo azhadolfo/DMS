@@ -49,6 +49,14 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Create()
         {
+            var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
+
+            if (!(userrole == "admin"))
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact MIS Department.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
             return View(new Register());
         }
 
