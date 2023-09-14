@@ -32,6 +32,8 @@ namespace Document_Management.Models
         public string Role { get; set; } = null!;
         [Required]
         public string Department { get; set; } = null!;
+        public string AccessFolders { get; set; } = null!;
+
 
     }
 }

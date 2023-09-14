@@ -3,6 +3,7 @@ using System;
 using Document_Management.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Document_Management.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230914013732_Add AccessFolders column in Account Database")]
+    partial class AddAccessFolderscolumninAccountDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,10 +142,6 @@ namespace Document_Management.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Area")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("Contact")
                         .HasColumnType("integer");
 
@@ -152,10 +151,6 @@ namespace Document_Management.Migrations
 
                     b.Property<int>("GatepassId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Items")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("LastName")
                         .IsRequired()

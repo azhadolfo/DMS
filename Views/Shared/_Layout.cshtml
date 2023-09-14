@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - DocumentManagement</title>
+    <title>@ViewData["Title"] | Filpride Online System</title>
    @*  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
+    <link href="~/F O S.ico" rel="shortcut icon" type="image/x-icon" />
     <link rel="stylesheet" href="~/css/bootswatchTheme.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DocumentManagement.styles.css" asp-append-version="true" />
@@ -82,10 +83,15 @@
                                 <a class="dropdown-item" asp-controller="Dms" asp-action="DownloadFile">Download File</a>
                             </div>
                         </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Logs" asp-action="Index">Logs</a>
-                        </li>
+                        @{
+                            var userrole = Context.Session.GetString("userrole")?.ToLower();                          
+                        }
+                        @if (userrole == "admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Logs" asp-action="Index">Logs</a>
+                            </li>
+                        }                     
 
                         @*   <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Login</a>

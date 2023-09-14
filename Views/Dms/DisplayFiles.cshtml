@@ -1,0 +1,115 @@
+﻿@model PaginatedList<FileDocument>
+
+@{
+    ViewData["Title"] = "Download";
+}
+
+<h1 class="h1">List of PDF Files</h1>
+
+<form class="d-flex">
+    <input id="searchInput" class="form-control me-sm-2" type="text" placeholder="Search by Name, Date, Description, or Username">
+</form>
+
+<br />
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr class="table-dark">
+                <th>File Name</th>
+                <th>Date Uploaded</th>
+                <th>Description</th>
+                <th>Username</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var file in Model.Items)
+            {
+                <tr>
+                    <td>@file.Name</td>
+                    <td>@file.DateUploaded</td>
+                    <td>@file.Description</td>
+                    <td>@file.Username</td>
+                    <td>
+                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-primary rounded">Download</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="text-center">
+    <a asp-action="DownloadFile" class="btn btn-secondary mt-3" id="backToFolderList">Back to Folder List</a>
+</div>
+
+<div class="pagination">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page=@(Model.PageIndex - 1)" aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+            }
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                    <a class="page-link" href="?page=@i">@i</a>
+                </li>
+            }
+
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?page=@(Model.PageIndex + 1)" aria-label="Next">
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page=@Model.TotalPages" aria-label="Last">
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#searchInput').on('keyup', function () {
+                var searchText = $(this).val().toLowerCase();
+                $('tbody tr').each(function () {
+                    var row = $(this);
+                    var columns = row.find('td');
+                    var found = false;
+
+                    columns.each(function () {
+                        var columnText = $(this).text().toLowerCase();
+                        if (columnText.includes(searchText)) {
+                            found = true;
+                            return false; // Exit the loop
+                        }
+                    });
+
+                    if (found) {
+                        row.show();
+                    } else {
+                        row.hide();
+                    }
+                });
+            });
+        });
+    </script>
+}

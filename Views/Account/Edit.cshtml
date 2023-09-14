@@ -37,6 +37,15 @@
                 <span asp-validation-for="Department" class="text-danger"></span>
             </div>
             <div class="mb-3">
+                <label class="form-label">Access Folders:</label>
+                @foreach (var department in new List<string> { "Accounting", "Finance", "Marketing", "MIS" })
+                {
+                    <div>
+                        <input type="checkbox" name="AccessFolders" value="@department" @(Model.AccessFolders.Contains(department) ? "checked" : "") /> @department
+                    </div>
+                }
+            </div>
+            <div class="mb-3">
                 <label asp-for="Username" class="form-label"></label>
                 <input asp-for="Username" class="form-control" />
                 <span asp-validation-for="Username" class="text-danger"></span>
@@ -56,7 +65,6 @@
                 <select class="form-control" asp-for="Role">
                     <option value="Admin">Admin</option>
                     <option value="User">User</option>
-                    <option value="Staff">Staff</option>
                     <option value="Validator">Validator</option>
                 </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
