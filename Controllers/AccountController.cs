@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Document_Management.Controllers
 {
@@ -169,6 +170,7 @@ namespace Document_Management.Controllers
                 user.Department = model.Department;
                 user.Username = model.Username;
                 user.Password = HashPassword(model.Password);
+                user.ConfirmPassword = HashPassword(model.ConfirmPassword);
                 user.Role = model.Role;
 
                 // Join the selected departments into a comma-separated string
@@ -253,6 +255,30 @@ namespace Document_Management.Controllers
 
             await _dbcontext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(Register model)
+        {
+             var username = HttpContext.Session.GetString("username")?.ToLower();
+             var user = await _dbcontext.Account.FirstOrDefaultAsync(x => x.Username == username);
+
+             if (user != null)
+             {
+             user.Password = HashPassword(model.Password);
+             user.ConfirmPassword = HashPassword(model.ConfirmPassword);
+             await _dbcontext.SaveChangesAsync();
+             }
+
+             TempData["success"] = "Change password successfully";
+             return RedirectToAction("Index");
+         
         }
 
         //Action for Account/Logout and remove the session 

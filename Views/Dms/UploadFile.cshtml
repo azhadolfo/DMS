@@ -44,3 +44,10 @@
         <button type="submit" class="btn btn-primary rounded">Upload</button>
     </form>
 </div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
