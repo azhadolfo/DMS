@@ -124,43 +124,69 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
+            // Retrieve the user from the database
             var user = _dbcontext.Account.FirstOrDefault(x => x.Id == id);
+
+            // Split the comma-separated AccessFolders into a list of selected departments
+            if (!string.IsNullOrEmpty(user.AccessFolders))
+            {
+                var selectedDepartments = user.AccessFolders.Split(',').ToList();
+
+                // Join the selected departments back into a comma-separated string
+                user.AccessFolders = string.Join(",", selectedDepartments);
+            }
 
             return View(user);
         }
 
+
+
         //Post for the Action Account/Edit
         [HttpPost]
-        public async Task<IActionResult> Edit(Register model)
+        public async Task<IActionResult> Edit(Register model, string[] AccessFolders)
         {
             var user = await _dbcontext.Account.FindAsync(model.Id);
             var username = HttpContext.Session.GetString("username");
 
             if (string.IsNullOrEmpty(username))
-            { 
-               return RedirectToAction("Login", "Account");
+            {
+                return RedirectToAction("Login", "Account");
             }
-                if (user != null)
+
+            if (user != null)
+            {
+                // Update the user properties
+                user.EmployeeNumber = model.EmployeeNumber;
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.Department = model.Department;
+                user.Username = model.Username;
+                user.Password = HashPassword(model.Password);
+                user.Role = model.Role;
+
+                // Join the selected departments into a comma-separated string
+                if (AccessFolders != null && AccessFolders.Length > 0)
                 {
-                    user.EmployeeNumber = model.EmployeeNumber; 
-                    user.FirstName = model.FirstName;
-                    user.LastName = model.LastName;
-                    user.Department = model.Department;
-                    user.Username = model.Username;
-                    user.Password = HashPassword(model.Password);
-                    user.Role = model.Role;
-
-                    //Implementing the logs 
-                    LogsModel logs = new(username, Environment.MachineName, $"Update user: {user.Username}");
-                    _dbcontext.Logs.Add(logs);
-
-                    await _dbcontext.SaveChangesAsync();
-                    TempData["success"] = "User updated successfully";
-                    return RedirectToAction("Index");
+                    user.AccessFolders = string.Join(",", AccessFolders);
                 }
+                else
+                {
+                    // Handle the case where no departments are selected
+                    user.AccessFolders = string.Empty;
+                }
+
+                // Implementing the logs
+                LogsModel logs = new(username, Environment.MachineName, $"Update user: {user.Username}");
+                _dbcontext.Logs.Add(logs);
+
+                await _dbcontext.SaveChangesAsync();
+                TempData["success"] = "User updated successfully";
+                return RedirectToAction("Index");
+            }
 
             return RedirectToAction("Index");
         }
+
 
         // GET: Account/Delete/5
         public async Task<IActionResult> Delete(int? id)
