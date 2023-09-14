@@ -81,7 +81,7 @@ namespace Document_Management.Controllers
                     _dbcontext.FileDocuments.Add(fileDocument);
 
                     //Implementing the logs 
-                    LogsModel logs = new(username, Environment.MachineName, $"Upload new file in {fileDocument.Department} Department");
+                    LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department");
                     _dbcontext.Logs.Add(logs);
 
                     _dbcontext.SaveChanges();
