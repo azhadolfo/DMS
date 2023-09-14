@@ -53,7 +53,7 @@ namespace Document_Management.Controllers
 
         //Post for the Action Account/Create
         [HttpPost]
-        public IActionResult Create(Register user)
+        public IActionResult Create(Register user, string[] AccessFolders)
         {
             if (ModelState.IsValid)
             {
@@ -61,6 +61,9 @@ namespace Document_Management.Controllers
 
                 if (!string.IsNullOrEmpty(username))
                 {
+                    // Join selected departments into a comma-separated string
+                    user.AccessFolders = string.Join(",", AccessFolders);
+
                     user.Password = HashPassword(user.Password);
                     user.ConfirmPassword = HashPassword(user.ConfirmPassword);
                     _dbcontext.Account.Add(user);
@@ -100,7 +103,7 @@ namespace Document_Management.Controllers
                 {
                     HttpContext.Session.SetString("username", user.Username); // Store username in session
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
-                    HttpContext.Session.SetString("userdepartment", user.Department); // Store user role in session
+                    HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user role in session
 
 
 

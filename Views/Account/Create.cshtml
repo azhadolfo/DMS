@@ -52,6 +52,15 @@
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
             <div class="mb-3">
+                <label class="form-label">Departments:</label>
+                @foreach (var department in new List<string> { "Accounting", "Finance", "Marketing", "MIS" })
+                {
+                    <div>
+                        <input type="checkbox" name="AccessFolders" value="@department" /> @department
+                    </div>
+                }
+            </div>
+            <div class="mb-3">
                 <label asp-for="Role" class="form-label"></label>
                 <select class="form-control" asp-for="Role">
                     <option value="Admin">Admin</option>

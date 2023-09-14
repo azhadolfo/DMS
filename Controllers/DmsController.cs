@@ -142,18 +142,20 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> DisplayFiles(string folderName, int? page)
         {
-
             // Retrieve the user's department from the session or any other method you're using
-            var userDepartment = HttpContext.Session.GetString("userdepartment");
-            //var userDepartment = "Marketing";
+            var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
 
-            // Check if the user's department matches the folder name
-            if (userDepartment != folderName)
+            // Split the userDepartment string into individual department names
+            var userDepartments = userAccessFolders.Split(',');
+
+            // Check if any of the user's departments allow access to the specified folderName
+            if (!userDepartments.Any(dep => dep.Trim() == folderName))
             {
                 TempData["Denied"] = "You have no access to this action. Please contact MIS Department.";
                 return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
             }
 
+            // If any of the user's departments are allowed, continue with your code to display files
             int pageSize = 10; // Number of items per page
             int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
 
@@ -179,7 +181,9 @@ namespace Document_Management.Controllers
             var model = await PaginatedList<FileDocument>.CreateAsync(fileDocuments, pageIndex, pageSize);
 
             return View(model);
+
         }
+
 
 
     }
