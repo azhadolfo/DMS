@@ -151,7 +151,7 @@ namespace Document_Management.Controllers
             // Check if any of the user's departments allow access to the specified folderName
             if (!userDepartments.Any(dep => dep.Trim() == folderName))
             {
-                TempData["Denied"] = "You have no access to this action. Please contact MIS Department.";
+                TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
             }
 

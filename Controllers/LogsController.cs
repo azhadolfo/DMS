@@ -21,7 +21,7 @@ namespace Document_Management.Controllers
 
             if (!(userrole == "Admin"))
             {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact MIS Department.";
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
