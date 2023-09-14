@@ -22,8 +22,7 @@ namespace Document_Management.Migrations
                     MiddleName = table.Column<string>(type: "text", nullable: false),
                     Contact = table.Column<int>(type: "integer", nullable: false),
                     GatepassId = table.Column<int>(type: "integer", nullable: false),
-                    ScheduleDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Purpose = table.Column<string>(type: "text", nullable: false)
+
                 },
                 constraints: table =>
                 {

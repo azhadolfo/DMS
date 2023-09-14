@@ -36,18 +36,28 @@
         </div> *@
 
         <div class="mb-3">
-            <label asp-for="Contact" class="form-label"></label>
-            <input asp-for="Contact" type="number" class="form-control" id="myInput" onclick="limitInputLength(this, 10)" placeholder="Contact Number ex. 09..." />
+            <label asp-for="Area" class="form-label"></label>
+            <input asp-for="Area" type="text" class="form-control" placeholder="Area" />
         </div>
 
         <div class="mb-3">
+            <label asp-for="Contact" class="form-label"></label>
+            <input asp-for="Contact" type="number" class="form-control" id="myInput" onclick="limitInputLength(this, 10)" placeholder="Contact Number +63" />
+        </div>
+
+        @* <div class="mb-3">
             <label asp-for="ScheduleDate" class="form-label"></label>
             <input asp-for="ScheduleDate" type="datetime-local" class="form-control" />
-        </div>
+        </div> *@
 
-        <div class="mb-3">
+        @* <div class="mb-3">
             <label asp-for="Purpose" class="form-label"></label>
             <textarea asp-for="Purpose" class="form-control" rows="10" placeholder="Enter your purpose"></textarea>
+        </div> *@
+
+        <div class="mb-3">
+            <label class="form-label">Inform to bring out of the Premises the following items:</label>
+            <textarea asp-for="Items" class="form-control" rows="10" placeholder="Enter items"></textarea>
         </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>

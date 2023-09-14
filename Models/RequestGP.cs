@@ -28,16 +28,23 @@ namespace Document_Management.Models
         [Display(Name = "Gatepass Id No.:")]
         public int GatepassId { get; set; } 
 
-        [Required]
-        [Display(Name = "Schedule Date:")]
-        public DateTime ScheduleDate { get; set; }
+        //[Required]
+        //[Display(Name = "Schedule Date:")]
+        //public DateTime ScheduleDate { get; set; }
 
-        [Required]
-        [Display(Name = "Purpose:")]
-        public string Purpose { get; set; } = null!;
+        //[Required]
+        //[Display(Name = "Purpose:")]
+        //public string Purpose { get; set; } = null!;
 
         public string Status { get; set; } = "";
 
         public string Username { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Area:")]
+        public string Area { get; set; } = null!;
+
+        [Required]
+        public string Items { get; set; } = null!;
     }
 }

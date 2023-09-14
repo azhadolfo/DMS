@@ -17,7 +17,7 @@
             <th class="text-primary ">Full Name</th>
             <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
             <th class="text-primary w-25">@Html.DisplayNameFor(model => model.GatepassId)</th>
-            <th class="text-primary ">@Html.DisplayNameFor(model => model.ScheduleDate)</th>
+           @*  <th class="text-primary ">@Html.DisplayNameFor(model => model.ScheduleDate)</th> *@
             <th class="text-primary ">Action</th>
         @*     <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> *@
      
@@ -46,7 +46,7 @@
                     <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
                     <td>@user.Contact</td>
                     <td>@user.GatepassId</td>
-                    <td>@user.ScheduleDate</td>
+                    @* <td>@user.ScheduleDate</td> *@
                   
 
                     <td class="w-50">
