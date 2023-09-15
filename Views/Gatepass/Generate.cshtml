@@ -1,0 +1,134 @@
+﻿@model Document_Management.Models.RequestGP
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+
+@* <hr /> *@
+<div class="container" >
+                    <div class="text-center" >
+      <h5><strong>FILPRIDE RESOURCES, INC.</strong></h5>
+            <h6> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</h6><br>
+            <h5>  GATE PASS</h5>
+       
+                        
+                    </div>
+</div>
+<div class="container">
+<h5>DATE:</h5>
+<h5 class="text-end">AREA: @Html.DisplayFor(model => model.Area)</h5>
+    <h5>COMPANY NAME: FILPRIDE RESOURCES, INC.</h5><br />
+<h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
+<h6>to bring out of the Premises the following items:</h6>
+    <p class="mb-0 mt-0 text-start">
+        <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
+ 
+    </p>
+
+
+<br />
+    <p class="text-wrap"></p>
+    <hr class="w-25" />
+    <h6>Authorized Signature</h6><br />
+    <hr class="w-25" />
+    <h6>Noted by:</h6><br />
+</div>
+<hr /><br />
+<hr />
+<div class="container">
+    <div class="text-center">
+        <h5><strong>FILPRIDE RESOURCES, INC.</strong></h5>
+        <h6> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</h6><br>
+        <h5>  GATE PASS</h5>
+
+
+    </div>
+</div>
+<div class="container">
+    <h5>DATE:</h5>
+    <h5 class="text-end">AREA: @Html.DisplayFor(model => model.Area)</h5>
+    <h5>COMPANY NAME: FILPRIDE RESOURCES, INC.</h5><br />
+    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
+    <h6>to bring out of the Premises the following items:</h6>
+    <p class="text-wrap"><u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u></p>
+    <br />
+    <p class="text-wrap"></p>
+    <hr class="w-25" />
+    <h6>Authorized Signature</h6><br />
+    <hr class="w-25" />
+    <h6>Noted by:</h6><br />
+</div>
+   @*  <table class="table table-responsive table-borderless">
+        <thead>
+            <tr class="">
+                <th class="text-primary ">Full Name</th>
+                <td>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</td>
+            </tr>
+            <tr>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
+                <td>@Html.DisplayFor(model => model.Contact)</td>
+        </tr>
+            <tr>
+                <th class="text-primary w-25">@Html.DisplayNameFor(model => model.GatepassId)</th>
+                <td>@Html.DisplayFor(model => model.GatepassId)</td>
+        </tr>
+            @* <tr>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.ScheduleDate)</th>
+                <td>@Html.DisplayFor(model => model.ScheduleDate)</td>
+        </tr>
+            <tr>
+                <th class="text-primary ">Purpose</th>
+                <td>@Html.DisplayFor(model => model.Purpose)</td>
+        </tr> 
+            <tr>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
+                <td>@Html.DisplayFor(model => model.Area)</td>
+            </tr>
+            <tr>
+                <th class="text-primary ">Items</th>
+                <td>@Html.DisplayFor(model => model.Items)</td>
+            </tr>
+            <tr>
+                <th class="text-primary ">Status</th>
+                <td>@Html.DisplayFor(model => model.Status)</td>
+        </tr>
+                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> 
+
+            
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table> *@
+
+    <a class="btn btn-success" onclick="printPage()" id="printButton">Print</a>
+        <a asp-action="RecievedGP" id="otherButton">Back</a>
+
+@section Scripts{
+    <script>
+        function printPage() {
+            var printButton = document.getElementById("printButton");
+            var otherButton = document.getElementById("otherButton");
+
+            // Hide the buttons before printing
+            if (printButton) {
+                printButton.style.visibility = "hidden";
+            }
+            if (otherButton) {
+                otherButton.style.visibility = "hidden";
+            }
+
+            // Call the print function
+            window.print();
+
+            // Restore the buttons' visibility after printing (optional)
+            if (printButton) {
+                printButton.style.visibility = "visible";
+            }
+            if (otherButton) {
+                otherButton.style.visibility = "visible";
+            }
+        }
+    </script>
+}
