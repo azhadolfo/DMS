@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Configuration;
 
 namespace Document_Management.Models
 {
@@ -21,8 +22,10 @@ namespace Document_Management.Models
         public string MiddleName { get; set; } = null!;
 
         [Required]
+        [IntegerValidator]
         [Display(Name = "Contact:")]
-        public int Contact { get; set; }
+        public Int64 Contact { get; set; }
+
 
         [Required]
         [Display(Name = "Gatepass Id No.:")]
