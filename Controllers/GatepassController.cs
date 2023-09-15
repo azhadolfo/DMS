@@ -164,6 +164,19 @@ namespace Document_Management.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult Generate(int id)
+        {
+
+            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
+
+            if (requestGP == null)
+            {
+                return NotFound();
+            }
+
+            return View(requestGP);
+        }
 
     }
 }
