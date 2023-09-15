@@ -4,14 +4,62 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Approved</h1>
 
-<div>
-    <h4>Details</h4>  
+@* <hr /> *@
+<div class="container" >
+                    <div class="text-center" >
+      <h5><strong>FILPRIDE RESOURCES, INC.</strong></h5>
+            <h6> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</h6><br>
+            <h5>  GATE PASS</h5>
+       
+                        
+                    </div>
 </div>
+<div class="container">
+<h5>DATE:</h5>
+<h5 class="text-end">AREA: @Html.DisplayFor(model => model.Area)</h5>
+    <h5>COMPANY NAME: FILPRIDE RESOURCES, INC.</h5><br />
+<h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
+<h6>to bring out of the Premises the following items:</h6>
+    <p class="mb-0 mt-0 text-start">
+        <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
+ 
+    </p>
+
+
+<br />
+    <p class="text-wrap"></p>
+    <hr class="w-25" />
+    <h6>Authorized Signature</h6><br />
+    <hr class="w-25" />
+    <h6>Noted by:</h6><br />
+</div>
+<hr /><br />
 <hr />
-<div>
-    <table class="table table-responsive table-borderless">
+<div class="container">
+    <div class="text-center">
+        <h5><strong>FILPRIDE RESOURCES, INC.</strong></h5>
+        <h6> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</h6><br>
+        <h5>  GATE PASS</h5>
+
+
+    </div>
+</div>
+<div class="container">
+    <h5>DATE:</h5>
+    <h5 class="text-end">AREA: @Html.DisplayFor(model => model.Area)</h5>
+    <h5>COMPANY NAME: FILPRIDE RESOURCES, INC.</h5><br />
+    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
+    <h6>to bring out of the Premises the following items:</h6>
+    <p class="text-wrap"><u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u></p>
+    <br />
+    <p class="text-wrap"></p>
+    <hr class="w-25" />
+    <h6>Authorized Signature</h6><br />
+    <hr class="w-25" />
+    <h6>Noted by:</h6><br />
+</div>
+   @*  <table class="table table-responsive table-borderless">
         <thead>
             <tr class="">
                 <th class="text-primary ">Full Name</th>
@@ -32,7 +80,7 @@
             <tr>
                 <th class="text-primary ">Purpose</th>
                 <td>@Html.DisplayFor(model => model.Purpose)</td>
-        </tr> *@
+        </tr> 
             <tr>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
                 <td>@Html.DisplayFor(model => model.Area)</td>
@@ -45,17 +93,18 @@
                 <th class="text-primary ">Status</th>
                 <td>@Html.DisplayFor(model => model.Status)</td>
         </tr>
-                @*     <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> *@
+                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> 
 
             
         </thead>
         <tbody>
 
         </tbody>
-    </table>
-    <a class="btn btn-secondary" onclick="printPage()" id="printButton">Print</a>
+    </table> *@
+
+    <a class="btn btn-success" onclick="printPage()" id="printButton">Print</a>
         <a asp-action="RecievedGP" id="otherButton">Back</a>
-</div>
+
 @section Scripts{
     <script>
         function printPage() {
