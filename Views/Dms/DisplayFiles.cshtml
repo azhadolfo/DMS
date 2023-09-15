@@ -7,7 +7,7 @@
 <h1 class="h1">List of PDF Files</h1>
 
 <form class="d-flex">
-    <input id="searchInput" class="form-control me-sm-2" type="text" placeholder="Search by Name, Date, Description, or Username">
+    <input id="searchInput" class="form-control me-sm-2 rounded" type="search" placeholder="Search by Name, Date, Description, or Username">
 </form>
 
 <br />
@@ -32,7 +32,7 @@
                     <td>@file.Description</td>
                     <td>@file.Username</td>
                     <td>
-                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-primary rounded">Download</a>
+                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
                     </td>
                 </tr>
             }
@@ -50,12 +50,12 @@
             @if (Model.HasPreviousPage)
             {
                 <li class="page-item">
-                    <a class="page-link" href="?page=1" aria-label="First">
+                    <a class="page-link" href="@Url.Action("DisplayFiles", new { folderName = ViewData["folderName"], page = 1 })" aria-label="First">
                         <span aria-hidden="true">First</span>
                     </a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page=@(Model.PageIndex - 1)" aria-label="Previous">
+                    <a class="page-link" href="@Url.Action("DisplayFiles", new { folderName = ViewData["folderName"], page = (Model.PageIndex - 1) })" aria-label="Previous">
                         <span aria-hidden="true">Previous</span>
                     </a>
                 </li>
@@ -64,19 +64,19 @@
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.PageIndex ? "active" : "")">
-                    <a class="page-link" href="?page=@i">@i</a>
+                    <a class="page-link" href="@Url.Action("DisplayFiles", new { folderName = ViewData["folderName"], page = i })">@i</a>
                 </li>
             }
 
             @if (Model.HasNextPage)
             {
                 <li class="page-item">
-                    <a class="page-link" href="?page=@(Model.PageIndex + 1)" aria-label="Next">
+                    <a class="page-link" href="@Url.Action("DisplayFiles", new { folderName = ViewData["folderName"], page = (Model.PageIndex + 1) })" aria-label="Next">
                         <span aria-hidden="true">Next</span>
                     </a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page=@Model.TotalPages" aria-label="Last">
+                    <a class="page-link" href="@Url.Action("DisplayFiles", new { folderName = ViewData["folderName"], page = Model.TotalPages })" aria-label="Last">
                         <span aria-hidden="true">Last</span>
                     </a>
                 </li>
@@ -84,6 +84,7 @@
         </ul>
     </nav>
 </div>
+
 
 @section Scripts {
     <script>

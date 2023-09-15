@@ -6,11 +6,11 @@
 
 <partial name="_Notification">
 
-    <h1>Index</h1>
+    <h1>Employees</h1>
 
     <div class="d-flex justify-content-end">
         <form class="form-inline">
-            <input id="searchInput" class="form-control mr-sm-2" type="text" placeholder="Search">
+            <input id="searchInput" class="form-control me-sm-2 rounded" type="search" placeholder="Search">
         </form>
     </div>
 
@@ -40,8 +40,8 @@
                         <td>@user.Username</td>
                         <td>@user.Role</td>
                         <td>
-                            <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-secondary">Edit</a> |
-                            <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-outline-secondary">Delete</a>
+                            <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-light">Edit</a> |
+                            <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-light">Delete</a>
                         </td>
                     </tr>
                 }

@@ -2,6 +2,7 @@
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace Document_Management.Controllers
 {
@@ -81,7 +82,7 @@ namespace Document_Management.Controllers
                     _dbcontext.FileDocuments.Add(fileDocument);
 
                     //Implementing the logs 
-                    LogsModel logs = new(username, Environment.MachineName, $"Upload new file in {fileDocument.Department} Department");
+                    LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department");
                     _dbcontext.Logs.Add(logs);
 
                     _dbcontext.SaveChanges();
@@ -142,6 +143,8 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> DisplayFiles(string folderName, int? page)
         {
+            ViewData["folderName"] = folderName; // Using ViewData
+
             // Retrieve the user's department from the session or any other method you're using
             var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
 
@@ -155,12 +158,13 @@ namespace Document_Management.Controllers
                 return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
             }
 
+    
             // If any of the user's departments are allowed, continue with your code to display files
             int pageSize = 10; // Number of items per page
             int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
-            var folderPath = Path.Combine(wwwrootPath, folderName);
+            var folderPath = Path.Combine(wwwrootPath, folderName); // wwwroot/Files/null
             var pdfFiles = Directory.GetFiles(folderPath, "*.pdf").Select(Path.GetFileName);
 
             // Assuming you have a list of FileDocument objects in your database
@@ -177,8 +181,9 @@ namespace Document_Management.Controllers
                     Username = file.Username
                 })
                 .OrderByDescending(u => u.DateUploaded);
-
+            
             var model = await PaginatedList<FileDocument>.CreateAsync(fileDocuments, pageIndex, pageSize);
+
 
             return View(model);
 

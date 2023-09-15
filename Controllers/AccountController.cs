@@ -78,7 +78,7 @@ namespace Document_Management.Controllers
                     _dbcontext.Account.Add(user);
 
                     //Implementing the logs 
-                    LogsModel logs = new(username, Environment.MachineName, $"Add new user: {user.Username}");
+                    LogsModel logs = new(username, $"Add new user: {user.Username}");
                     _dbcontext.Logs.Add(logs);
 
                     _dbcontext.SaveChanges();
@@ -193,7 +193,7 @@ namespace Document_Management.Controllers
                 }
 
                 // Implementing the logs
-                LogsModel logs = new(username, Environment.MachineName, $"Update user: {user.Username}");
+                LogsModel logs = new(username, $"Update user: {user.Username}");
                 _dbcontext.Logs.Add(logs);
 
                 await _dbcontext.SaveChangesAsync();
@@ -253,7 +253,7 @@ namespace Document_Management.Controllers
                 _dbcontext.Account.Remove(employee);
 
                 //Implementing the logs 
-                LogsModel logs = new(username, Environment.MachineName, $"Delete user: {employee.Username}");
+                LogsModel logs = new(username, $"Delete user: {employee.Username}");
                 _dbcontext.Logs.Add(logs);
 
                 await _dbcontext.SaveChangesAsync();

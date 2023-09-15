@@ -70,15 +70,13 @@
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
             <div class="mb-3">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-outline-success rounded" />
+                <a asp-action="Index" class="btn btn-outline-primary rounded">Back to List</a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
     @{
