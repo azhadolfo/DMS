@@ -29,11 +29,7 @@ namespace Document_Management.Models
 
         [Required]
         [Display(Name = "Gatepass Id No.:")]
-        public int GatepassId { get; set; } 
-
-        //[Required]
-        //[Display(Name = "Schedule Date:")]
-        //public DateTime ScheduleDate { get; set; }
+        public int GatepassId { get; set; }
 
         //[Required]
         //[Display(Name = "Purpose:")]
@@ -49,5 +45,9 @@ namespace Document_Management.Models
 
         [Required]
         public string Items { get; set; } = null!;
+
+        [Required]
+        [Display(Name = "Schedule Date:")]
+        public DateTime Schedule { get; set; }
     }
 }
