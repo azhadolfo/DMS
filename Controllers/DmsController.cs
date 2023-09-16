@@ -141,7 +141,7 @@ namespace Document_Management.Controllers
             return View(folders);
         }
 
-        public async Task<IActionResult> DisplayFiles(string folderName, int? page)
+        public async Task<IActionResult> DisplayFiles(string folderName)
         {
             ViewData["folderName"] = folderName; // Using ViewData
 
@@ -159,9 +159,9 @@ namespace Document_Management.Controllers
             }
 
     
-            // If any of the user's departments are allowed, continue with your code to display files
-            int pageSize = 10; // Number of items per page
-            int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
+            //// If any of the user's departments are allowed, continue with your code to display files
+            //int pageSize = 10; // Number of items per page
+            //int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             var folderPath = Path.Combine(wwwrootPath, folderName); // wwwroot/Files/null
@@ -169,7 +169,7 @@ namespace Document_Management.Controllers
 
             // Assuming you have a list of FileDocument objects in your database
             // You can filter them based on folderName and select the relevant properties
-            var fileDocuments = _dbcontext.FileDocuments
+            var fileDocuments = await _dbcontext.FileDocuments
                 .Where(file => file.Department == folderName && pdfFiles.Contains(file.Name))
                 .Select(file => new FileDocument
                 {
@@ -180,12 +180,12 @@ namespace Document_Management.Controllers
                     Department = file.Department,
                     Username = file.Username
                 })
-                .OrderByDescending(u => u.DateUploaded);
+                .OrderByDescending(u => u.DateUploaded).ToListAsync();
             
-            var model = await PaginatedList<FileDocument>.CreateAsync(fileDocuments, pageIndex, pageSize);
+            //var model = await PaginatedList<FileDocument>.CreateAsync(fileDocuments, pageIndex, pageSize);
 
 
-            return View(model);
+            return View(fileDocuments);
 
         }
 

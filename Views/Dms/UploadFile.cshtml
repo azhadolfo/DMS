@@ -23,7 +23,7 @@
             <label asp-for="Department" class="control-label"></label>
             <div class="col">
                 <select asp-for="Department" class="form-control">
-                    <option selected value="">Choose the Department</option>
+                    <option selected disabled value="">Choose the department to which this file should be assigned.</option>
                     <option value="Accounting">Accounting</option>
                     <option value="MIS">MIS</option>
                     <option value="Marketing">Marketing</option>
@@ -36,7 +36,7 @@
         <div class="mb-3">
             <label asp-for="Description" class="form-label"></label>
             <div class="col">
-                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or phrases that will help us find the file later."></textarea>
+                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or keywords that will help us find the file later."></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
         </div>
