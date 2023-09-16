@@ -15,8 +15,8 @@
 @* <p>
     <a asp-action="Create" class="btn btn-primary rounded-3">Create New</a>
 </p> *@
-
-<table class="table table-responsive">
+<div class="table-responsive">
+<table class="table">
     <thead>
         <tr>
             <th class="text-primary ">Full Name</th>
@@ -31,7 +31,7 @@
             <th class="text-primary ">Remarks</th>
              @if (userrole == "validator")
             {
-                <th class="text-primary ">Username</th>
+                <th class="text-primary ">Schedule</th>
             }
             <th class="text-primary ">Action</th>
             @*     <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> *@
@@ -54,7 +54,7 @@
                         <td>@user.Items</td>
                        @*  <td>@user.ScheduleDate</td> *@
                         <td>@user.Status</td>
-                        <td>@user.Username</td>
+                        <td>@user.Schedule</td>
 
 
                         <td class="w-50">
@@ -87,3 +87,4 @@
         }
     </tbody>
 </table>
+</div>

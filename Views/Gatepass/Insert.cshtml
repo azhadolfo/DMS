@@ -40,7 +40,12 @@
 
         <div class="mb-3">
             <label asp-for="Area" class="form-label"></label>
-            <input asp-for="Area" type="text" class="form-control" placeholder="Area" />
+            <select class="form-control" asp-for="Area">
+                <option value="" selected disabled>Select available area</option>
+                <option value="Cubao">Cubao</option>
+                <option value="Eastwood">Eastwood</option>
+                <option value="Market-Market">Market-Market</option>
+            </select>
             <span asp-validation-for="Area" class="text-danger"></span>
         </div>
 
@@ -50,10 +55,10 @@
             <span asp-validation-for="Contact" class="text-danger"></span>
         </div>
 
-        @* <div class="mb-3">
-            <label asp-for="ScheduleDate" class="form-label"></label>
-            <input asp-for="ScheduleDate" type="datetime-local" class="form-control" />
-        </div> *@
+        <div class="mb-3">
+            <label asp-for="Schedule" class="form-label"></label>
+            <input asp-for="Schedule" type="datetime-local" class="form-control" />
+        </div>
 
         @* <div class="mb-3">
             <label asp-for="Purpose" class="form-label"></label>
