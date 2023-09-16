@@ -29,6 +29,7 @@
 
 <br />
     <p class="text-wrap"></p>
+    <img src="~/" />
     <hr class="w-25" />
     <h6>Authorized Signature</h6><br />
     <hr class="w-25" />
@@ -111,6 +112,10 @@
             var printButton = document.getElementById("printButton");
             var otherButton = document.getElementById("otherButton");
 
+             // Hide the header and footer
+            document.querySelector("header").style.display = "none";
+            document.querySelector("footer").style.display = "none";
+
             // Hide the buttons before printing
             if (printButton) {
                 printButton.style.visibility = "hidden";
@@ -129,6 +134,12 @@
             if (otherButton) {
                 otherButton.style.visibility = "visible";
             }
+
+           
+
+            //  Restore the header and footer's visibility after printing (optional)
+            // document.querySelector("header").style.display = "";
+            // document.querySelector("footer").style.display = "";
         }
     </script>
 }
