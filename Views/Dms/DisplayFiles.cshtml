@@ -16,24 +16,24 @@
     <table class="table table-hover">
         <thead>
             <tr class="table-dark">
+                <th></th>
                 <th>File Name</th>
-                <th>Date Uploaded</th>
-                <th>Description</th>
+                <th>Date Upload</th>
                 <th>Username</th>
-                <th>Actions</th>
+                <th>Description</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var file in Model)
             {
-                <tr class="align-text-bottom">
-                    <td>@file.Name</td>
-                    <td>@file.DateUploaded</td>
-                    <td>@file.Description</td>
-                    <td>@file.Username</td>
+                <tr class="align-items-center">
                     <td>
                         <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
                     </td>
+                    <td>@file.Name</td>
+                    <td>@file.DateUploaded</td>
+                    <td>@file.Username</td>
+                    <td>@file.Description</td>                 
                 </tr>
             }
         </tbody>

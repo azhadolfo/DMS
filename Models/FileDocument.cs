@@ -12,9 +12,11 @@ namespace Document_Management.Models
         public string? Name { get; set; }
         [Display(Name = "File Location")]
         public string? Location { get; set; }
-        [Required]
-        public string? Department { get; set; } 
-        [Required]
+        [Required(ErrorMessage = "Department is required.")]
+        public string? Department { get; set; }
+        [Required(ErrorMessage = "Description is required.")]
+        [StringLength(255, ErrorMessage = "Description must be less than 255 characters.")]
+        [Display(Name = "Description")]
         public string? Description { get; set; } 
         [Display(Name = "Date Uploaded")]
         public DateTime DateUploaded { get; set; }
