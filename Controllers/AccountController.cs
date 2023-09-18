@@ -159,7 +159,7 @@ namespace Document_Management.Controllers
 
         //Post for the Action Account/Edit
         [HttpPost]
-        public async Task<IActionResult> Edit(Register model, string[] AccessFolders)
+        public async Task<IActionResult> Edit(Register model, string[] AccessFolders, string newPassword, string newConfirmPassword)
         {
             var user = await _dbcontext.Account.FindAsync(model.Id);
             var username = HttpContext.Session.GetString("username");
@@ -177,9 +177,15 @@ namespace Document_Management.Controllers
                 user.LastName = model.LastName;
                 user.Department = model.Department;
                 user.Username = model.Username;
-                user.Password = HashPassword(model.Password);
-                user.ConfirmPassword = HashPassword(model.ConfirmPassword);
                 user.Role = model.Role;
+
+                // Check if a new password is provided
+                if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
+                {
+                    // Hash and update the new password
+                    user.Password = HashPassword(newPassword);
+                    user.Password = HashPassword(newConfirmPassword);
+                }
 
                 // Join the selected departments into a comma-separated string
                 if (AccessFolders != null && AccessFolders.Length > 0)
@@ -279,13 +285,18 @@ namespace Document_Management.Controllers
 
              if (user != null)
              {
-             user.Password = HashPassword(model.Password);
-             user.ConfirmPassword = HashPassword(model.ConfirmPassword);
-             await _dbcontext.SaveChangesAsync();
-             }
+                if(user.Password == HashPassword(model.Password))
+                {
+                    TempData["error"] = "New password must not the same with the previous.";
+                }
+
+                user.Password = HashPassword(model.Password);
+                user.ConfirmPassword = HashPassword(model.ConfirmPassword);
+                await _dbcontext.SaveChangesAsync();
+            }
 
              TempData["success"] = "Change password successfully";
-             return RedirectToAction("Index");
+             return View();
          
         }
 
