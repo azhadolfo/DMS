@@ -66,6 +66,14 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
+                var existingUser = _dbcontext.Account.FirstOrDefault(u => u.Username == user.Username);
+
+                if(existingUser != null)
+                {
+                    ModelState.AddModelError("", "Username is already in use by other user.");
+                    return View(existingUser);
+                }
+
                 var username = HttpContext.Session.GetString("username");
 
                 if (!string.IsNullOrEmpty(username))
