@@ -4,11 +4,11 @@
     ViewData["Title"] = "Request Gatepass";
     int randomGatepassId = new Random().Next(10000, 100000);
 }
-
+<partial name="_Notification">
 <div class="container mt-5">
     <h1>@ViewData["Title"]</h1>
     <form asp-action="Insert">
-       <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+       <div asp-validation-summary="ModelOnly" class="text-danger"> </div>
         <div class="mb-3">
             <div class="col">
                 <input asp-for="GatepassId" type="hidden" class="form-control" value="@randomGatepassId" />
@@ -58,6 +58,7 @@
         <div class="mb-3">
             <label asp-for="Schedule" class="form-label"></label>
             <input asp-for="Schedule" type="datetime-local" class="form-control" />
+            <span asp-validation-for="Schedule" class="text-danger"></span>
         </div>
 
         @* <div class="mb-3">
