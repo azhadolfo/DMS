@@ -66,12 +66,25 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
-                var existingUser = _dbcontext.Account.FirstOrDefault(u => u.Username == user.Username);
+                var usernameExists = _dbcontext.Account.Any(u => u.Username == user.Username);
+                var employeeNumberExists = _dbcontext.Account.Any(u => u.EmployeeNumber == user.EmployeeNumber);
 
-                if(existingUser != null)
+                if (usernameExists && employeeNumberExists)
                 {
-                    ModelState.AddModelError("", "Username is already in use by other user.");
-                    return View(existingUser);
+                    ModelState.AddModelError("", "Both Username and Employee Number are already in use by other users.");
+                }
+                else if (usernameExists)
+                {
+                    ModelState.AddModelError("", "Username is already in use by another user.");
+                }
+                else if (employeeNumberExists)
+                {
+                    ModelState.AddModelError("", "Employee Number is already in use by another user.");
+                }
+
+                if (usernameExists || employeeNumberExists)
+                {
+                    return View(user); // Return the user object that failed validation
                 }
 
                 var username = HttpContext.Session.GetString("username");

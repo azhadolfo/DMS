@@ -31,7 +31,7 @@ namespace Document_Management.Models
         public string Username { get; set; } = null!;
 
         [Required(ErrorMessage = "Password is required.")]
-        //[StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+        //[StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")] //Uncomment this after the complete production
         [DataType(DataType.Password)]
         public string Password { get; set; } = null!;
 
