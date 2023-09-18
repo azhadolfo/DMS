@@ -50,9 +50,11 @@ namespace Document_Management.Controllers
                 if (username != null)
                 {
                     gpInfo.Username = username;
-                    }
-                    _dbcontext.Gatepass.Add(gpInfo);
+                }
+                _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
+                TempData["success"] = "User created successfully";
+               TempData["newRequest"] = true; // Set the ViewData property to true**
                 return RedirectToAction("Insert");
             }
 
@@ -70,6 +72,11 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
+            // Check the ViewData property**
+     if (TempData["newRequest"] != null && (bool)TempData["newRequest"])
+            {
+                TempData["success"] = "You have a new Request";
+            }
             ViewBag.users = _dbcontext.Gatepass.ToList();
 
             return View();
@@ -106,10 +113,10 @@ namespace Document_Management.Controllers
             {
                 client.Status = "Approved";
                 await _dbcontext.SaveChangesAsync();
+                TempData["success"] = "Approved successfully";
             }
             return RedirectToAction(nameof(Validator));
         }
-
 
 
         [HttpGet]
@@ -143,6 +150,7 @@ namespace Document_Management.Controllers
             {
                 client.Status = "Disapproved";
                 await _dbcontext.SaveChangesAsync();
+                TempData["success"] = "Disapproved successfully";
             }
             return RedirectToAction(nameof(Validator));
         }
