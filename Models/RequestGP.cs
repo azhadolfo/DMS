@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Configuration;
 
 namespace Document_Management.Models
@@ -25,7 +24,6 @@ namespace Document_Management.Models
         [IntegerValidator]
         [Display(Name = "Contact:")]
         public Int64 Contact { get; set; }
-
 
         [Required]
         [Display(Name = "Gatepass Id No.:")]

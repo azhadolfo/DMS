@@ -22,7 +22,6 @@ namespace Document_Management.Migrations
                     MiddleName = table.Column<string>(type: "text", nullable: false),
                     Contact = table.Column<int>(type: "integer", nullable: false),
                     GatepassId = table.Column<int>(type: "integer", nullable: false),
-
                 },
                 constraints: table =>
                 {

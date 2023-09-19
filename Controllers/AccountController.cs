@@ -1,18 +1,14 @@
 ﻿using Document_Management.Data;
 using Document_Management.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
 using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Text;
 
 namespace Document_Management.Controllers
 {
-    
     public class AccountController : Controller
     {
-
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
@@ -23,12 +19,11 @@ namespace Document_Management.Controllers
         }
 
         //Action for Account/Index
-        public async Task<IActionResult> Index() 
+        public async Task<IActionResult> Index()
         {
             var username = HttpContext.Session.GetString("username");
             if (!string.IsNullOrEmpty(username))
             {
-
                 //int pageSize = 10; // Number of items per page
                 //int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
 
@@ -43,7 +38,6 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
         }
-
 
         //Get for the Action Account/Create
         [HttpGet]
@@ -98,7 +92,7 @@ namespace Document_Management.Controllers
                     user.ConfirmPassword = HashPassword(user.ConfirmPassword);
                     _dbcontext.Account.Add(user);
 
-                    //Implementing the logs 
+                    //Implementing the logs
                     LogsModel logs = new(username, $"Add new user: {user.Username}");
                     _dbcontext.Logs.Add(logs);
 
@@ -129,22 +123,18 @@ namespace Document_Management.Controllers
             if (ModelState.IsValid)
             {
                 var user = _dbcontext.Account.FirstOrDefault(u => u.Username == username);
-                if(user!=null && user.Password == HashPassword(password))
+                if (user != null && user.Password == HashPassword(password))
                 {
                     HttpContext.Session.SetString("username", user.Username); // Store username in session
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
                     HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user role in session
 
-
-
                     return RedirectToAction("Index", "Home");
                 }
                 else
                 {
-                    ModelState.AddModelError("","Invalid username or password");
+                    ModelState.AddModelError("", "Invalid username or password");
                 }
-
-
             }
 
             return View();
@@ -175,8 +165,6 @@ namespace Document_Management.Controllers
 
             return View(user);
         }
-
-
 
         //Post for the Action Account/Edit
         [HttpPost]
@@ -231,7 +219,6 @@ namespace Document_Management.Controllers
             return RedirectToAction("Index");
         }
 
-
         // GET: Account/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -256,7 +243,6 @@ namespace Document_Management.Controllers
             return View(employee);
         }
 
-
         // POST: Account/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -279,7 +265,7 @@ namespace Document_Management.Controllers
             {
                 _dbcontext.Account.Remove(employee);
 
-                //Implementing the logs 
+                //Implementing the logs
                 LogsModel logs = new(username, $"Delete user: {employee.Username}");
                 _dbcontext.Logs.Add(logs);
 
@@ -301,12 +287,12 @@ namespace Document_Management.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangePassword(Register model)
         {
-             var username = HttpContext.Session.GetString("username")?.ToLower();
-             var user = await _dbcontext.Account.FirstOrDefaultAsync(x => x.Username == username);
+            var username = HttpContext.Session.GetString("username")?.ToLower();
+            var user = await _dbcontext.Account.FirstOrDefaultAsync(x => x.Username == username);
 
-             if (user != null)
-             {
-                if(user.Password == HashPassword(model.Password))
+            if (user != null)
+            {
+                if (user.Password == HashPassword(model.Password))
                 {
                     TempData["error"] = "New password must not the same with the previous.";
                 }
@@ -316,21 +302,19 @@ namespace Document_Management.Controllers
                 await _dbcontext.SaveChangesAsync();
             }
 
-             TempData["success"] = "Change password successfully";
-             return View();
-         
+            TempData["success"] = "Change password successfully";
+            return View();
         }
 
-        //Action for Account/Logout and remove the session 
+        //Action for Account/Logout and remove the session
         public IActionResult Logout()
         {
             // Clear the session
             HttpContext.Session.Clear();
 
             // Redirect to the login page or any other appropriate page
-            return RedirectToAction("Index","Home");
+            return RedirectToAction("Index", "Home");
         }
-
 
         // Hash the password using a salt
         public static string HashPassword(string password)
@@ -339,6 +323,5 @@ namespace Document_Management.Controllers
             var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
             return Convert.ToBase64String(hashedBytes);
         }
-
     }
 }

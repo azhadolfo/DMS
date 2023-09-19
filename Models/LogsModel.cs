@@ -8,12 +8,15 @@ namespace Document_Management.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
         public string Username { get; set; }
+
         //public string Computer { get; set; }
         public string Activity { get; set; }
+
         public DateTime Date { get; set; }
 
-        public LogsModel(string username,string activity)
+        public LogsModel(string username, string activity)
         {
             Username = username;
             Activity = activity;

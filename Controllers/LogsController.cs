@@ -1,7 +1,6 @@
 ﻿using Document_Management.Data;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Document_Management.Controllers
 {
@@ -15,6 +14,7 @@ namespace Document_Management.Controllers
         {
             _dbcontext = context;
         }
+
         public async Task<IActionResult> Index(int? page)
         {
             var userrole = HttpContext.Session.GetString("userrole");
@@ -34,6 +34,5 @@ namespace Document_Management.Controllers
 
             return View(model);
         }
-
     }
 }

@@ -1,11 +1,7 @@
 ﻿using Document_Management.Data;
 using Document_Management.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Text;
-using System.Security.Cryptography;
-
 
 namespace Document_Management.Controllers
 {
@@ -54,14 +50,12 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 TempData["success"] = "User created successfully";
-               TempData["newRequest"] = true; // Set the ViewData property to true**
+                TempData["newRequest"] = true; // Set the ViewData property to true**
                 return RedirectToAction("Insert");
             }
 
             return View(gpInfo);
         }
-
-
 
         public IActionResult Validator()
         {
@@ -73,7 +67,7 @@ namespace Document_Management.Controllers
             }
 
             // Check the ViewData property**
-     if (TempData["newRequest"] != null && (bool)TempData["newRequest"])
+            if (TempData["newRequest"] != null && (bool)TempData["newRequest"])
             {
                 TempData["success"] = "You have a new Request";
             }
@@ -86,7 +80,6 @@ namespace Document_Management.Controllers
         public IActionResult Approved(int? id)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
-
 
             if (requestGP == null)
             {
@@ -118,7 +111,6 @@ namespace Document_Management.Controllers
             return RedirectToAction(nameof(Validator));
         }
 
-
         [HttpGet]
         public IActionResult Disapproved(int? id)
         {
@@ -131,7 +123,6 @@ namespace Document_Management.Controllers
 
             return View(requestGP);
         }
-
 
         [HttpPost, ActionName("Disapproved")]
         public async Task<IActionResult> Disapproved(int id)
@@ -158,7 +149,6 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult RecievedGP()
         {
-
             var username = HttpContext.Session.GetString("username");
 
             if (!string.IsNullOrEmpty(username))
@@ -175,7 +165,6 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Generate(int id)
         {
-
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
             if (requestGP == null)
@@ -185,6 +174,5 @@ namespace Document_Management.Controllers
 
             return View(requestGP);
         }
-
     }
 }
