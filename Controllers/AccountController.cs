@@ -45,7 +45,7 @@ namespace Document_Management.Controllers
         {
             var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
 
-            if (!(userrole == "admin"))
+            if (userrole != "admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
@@ -145,7 +145,7 @@ namespace Document_Management.Controllers
         public IActionResult Edit(int id)
         {
             var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
-            if (!(userrole == "admin"))
+            if (userrole != "admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
@@ -223,7 +223,7 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
-            if (!(userrole == "admin"))
+            if (userrole != "admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action

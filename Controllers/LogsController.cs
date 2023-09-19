@@ -19,7 +19,7 @@ namespace Document_Management.Controllers
         {
             var userrole = HttpContext.Session.GetString("userrole");
 
-            if (!(userrole == "Admin"))
+            if (userrole != "Admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action

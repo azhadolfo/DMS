@@ -11,7 +11,6 @@ namespace Document_Management.Models
 
         public string Username { get; set; }
 
-        //public string Computer { get; set; }
         public string Activity { get; set; }
 
         public DateTime Date { get; set; }
