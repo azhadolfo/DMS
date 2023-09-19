@@ -95,7 +95,7 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
-                TempData["error"] = "Contact MIS: " + ex.Message.ToString();
+                TempData["error"] = "Contact MIS: " + ex.Message;
             }
 
             return View(fileDocument);
