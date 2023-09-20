@@ -1,10 +1,13 @@
 ﻿using Document_Management.Data;
+using Document_Management.Hubs;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.Text;
 
 namespace Document_Management.Controllers
 {
+    
     public class GatepassController : Controller
     {
         //public IActionResult Index()
@@ -14,11 +17,12 @@ namespace Document_Management.Controllers
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
-
+        private readonly IHubContext<ChatHub> _hubContext;
         //Passing the dbcontext in to another variable
-        public GatepassController(ApplicationDbContext context)
+        public GatepassController(ApplicationDbContext context, IHubContext<ChatHub> hubContext)
         {
             _dbcontext = context;
+            _hubContext = hubContext;
         }
 
         //RequestGatepass
@@ -37,7 +41,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
-        public IActionResult Insert(RequestGP gpInfo)
+        public async Task<IActionResult> Insert(RequestGP gpInfo)
         {
             var username = HttpContext.Session.GetString("username");
 
@@ -50,7 +54,7 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 TempData["success"] = "User created successfully";
-                TempData["newRequest"] = true; // Set the ViewData property to true**
+                await _hubContext.Clients.All.SendAsync("Notification", "You have a new Request");
                 return RedirectToAction("Insert");
             }
 
@@ -66,11 +70,7 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            // Check the ViewData property**
-            if (TempData["newRequest"] != null && (bool)TempData["newRequest"])
-            {
-                TempData["success"] = "You have a new Request";
-            }
+          
             ViewBag.users = _dbcontext.Gatepass.ToList();
 
             return View();
@@ -107,6 +107,7 @@ namespace Document_Management.Controllers
                 client.Status = "Approved";
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Approved successfully";
+                await _hubContext.Clients.All.SendAsync("Approved", "Your Request has been Approved");
             }
             return RedirectToAction(nameof(Validator));
         }
@@ -142,6 +143,7 @@ namespace Document_Management.Controllers
                 client.Status = "Disapproved";
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Disapproved successfully";
+                await _hubContext.Clients.All.SendAsync("Disapproved", "Your Request has been Disapproved");
             }
             return RedirectToAction(nameof(Validator));
         }

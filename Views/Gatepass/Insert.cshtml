@@ -72,7 +72,7 @@
             <span asp-validation-for="Items" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary" id="notif">Submit</button>
     </form>
 </div>
 @section Scripts{
@@ -131,4 +131,6 @@
         }
 
 </script>
+        <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+        <script src="~/js/approved_disapproved.js"></script>
 }
