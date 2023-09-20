@@ -1,4 +1,5 @@
-﻿@{
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
     var username = Context.Session.GetString("username");
 }
 
@@ -6,7 +7,7 @@
 @if (!string.IsNullOrEmpty(username))
 {
     <li class="nav-item">
-        <a id="manage" class="nav-link" asp-controller="Account" asp-action="ChangePassword" title="Manage">Hello @username!</a>
+        <a id="manage" class="nav-link" asp-controller="Account" asp-action="ChangePassword" title="Manage">Hello @HttpContextAccessor.HttpContext?.Session.GetString("Username")!</a>
     </li>
     <li class="nav-item">
         <a href="javascript:void(0);" class="nav-link" onclick="confirmLogout()">Logout</a>
