@@ -1,10 +1,12 @@
 using Document_Management.Data;
+using Document_Management.Hubs;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 //New added middleware
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -39,6 +41,8 @@ app.UseRouting();
 app.UseSession();
 
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.MapControllerRoute(
     name: "default",
