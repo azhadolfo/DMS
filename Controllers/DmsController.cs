@@ -2,23 +2,21 @@
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static NuGet.Packaging.PackagingConstants;
 
 namespace Document_Management.Controllers
 {
     public class DmsController : Controller
     {
-
         private readonly IWebHostEnvironment _hostingEnvironment;
+
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
         //Passing the dbcontext in to another variable
-        public DmsController(IWebHostEnvironment hostingEnvironment,ApplicationDbContext context)
+        public DmsController(IWebHostEnvironment hostingEnvironment, ApplicationDbContext context)
         {
             _hostingEnvironment = hostingEnvironment;
             _dbcontext = context;
-            
         }
 
         //Get for the Action Dms/Upload
@@ -76,12 +74,11 @@ namespace Document_Management.Controllers
                         file.CopyTo(stream); // Copy the file to the server
                     }
 
-                    
                     fileDocument.Name = filename;
                     fileDocument.Location = filePath;
                     _dbcontext.FileDocuments.Add(fileDocument);
 
-                    //Implementing the logs 
+                    //Implementing the logs
                     LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department");
                     _dbcontext.Logs.Add(logs);
 
@@ -98,7 +95,7 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
-                TempData["error"] = "Contact MIS: " + ex.Message.ToString();
+                TempData["error"] = "Contact MIS: " + ex.Message;
             }
 
             return View(fileDocument);
@@ -126,7 +123,6 @@ namespace Document_Management.Controllers
 
         //    return View(model);
         //}
-
 
         public IActionResult DownloadFile()
         {
@@ -158,7 +154,6 @@ namespace Document_Management.Controllers
                 return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
             }
 
-    
             //// If any of the user's departments are allowed, continue with your code to display files
             //int pageSize = 10; // Number of items per page
             //int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
@@ -181,15 +176,10 @@ namespace Document_Management.Controllers
                     Username = file.Username
                 })
                 .OrderByDescending(u => u.DateUploaded).ToListAsync();
-            
+
             //var model = await PaginatedList<FileDocument>.CreateAsync(fileDocuments, pageIndex, pageSize);
 
-
             return View(fileDocuments);
-
         }
-
-
-
     }
 }

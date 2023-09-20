@@ -1,7 +1,6 @@
 ﻿using Document_Management.Data;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Document_Management.Controllers
 {
@@ -15,11 +14,12 @@ namespace Document_Management.Controllers
         {
             _dbcontext = context;
         }
+
         public async Task<IActionResult> Index(int? page)
         {
             var userrole = HttpContext.Session.GetString("userrole");
 
-            if (!(userrole == "Admin"))
+            if (userrole != "Admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
@@ -34,6 +34,5 @@ namespace Document_Management.Controllers
 
             return View(model);
         }
-
     }
 }

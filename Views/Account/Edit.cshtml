@@ -53,13 +53,13 @@
             </div>
             <div class="mb-3">
                 <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" placeholder="••••••••" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+                <input name="newPassword" class="form-control" placeholder="••••••••" />
+                @* <span asp-validation-for="Password" class="text-danger"></span> *@
             </div>
             <div class="mb-3">
                 <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                <input name="newConfirmPassword" class="form-control" placeholder="••••••••" />
+                @* <span asp-validation-for="ConfirmPassword" class="text-danger"></span> *@
             </div>
             <div class="mb-3">
                 <label asp-for="Role" class="form-label"></label>

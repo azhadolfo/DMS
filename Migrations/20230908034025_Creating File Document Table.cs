@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -12,7 +11,6 @@ namespace Document_Management.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-
             migrationBuilder.CreateTable(
                 name: "FileDocuments",
                 columns: table => new
@@ -37,7 +35,6 @@ namespace Document_Management.Migrations
         {
             migrationBuilder.DropTable(
                 name: "FileDocuments");
-
         }
     }
 }
