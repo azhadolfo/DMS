@@ -17,6 +17,7 @@
             <div class="col">
                 <input name="file" type="file" class="form-control" accept=".pdf"/>
                 <span asp-validation-for="Name" class="text-danger"></span>
+                <small class="text-muted">Maximum file size allowed: 5MB</small> <!-- Reminder message -->
             </div>
         </div>
         <div class="mb-3">
@@ -50,4 +51,29 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const fileInput = document.querySelector('input[type="file"]');
+            const form = document.querySelector('form');
+
+            form.addEventListener("submit", function (event) {
+                const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
+
+                if (fileInput.files.length > 0) {
+                    const fileSize = fileInput.files[0].size;
+
+                    if (fileSize > maxFileSize) {
+                        event.preventDefault();
+                        Swal.fire(
+                            'Opps',
+                            'File size exceeds the maximum limit of 5MB.!',
+                            'error'
+                        )
+                    }
+                }
+            });
+        });
+    </script>
+
 }

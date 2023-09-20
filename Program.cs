@@ -21,6 +21,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true; // Required to ensure the session cookie is sent during every request
 });
 
+//DI
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
