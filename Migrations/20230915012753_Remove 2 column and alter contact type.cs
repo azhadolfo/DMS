@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -18,13 +17,11 @@ namespace Document_Management.Migrations
             migrationBuilder.DropColumn(
                 name: "ScheduleDate",
                 table: "Gatepass");
-
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
             migrationBuilder.AddColumn<string>(
                 name: "Purpose",
                 table: "Gatepass",

@@ -4,6 +4,8 @@
     ViewData["Title"] = "Register";
 }
 
+<partial name="_Notification">
+
 <h1>Create User</h1>
 
 <h4>Employee</h4>
@@ -11,6 +13,7 @@
 <div class="row">
     <div class="col">
         <form asp-action="Create" class="needs-validation">
+            <div asp-validation-summary="All" class="text-danger"></div>
             <div class="mb-3">
                 <label asp-for="EmployeeNumber" class="form-label"></label>
                 <input asp-for="EmployeeNumber" type="number" value="" class="form-control" />
