@@ -1,4 +1,5 @@
 ﻿using Document_Management.Data;
+using Document_Management.Hubs;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
@@ -15,10 +16,13 @@ namespace Document_Management.Controllers
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
+        private readonly NotificationHub _notificationHub;
+
         //Passing the dbcontext in to another variable
-        public GatepassController(ApplicationDbContext context)
+        public GatepassController(ApplicationDbContext context, NotificationHub notificationHub)
         {
             _dbcontext = context;
+            _notificationHub = notificationHub;
         }
 
         //RequestGatepass
@@ -37,7 +41,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
-        public IActionResult Insert(RequestGP gpInfo)
+        public async Task<IActionResult> Insert(RequestGP gpInfo)
         {
             var username = HttpContext.Session.GetString("username");
 
@@ -50,7 +54,9 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 TempData["success"] = "User created successfully";
-                TempData["newRequest"] = true; // Set the ViewData property to true**
+
+                await _notificationHub.SendNotificationToClient("you have new request", "leo");
+
                 return RedirectToAction("Insert");
             }
 
@@ -77,7 +83,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult Approved(int? id)
+        public async Task<IActionResult> Approved(int? id)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
@@ -85,6 +91,8 @@ namespace Document_Management.Controllers
             {
                 return NotFound();
             }
+
+            await _notificationHub.SendNotificationToClient("Your request has been approved.", requestGP.Username);
 
             return View(requestGP);
         }

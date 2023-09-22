@@ -1,5 +1,6 @@
 using Document_Management.Data;
 using Document_Management.Hubs;
+using Document_Management.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +11,7 @@ builder.Services.AddSignalR();
 
 //New added middleware
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Singleton);
 
 // Configure session services
 builder.Services.AddDistributedMemoryCache();
@@ -23,6 +24,8 @@ builder.Services.AddSession(options =>
 
 //DI
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<UserRepo>();
+builder.Services.AddSingleton<NotificationHub>();
 
 var app = builder.Build();
 
@@ -45,7 +48,7 @@ app.UseSession();
 
 app.UseAuthorization();
 
-app.MapHub<ChatHub>("/chatHub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.MapControllerRoute(
     name: "default",
