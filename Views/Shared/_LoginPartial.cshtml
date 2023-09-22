@@ -7,7 +7,7 @@
 @if (!string.IsNullOrEmpty(username))
 {
     <li class="nav-item">
-        <a id="manage" class="nav-link" asp-controller="Account" asp-action="ChangePassword" title="Manage">Hello @HttpContextAccessor.HttpContext?.Session.GetString("Username")!</a>
+        <a id="manage" class="nav-link" asp-controller="Account" asp-action="ChangePassword" title="Manage">Hello @HttpContextAccessor.HttpContext?.Session.GetString("username")!</a>
     </li>
     <li class="nav-item">
         <a href="javascript:void(0);" class="nav-link" onclick="confirmLogout()">Logout</a>
