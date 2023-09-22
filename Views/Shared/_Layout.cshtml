@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -125,6 +126,7 @@
     </header>
     <div class="container">
         <main role="main" class="py-3">
+            <input type="hidden" id="hfUsername" value="@HttpContextAccessor.HttpContext?.Session.GetString("username")" />
             @RenderBody()
         </main>
     </div>
@@ -141,6 +143,9 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <!-- Add this link in your HTML to include SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/notification.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

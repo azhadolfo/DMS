@@ -17,12 +17,11 @@ namespace Document_Management.Controllers
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
-        private readonly IHubContext<ChatHub> _hubContext;
+
         //Passing the dbcontext in to another variable
-        public GatepassController(ApplicationDbContext context, IHubContext<ChatHub> hubContext)
+        public GatepassController(ApplicationDbContext context)
         {
             _dbcontext = context;
-            _hubContext = hubContext;
         }
 
         //RequestGatepass
@@ -54,7 +53,7 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 TempData["success"] = "User created successfully";
-                await _hubContext.Clients.All.SendAsync("Notification", "You have a new Request");
+                TempData["newRequest"] = true; // Set the ViewData property to true**
                 return RedirectToAction("Insert");
             }
 
@@ -77,7 +76,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult Approved(int? id)
+        public async Task<IActionResult> Approved(int? id)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
@@ -85,6 +84,8 @@ namespace Document_Management.Controllers
             {
                 return NotFound();
             }
+
+            await _notificationHub.SendNotificationToClient("Your request has been approved.", requestGP.Username);
 
             return View(requestGP);
         }

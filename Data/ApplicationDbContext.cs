@@ -14,5 +14,6 @@ namespace Document_Management.Data
         public DbSet<LogsModel> Logs { get; set; }
 
         public DbSet<RequestGP> Gatepass { get; set; }
+        public DbSet<HubConnection> HubConnections { get; set; }
     }
 }
