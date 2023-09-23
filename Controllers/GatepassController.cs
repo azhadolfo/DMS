@@ -54,7 +54,7 @@ namespace Document_Management.Controllers
                 }
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
-                TempData["success"] = "Request created successfully";
+                TempData["success"] = "User created successfully";
                 await _notificationHub.SendNotificationToClient("You have new request!", "leo");
                 return RedirectToAction("Insert");
             }
