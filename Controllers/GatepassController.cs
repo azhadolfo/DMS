@@ -17,11 +17,13 @@ namespace Document_Management.Controllers
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
+        private readonly NotificationHub _notificationHub;
 
         //Passing the dbcontext in to another variable
-        public GatepassController(ApplicationDbContext context)
+        public GatepassController(ApplicationDbContext context, NotificationHub notification)
         {
             _dbcontext = context;
+            _notificationHub = notification;
         }
 
         //RequestGatepass
@@ -53,7 +55,7 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 TempData["success"] = "User created successfully";
-                TempData["newRequest"] = true; // Set the ViewData property to true**
+                await _notificationHub.SendNotificationToClient("You have new request!", "leo");
                 return RedirectToAction("Insert");
             }
 
@@ -76,7 +78,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Approved(int? id)
+        public IActionResult Approved(int? id)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
@@ -84,8 +86,6 @@ namespace Document_Management.Controllers
             {
                 return NotFound();
             }
-
-            await _notificationHub.SendNotificationToClient("Your request has been approved.", requestGP.Username);
 
             return View(requestGP);
         }
@@ -108,7 +108,7 @@ namespace Document_Management.Controllers
                 client.Status = "Approved";
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Approved successfully";
-                await _hubContext.Clients.All.SendAsync("Approved", "Your Request has been Approved");
+                await _notificationHub.SendNotificationToClient("Your request has been approved", client.Username);
             }
             return RedirectToAction(nameof(Validator));
         }
@@ -144,7 +144,7 @@ namespace Document_Management.Controllers
                 client.Status = "Disapproved";
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Disapproved successfully";
-                await _hubContext.Clients.All.SendAsync("Disapproved", "Your Request has been Disapproved");
+                await _notificationHub.SendNotificationToClient("Your request has been disapproved", client.Username);
             }
             return RedirectToAction(nameof(Validator));
         }

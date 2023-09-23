@@ -52,7 +52,7 @@ namespace Document_Management.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FileDocuments");
+                    b.ToTable("FileDocuments", (string)null);
                 });
 
             modelBuilder.Entity("Document_Management.Models.LogsModel", b =>
@@ -76,7 +76,7 @@ namespace Document_Management.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Logs");
+                    b.ToTable("Logs", (string)null);
                 });
 
             modelBuilder.Entity("Document_Management.Models.Register", b =>
@@ -124,7 +124,7 @@ namespace Document_Management.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Account");
+                    b.ToTable("Account", (string)null);
                 });
 
             modelBuilder.Entity("Document_Management.Models.RequestGP", b =>
@@ -174,7 +174,7 @@ namespace Document_Management.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Gatepass");
+                    b.ToTable("Gatepass", (string)null);
                 });
 #pragma warning restore 612, 618
         }

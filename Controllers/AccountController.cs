@@ -318,9 +318,17 @@ namespace Document_Management.Controllers
             // Clear the session
             HttpContext.Session.Clear();
 
+            // Disconnect the user from signalr hub when they logout
+            var username = HttpContext.Session.GetString("username");
+            if (!string.IsNullOrEmpty(username))
+            {
+                _notificationHub.OnDisconnectedAsync(null).Wait(); // Disconnect the user 
+            }
+
             // Redirect to the login page or any other appropriate page
             return RedirectToAction("Index", "Home");
         }
+
 
         // Hash the password using a salt
         public static string HashPassword(string password)
