@@ -11,7 +11,7 @@ builder.Services.AddSignalR();
 
 //New added middleware
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Singleton);
+options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Configure session services
 builder.Services.AddDistributedMemoryCache();
@@ -24,8 +24,8 @@ builder.Services.AddSession(options =>
 
 //DI
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddSingleton<UserRepo>();
-builder.Services.AddSingleton<NotificationHub>();
+builder.Services.AddScoped<UserRepo>();
+builder.Services.AddScoped<NotificationHub>();
 
 var app = builder.Build();
 
