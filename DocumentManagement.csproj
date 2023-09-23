@@ -6,6 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Document_Management</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="NewFolder\**" />
+    <Content Remove="NewFolder\**" />
+    <EmbeddedResource Remove="NewFolder\**" />
+    <None Remove="NewFolder\**" />
+  </ItemGroup>
 	
 
   <ItemGroup>
@@ -30,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="NewFolder\" />
     <Folder Include="wwwroot\Files\" />
   </ItemGroup>
 
