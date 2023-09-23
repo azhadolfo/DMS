@@ -15,8 +15,9 @@
 @* <p>
     <a asp-action="Create" class="btn btn-primary rounded-3">Create New</a>
 </p> *@
+
 <div class="table-responsive">
-<table class="table">
+    <table class="table" id="table">
     <thead>
         <tr>
             <th class="text-primary ">Full Name</th>
@@ -43,7 +44,7 @@
         {
 
 
-            if (userrole == "validator" && user.Status == "Approved")
+            if (userrole == "validator")
             {
                
                     <tr class="align-middle text-wrap">
@@ -64,8 +65,8 @@
                 
             }
 
-            @if (user.Username == username && user.Status == "Approved" && userrole != "validator")
-                {<tr class="align-middle text-wrap">
+            @if (user.Username == username && userrole != "validator")
+                {<tr class="align-middle text-wrap" id="table">
                     
                         <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
                         <td>@user.Contact</td>
@@ -88,3 +89,24 @@
     </tbody>
 </table>
 </div>
+@section Scripts{
+    <script>
+        $("#table").DataTable({
+            "aoColumnDefs": [{ "bSortable": false, "aTargets": [0, 7] }],
+            "aaSorting": [],
+            "pagingType": "full_numbers",
+            "language": {
+                "paginate": {
+                    "next": "Next",
+                    "previous": "Previous",
+                    "first": "First",
+                    "last": "Last"
+                }
+            },
+            "search": {
+                "search": ""
+            }
+        });
+
+    </script>
+}
