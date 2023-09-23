@@ -17,10 +17,10 @@ namespace Document_Management.Controllers
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
-        private readonly NotificationHub _notificationHub;
+        private readonly IHubContext<NotificationHub> _notificationHub;
 
         //Passing the dbcontext in to another variable
-        public GatepassController(ApplicationDbContext context, NotificationHub notification)
+        public GatepassController(ApplicationDbContext context, IHubContext<NotificationHub> notification)
         {
             _dbcontext = context;
             _notificationHub = notification;
@@ -55,7 +55,11 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 TempData["success"] = "Request created successfully";
-                await _notificationHub.SendNotificationToClient("You have new request!", "leo");
+                var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == "leo").ToList();
+                foreach (var hubConnection in hubConnections)
+                {
+                    await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "You have a new request", gpInfo.Username);
+                }
                 return RedirectToAction("Insert");
             }
 
@@ -108,7 +112,11 @@ namespace Document_Management.Controllers
                 client.Status = "Approved";
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Approved successfully";
-                await _notificationHub.SendNotificationToClient("Your request has been approved", client.Username);
+                var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
+                foreach (var hubConnection in hubConnections)
+                {
+                    await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "Your request has been approved", client.Username);
+                }
             }
             return RedirectToAction(nameof(Validator));
         }
@@ -144,7 +152,11 @@ namespace Document_Management.Controllers
                 client.Status = "Disapproved";
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Disapproved successfully";
-                await _notificationHub.SendNotificationToClient("Your request has been disapproved", client.Username);
+                var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
+                foreach (var hubConnection in hubConnections)
+                {
+                    await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "Your request has been disapproved", client.Username);
+                }
             }
             return RedirectToAction(nameof(Validator));
         }
