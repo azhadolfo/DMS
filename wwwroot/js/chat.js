@@ -14,6 +14,15 @@ connection.on("ReceiveMessage", function (user, message) {
     toastr.success(`${user} says: ${message}`);
 });
 
+connection.on("Notification", function (message) {
+    // Display a notification when a new message arrives
+    Swal.fire(
+        'Success',
+        message,
+        'success'
+    )
+});
+
 connection.start().then(function () {
     document.getElementById("sendButton").disabled = false;
 }).catch(function (err) {

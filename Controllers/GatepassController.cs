@@ -2,10 +2,12 @@
 using Document_Management.Hubs;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.Text;
 
 namespace Document_Management.Controllers
 {
+    
     public class GatepassController : Controller
     {
         //public IActionResult Index()
@@ -15,14 +17,13 @@ namespace Document_Management.Controllers
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
-
         private readonly NotificationHub _notificationHub;
 
         //Passing the dbcontext in to another variable
-        public GatepassController(ApplicationDbContext context, NotificationHub notificationHub)
+        public GatepassController(ApplicationDbContext context, NotificationHub notification)
         {
             _dbcontext = context;
-            _notificationHub = notificationHub;
+            _notificationHub = notification;
         }
 
         //RequestGatepass
@@ -54,9 +55,7 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 _dbcontext.SaveChanges();
                 TempData["success"] = "User created successfully";
-
-                await _notificationHub.SendNotificationToClient("you have new request", "leo");
-
+                await _notificationHub.SendNotificationToClient("You have new request!", "leo");
                 return RedirectToAction("Insert");
             }
 
@@ -72,18 +71,14 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            // Check the ViewData property**
-            if (TempData["newRequest"] != null && (bool)TempData["newRequest"])
-            {
-                TempData["success"] = "You have a new Request";
-            }
+          
             ViewBag.users = _dbcontext.Gatepass.ToList();
 
             return View();
         }
 
         [HttpGet]
-        public async Task<IActionResult> Approved(int? id)
+        public IActionResult Approved(int? id)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
@@ -91,8 +86,6 @@ namespace Document_Management.Controllers
             {
                 return NotFound();
             }
-
-            await _notificationHub.SendNotificationToClient("Your request has been approved.", requestGP.Username);
 
             return View(requestGP);
         }
@@ -115,6 +108,7 @@ namespace Document_Management.Controllers
                 client.Status = "Approved";
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Approved successfully";
+                await _notificationHub.SendNotificationToClient("Your request has been approved", client.Username);
             }
             return RedirectToAction(nameof(Validator));
         }
@@ -150,6 +144,7 @@ namespace Document_Management.Controllers
                 client.Status = "Disapproved";
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Disapproved successfully";
+                await _notificationHub.SendNotificationToClient("Your request has been disapproved", client.Username);
             }
             return RedirectToAction(nameof(Validator));
         }
