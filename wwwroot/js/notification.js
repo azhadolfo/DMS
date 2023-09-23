@@ -20,8 +20,6 @@ function OnConnected() {
 }
 
 connection.on("ReceivedNotification", function (message) {
-    // alert(message);
-    //DisplayGeneralNotification(message, 'General Message');
     Swal.fire(
         'Success',
         message,
@@ -30,8 +28,6 @@ connection.on("ReceivedNotification", function (message) {
 });
 
 connection.on("ReceivedPersonalNotification", function (message, username) {
-    // alert(message + ' - ' + username);
-    //DisplayPersonalNotification(message, 'hey ' + username);
     Swal.fire(
         'Success',
         message,
