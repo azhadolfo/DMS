@@ -2,6 +2,7 @@
 using Document_Management.Hubs;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,10 +14,10 @@ namespace Document_Management.Controllers
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
-        private NotificationHub _notificationHub;
+        private readonly IHubContext<NotificationHub> _notificationHub;
 
         //Passing the dbcontext in to another variable
-        public AccountController(ApplicationDbContext context, NotificationHub notificationHub)
+        public AccountController(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub)
         {
             _dbcontext = context;
             _notificationHub = notificationHub;
@@ -134,6 +135,8 @@ namespace Document_Management.Controllers
                     HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user role in session
 
                     //await _notificationHub.SendNotificationToClient("", username);
+
+                    await _notificationHub.Clients.All.SendAsync("ReceivedNotification", "");
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -318,17 +321,9 @@ namespace Document_Management.Controllers
             // Clear the session
             HttpContext.Session.Clear();
 
-            // Disconnect the user from signalr hub when they logout
-            var username = HttpContext.Session.GetString("username");
-            if (!string.IsNullOrEmpty(username))
-            {
-                _notificationHub.OnDisconnectedAsync(null).Wait(); // Disconnect the user 
-            }
-
             // Redirect to the login page or any other appropriate page
             return RedirectToAction("Index", "Home");
         }
-
 
         // Hash the password using a salt
         public static string HashPassword(string password)
