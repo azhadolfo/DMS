@@ -143,7 +143,7 @@ namespace Document_Management.Controllers
 
                     //await _notificationHub.SendNotificationToClient("", username);
 
-                    await _notificationHub.Clients.All.SendAsync("ReceivedNotification", "");
+                    //await _notificationHub.Clients.All.SendAsync("ReceivedNotification", "");
 
                     return RedirectToAction("Index", "Home");
                 }
