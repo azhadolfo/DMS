@@ -60,6 +60,7 @@ namespace Document_Management.Controllers
                 foreach (var hubConnection in hubConnections)
                 {
                     await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "You have a new request", gpInfo.Username);
+                    
                 }
                 return RedirectToAction("Insert");
             }
@@ -76,7 +77,6 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-          
             ViewBag.users = _dbcontext.Gatepass.ToList();
 
             return View();
