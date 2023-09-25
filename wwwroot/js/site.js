@@ -35,3 +35,7 @@ function DisplayPersonalNotification(message, title) {
         toastr.success(message, title);
     }, 1300);
 }
+
+$(document).ready(function () {
+    $('#myTable').DataTable();
+});

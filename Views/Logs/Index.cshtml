@@ -1,20 +1,20 @@
-﻿@model PaginatedList<LogsModel>
+﻿@model List<LogsModel>
 
 @{
     ViewData["Title"] = "Logs";
 }
 
 <div class="table-responsive">
-    <table class="table table-hover">
+    <table id="myTable" class="table table-hover">
         <thead>
-            <tr class="table-dark">
+            <tr>
                 <th>Username</th>
                 <th>Activity</th>
                 <th>Date</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var logs in Model.Items)
+            @foreach (var logs in Model)
             {
                 <tr>
                     <td>@logs.Username</td>
@@ -26,7 +26,7 @@
     </table>
 </div>
 
-<div class="pagination">
+@* <div class="pagination">
     <nav aria-label="Page navigation">
         <ul class="pagination justify-content-center">
             @if (Model.HasPreviousPage)
@@ -65,4 +65,4 @@
             }
         </ul>
     </nav>
-</div>
+  </div> *@
