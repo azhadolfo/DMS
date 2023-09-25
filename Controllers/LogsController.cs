@@ -28,7 +28,8 @@ namespace Document_Management.Controllers
             int pageSize = 10; // Number of items per page
             int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
 
-            var logs = _dbcontext.Logs.OrderByDescending(u => u.Date);
+            var logs = _dbcontext.Logs
+                .OrderByDescending(u => u.Date);
 
             var model = await PaginatedList<LogsModel>.CreateAsync(logs, pageIndex, pageSize);
 
