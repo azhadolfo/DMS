@@ -53,6 +53,7 @@ namespace Document_Management.Controllers
                     gpInfo.Username = username;
                 }
                 _dbcontext.Gatepass.Add(gpInfo);
+                gpInfo.Status = "Pending";
                 _dbcontext.SaveChanges();
                 TempData["success"] = "Request created successfully";
                 var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == "leo").ToList();

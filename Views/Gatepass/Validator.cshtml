@@ -8,60 +8,68 @@
 
 <h1>@ViewData["Title"]</h1>
 
-@* <p>
-    <a asp-action="Create" class="btn btn-primary rounded-3">Create New</a>
-</p> *@
-<div class="table-responsive">
-<table class="table">
-    <thead>
-        <tr>
-            <th class="text-primary ">Full Name</th>
-            <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
-            <th class="text-primary w-25">@Html.DisplayNameFor(model => model.GatepassId)</th>
-            <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
-            <th class="text-primary ">@Html.DisplayNameFor(model => model.Items)</th>
-           @*  <th class="text-primary ">@Html.DisplayNameFor(model => model.ScheduleDate)</th> *@
-            <th class="text-primary text-center">Action</th>
-        @*     <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> *@
-     
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in (List <Document_Management.Models.RequestGP>)ViewBag.users)
-        {
-               @*  <tr class="align-middle text-wrap">
-                <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
-                <td>@user.Contact</td>
-                <td>@user.GatepassId</td>
-                <td>@user.ScheduleDate</td> *@
-               @*  <td>@user.Purpose</td> *@
-               @*  <td class="w-50">
-                    <a asp-action="Approved" asp-route-id="@user.Id" class="btn btn-secondary">Approved</a> |
-                    <a asp-action="Disapproved" asp-route-id="@user.Id" class="btn btn-danger">Disapproved</a>
-                </td>
-            </tr> *@
+    <div class="table-responsive">
+        <table class="table" id="table">
+            <thead>
+                <tr>
+                    <th class="text-primary ">Full Name</th>
+                    <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
+                    <th class="text-primary w-25">@Html.DisplayNameFor(model => model.GatepassId)</th>
+                    <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
+                    <th class="text-primary ">@Html.DisplayNameFor(model => model.Items)</th>
+                    <th class="text-primary text-center">@Html.DisplayNameFor(model => model.Schedule)</th>
+                    <th class="text-primary text-center">Action</th>
 
-
-            <tr class="align-middle text-wrap">
-
-                @if (string.IsNullOrEmpty(user.Status))
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in (List<Document_Management.Models.RequestGP>)ViewBag.users)
                 {
-                    <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
-                    <td>@user.Contact</td>
-                    <td>@user.GatepassId</td>
-                    <td>@user.Area</td>
-                    <td>@user.Items</td>
-                    @* <td>@user.ScheduleDate</td> *@
-                  
 
-                    <td class="w-50 text-center">
+                    
+
+                        @if (user.Status == "Pending")
+                        {
+                        <tr class="align-middle">
+                            <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
+                            <td>@user.Contact</td>
+                            <td>@user.GatepassId</td>
+                            <td>@user.Area</td>
+                            <td>@user.Items</td>
+                            <td>@user.Schedule</td>
+
+
+                            <td class="w-50 text-center">
                                 <a asp-action="Approved" asp-route-id="@user.Id" class="btn btn-success">Approve</a> |
                                 <a asp-action="Disapproved" asp-route-id="@user.Id" class="btn btn-danger">Disapprove</a>
-                    </td>
-                }
+                            </td>
 
-            </tr>
-        }
-    </tbody>
-</table>
-</div>
+                        </tr>
+                        }
+
+                   
+                }
+            </tbody>
+        </table>
+    </div>
+    @section Scripts{
+        <script>
+            $("#table").DataTable({
+                "aoColumnDefs": [{ "bSortable": true, "aTargets": [0, 5] }],
+                "aaSorting": [],
+                "pagingType": "full_numbers",
+                "language": {
+                    "paginate": {
+                        "next": "Next",
+                        "previous": "Previous",
+                        "first": "First",
+                        "last": "Last"
+                    }
+                },
+                "search": {
+                    "search": ""
+                }
+            });
+
+        </script>
+    }

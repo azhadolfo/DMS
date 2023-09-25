@@ -12,10 +12,6 @@
 
 <h1>@ViewData["Title"]</h1>
 
-@* <p>
-    <a asp-action="Create" class="btn btn-primary rounded-3">Create New</a>
-</p> *@
-
 <div class="table-responsive">
     <table class="table" id="table">
     <thead>
@@ -35,7 +31,6 @@
                 <th class="text-primary ">Schedule</th>
             }
             <th class="text-primary ">Action</th>
-            @*     <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> *@
 
         </tr>
     </thead>
@@ -66,7 +61,7 @@
             }
 
             @if (user.Username == username && userrole != "validator")
-                {<tr class="align-middle text-wrap" id="table">
+                {<tr class="align-middle text-wrap">
                     
                         <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
                         <td>@user.Contact</td>
@@ -92,7 +87,7 @@
 @section Scripts{
     <script>
         $("#table").DataTable({
-            "aoColumnDefs": [{ "bSortable": false, "aTargets": [0, 7] }],
+            "aoColumnDefs": [{ "bSortable": true, "aTargets": [0, 7] }],
             "aaSorting": [],
             "pagingType": "full_numbers",
             "language": {
