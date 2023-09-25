@@ -13,7 +13,7 @@
 <h1>@ViewData["Title"]</h1>
 
 <div class="table-responsive">
-    <table class="table" id="table">
+    <table class="table">
     <thead>
         <tr>
             <th class="text-primary ">Full Name</th>
@@ -84,24 +84,4 @@
     </tbody>
 </table>
 </div>
-@section Scripts{
-    <script>
-        $("#table").DataTable({
-            "aoColumnDefs": [{ "bSortable": true, "aTargets": [0, 7] }],
-            "aaSorting": [],
-            "pagingType": "full_numbers",
-            "language": {
-                "paginate": {
-                    "next": "Next",
-                    "previous": "Previous",
-                    "first": "First",
-                    "last": "Last"
-                }
-            },
-            "search": {
-                "search": ""
-            }
-        });
 
-    </script>
-}
