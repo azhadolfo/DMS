@@ -1,5 +1,6 @@
 ﻿using Document_Management.Data;
 using Document_Management.Models;
+using Document_Management.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,14 +10,17 @@ namespace Document_Management.Controllers
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
 
+        private readonly UserRepo _userRepo;
+
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
         //Passing the dbcontext in to another variable
-        public DmsController(IWebHostEnvironment hostingEnvironment, ApplicationDbContext context)
+        public DmsController(IWebHostEnvironment hostingEnvironment, ApplicationDbContext context, UserRepo userRepo)
         {
             _hostingEnvironment = hostingEnvironment;
             _dbcontext = context;
+            _userRepo = userRepo;
         }
 
         //Get for the Action Dms/Upload
@@ -35,12 +39,20 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
-        public IActionResult UploadFile(FileDocument fileDocument, IFormFile file)
+        public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile file)
         {
             try
             {
                 if (ModelState.IsValid && file != null && file.Length > 0)
                 {
+                    var isFileExist = await _userRepo.CheckIfFileExists(file.FileName);
+
+                    if (isFileExist != null)
+                    {
+                        TempData["error"] = "This file already exists in our database!";
+                        return View(fileDocument);
+                    }
+
                     var username = HttpContext.Session.GetString("username");
 
                     if (string.IsNullOrEmpty(username))
@@ -50,6 +62,7 @@ namespace Document_Management.Controllers
 
                     fileDocument.DateUploaded = DateTime.Now;
                     fileDocument.Username = username;
+                    fileDocument.OriginalFilename = file.FileName;
 
                     var filename = Path.GetFileName(file.FileName);
                     var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
@@ -86,7 +99,7 @@ namespace Document_Management.Controllers
 
                     TempData["success"] = "File uploaded successfully";
 
-                    return RedirectToAction("UploadFile");
+                    return View(fileDocument);
                 }
                 else
                 {
