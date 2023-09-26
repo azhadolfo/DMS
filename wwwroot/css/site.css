@@ -71,3 +71,9 @@ input[type=number] {
     display: flex;
     justify-content: flex-end;
 }
+
+@page {
+    margin: 0;
+}
+
+
