@@ -27,45 +27,7 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
-.table {
-    font-size: 16px;
-    line-height: 1.5;
-}
 
-    .table th,
-    .table td {
-        padding: 10px;
-    }
-
-/* Center the pagination controls */
-.dataTables_paginate {
-    display: flex;
-    justify-content: center;
-}
-
-    /* Style the pagination buttons */
-    .dataTables_paginate .paginate_button {
-        margin: 0 5px;
-        padding: 5px 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-        /* Highlight the current page number */
-        .dataTables_paginate .paginate_button.current {
-            background-color: #ccc;
-        }
-
-/* Style the search input */
-.dataTables_filter input {
-    width: 300px;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-    float: right;
-}
 
 .dataTables_filter {
     display: flex;
