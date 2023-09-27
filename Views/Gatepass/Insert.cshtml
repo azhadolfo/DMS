@@ -5,119 +5,68 @@
     int randomGatepassId = new Random().Next(10000, 100000);
 }
 <partial name="_Notification">
-<div class="container mt-5">
-    <h1>@ViewData["Title"]</h1>
-    <form asp-action="Insert">
-       <div asp-validation-summary="ModelOnly" class="text-danger"> </div>
-        <div class="mb-3">
-            <div class="col">
-                <input asp-for="GatepassId" type="hidden" class="form-control" value="@randomGatepassId" />
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <div class="row">
+    <div class="container mt-5">
+        <h1>@ViewData["Title"]</h1>
+        <form asp-action="Insert">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3">
                 <div class="col">
-                    <input asp-for="LastName" type="text" class="form-control" placeholder="Last Name" id="textInput" oninput="checkTextTyping(this)" />
-                    <span asp-validation-for="LastName" class="text-danger"></span>
-                </div>
-                <div class="col">
-                    <input asp-for="FirstName" type="text" class="form-control" placeholder="First Name" id="textInput" oninput="checkTextTyping(this)" />
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
-                </div>
-                <div class="col">
-                    <input asp-for="MiddleName" type="text" class="form-control" placeholder="Middle Name" id="textInput" oninput="checkTextTyping(this)" />
-                    <span asp-validation-for="MiddleName" class="text-danger"></span>
+                    <input asp-for="GatepassId" type="hidden" class="form-control" value="@randomGatepassId" />
                 </div>
             </div>
-        </div>
 
-        <div class="mb-3">
-            <label asp-for="Area" class="form-label"></label>
-            <select class="form-select" asp-for="Area">
-                <option value="" selected disabled>Select available area</option>
-                <option value="Cubao">Cubao</option>
-                <option value="Eastwood">Eastwood</option>
-                <option value="Market-Market">Market-Market</option>
-            </select>
-            <span asp-validation-for="Area" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <div class="row">
+                    <div class="col">
+                        <input asp-for="LastName" type="text" class="form-control" placeholder="Last Name" id="textInput" oninput="checkTextTyping(this)" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                    <div class="col">
+                        <input asp-for="FirstName" type="text" class="form-control" placeholder="First Name" id="textInput" oninput="checkTextTyping(this)" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="col">
+                        <input asp-for="MiddleName" type="text" class="form-control" placeholder="Middle Name" id="textInput" oninput="checkTextTyping(this)" />
+                        <span asp-validation-for="MiddleName" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <label asp-for="Contact" class="form-label"></label>
-            <input asp-for="Contact" type="number" class="form-control" oninput="limitAndCheckInput(this, 10)" placeholder="Contact Number +63" />
-            <span asp-validation-for="Contact" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label asp-for="Area" class="form-label"></label>
+                <select class="form-select" asp-for="Area">
+                    <option value="" selected disabled>Select available area</option>
+                    <option value="Cubao">Cubao</option>
+                    <option value="Eastwood">Eastwood</option>
+                    <option value="Market-Market">Market-Market</option>
+                </select>
+                <span asp-validation-for="Area" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label asp-for="Schedule" class="form-label"></label>
-            <input asp-for="Schedule" type="datetime-local" class="form-control" />
-            <span asp-validation-for="Schedule" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label asp-for="Contact" class="form-label"></label>
+                <input asp-for="Contact" type="number" class="form-control" oninput="limitAndCheckInput(this, 10)" placeholder="Contact Number +63" />
+                <span asp-validation-for="Contact" class="text-danger"></span>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Inform to bring out of the Premises the following items:</label>
-            <textarea asp-for="Items" class="form-control" rows="10" placeholder="Your items"></textarea>
-            <span asp-validation-for="Items" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label asp-for="Schedule" class="form-label"></label>
+                <input asp-for="Schedule" type="datetime-local" class="form-control" />
+                <span asp-validation-for="Schedule" class="text-danger"></span>
+            </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-</div>
-@section Scripts{
-    <script>
-        function limitAndCheckInput(inputElement, maxLength) {
-            var inputValue = inputElement.value;
+            <div class="mb-3">
+                <label class="form-label">Inform to bring out of the Premises the following items:</label>
+                <textarea asp-for="Items" class="form-control" rows="10" placeholder="Your items"></textarea>
+                <span asp-validation-for="Items" class="text-danger"></span>
+            </div>
 
-            
-
-            // Limit the input length
-            var currentLength = inputElement.value.length;
-            maxLength = maxLength || 10;
-
-            if (currentLength > maxLength) {
-                inputElement.value = inputElement.value.substring(0, maxLength);
-            }
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    @section Scripts{
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
         }
-
-        const contactInput = document.querySelector("#Contact");
-
-        contactInput.addEventListener("input", function () {
-            if (contactInput.value.length < 10) {
-                contactInput.setCustomValidity("Please enter a contact number that is at least 10 digits long.");
-            } else {
-                contactInput.setCustomValidity("");
-            }
-        });
-
-        function showMessage(message) {
-    const popup = document.createElement('div');
-    popup.classList.add('popup');
-    popup.innerHTML = message;
-
-    document.body.appendChild(popup);
-
-    setTimeout(() => {
-        document.body.removeChild(popup);
-    }, 2000); // 2 seconds
-}
-
-
-        function checkTextTyping(inputElement) {
-            var inputValue = inputElement.value;
-            var hasNumbers = /\d/.test(inputValue); // Regular expression to check for numbers
-            var hasSpecialCharacters = /[^\w\s]/.test(inputValue); // Regular expression to check for special characters
-
-            if (hasSpecialCharacters) {
-                showMessage('Please enter text only, without special characters.');
-                inputElement.value = inputValue.replace(/[^\w\s]/g, ''); // Remove special characters from the input
-            }
-
-            if (hasNumbers) {
-                showMessage('Please enter text only, without numbers.');
-                inputElement.value = inputValue.replace(/\d/g, ''); // Remove numbers from the input
-            }
-        }
-</script>
-}
+    }
