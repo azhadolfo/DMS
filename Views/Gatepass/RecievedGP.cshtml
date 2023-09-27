@@ -13,22 +13,22 @@
 <h1>@ViewData["Title"]</h1>
 
 <div class="table-responsive">
-    <table class="table">
+    <table class="table" id="myTable">
     <thead>
         <tr>
             <th class="text-primary ">Full Name</th>
             <th class="text-primary ">Contact</th>
             @if (userrole == "validator")
             {
-            <th class="text-primary w-25">GatepassId</th>
+            <th class="text-primary ">GatepassId</th>
             }
-            <th class="text-primary w-25">Area</th>
+            <th class="text-primary ">Area</th>
             <th class="text-primary ">Remarks</th>
              @if (userrole == "validator")
             {
                 <th class="text-primary ">Schedule</th>
             }
-            <th class="text-primary ">Action</th>
+            <th></th>
 
         </tr>
     </thead>
@@ -38,17 +38,17 @@
             if (userrole == "validator")
             {
                     <tr class="align-middle">
-                        <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
+                        <td>@user.LastName @user.FirstName @user.MiddleName</td>
                         <td>@user.Contact</td>
                         <td>@user.GatepassId</td>
                         <td>@user.Area</td>
                         <td>@user.Status</td>
                         <td>@user.Schedule</td>
 
-                        <td class="w-50">
+                        <td>
                         @if (user.Status == "Approved")
             {
-                            <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Generate</a>
+                            <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
             }
                         </td>
                     </tr>
@@ -59,15 +59,15 @@
                 {
                     <tr class="align-middle">
                     
-                        <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
+                        <td>@user.LastName @user.FirstName @user.MiddleName</td>
                         <td>@user.Contact</td>
                         <td>@user.Area</td>
                         <td>@user.Status</td>
 
-                        <td class="w-50">
+                        <td>
                         @if (user.Status == "Approved")
                         {
-                            <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Generate</a>
+                            <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
                         }
                         </td>
                     </tr>

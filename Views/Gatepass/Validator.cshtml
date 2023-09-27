@@ -9,14 +9,14 @@
 <h1>@ViewData["Title"]</h1>
 
     <div class="table-responsive">
-        <table class="table" >
+        <table class="table" id="myTable" >
             <thead>
                 <tr>
                     <th class="text-primary ">Full Name</th>
                     <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
                     <th class="text-primary w-25">@Html.DisplayNameFor(model => model.GatepassId)</th>
                     <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
-                    <th class="text-primary text-center">@Html.DisplayNameFor(model => model.Schedule)</th>
+                    <th class="text-primary ">@Html.DisplayNameFor(model => model.Schedule)</th>
                     <th class="text-primary text-center">Action</th>
 
                 </tr>
@@ -30,7 +30,7 @@
                         @if (user.Status == "Pending")
                         {
                         <tr class="align-middle">
-                            <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
+                            <td >@user.LastName @user.FirstName @user.MiddleName</td>
                             <td>@user.Contact</td>
                             <td>@user.GatepassId</td>
                             <td>@user.Area</td>
@@ -38,7 +38,7 @@
                             <td>@user.Schedule</td>
 
 
-                            <td class="w-50 text-center">
+                            <td>
                                 <a asp-action="Approved" asp-route-id="@user.Id" class="btn btn-success">Approve</a> |
                                 <a asp-action="Disapproved" asp-route-id="@user.Id" class="btn btn-danger">Disapprove</a>
                             </td>
