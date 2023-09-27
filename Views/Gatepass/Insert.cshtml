@@ -69,4 +69,48 @@
         @{
             await Html.RenderPartialAsync("_ValidationScriptsPartial");
         }
+        <script>
+            function limitAndCheckInput(inputElement, maxLength) {
+                var inputValue = inputElement.value;
+
+
+
+                // Limit the input length
+                var currentLength = inputElement.value.length;
+                maxLength = maxLength || 10;
+
+                if (currentLength > maxLength) {
+                    inputElement.value = inputElement.value.substring(0, maxLength);
+                }
+            }
+
+            const contactInput = document.querySelector("#Contact");
+
+            contactInput.addEventListener("input", function () {
+                if (contactInput.value.length < 10) {
+                } else {
+                    contactInput.setCustomValidity("");
+                }
+            });
+
+            function showMessage(message) {
+            }
+
+
+            function checkTextTyping(inputElement) {
+                var inputValue = inputElement.value;
+                var hasNumbers = /\d/.test(inputValue); // Regular expression to check for numbers
+                var hasSpecialCharacters = /[^\w\s]/.test(inputValue); // Regular expression to check for special characters
+
+                if (hasSpecialCharacters) {
+                    showMessage('Please enter text only, without special characters.');
+                    inputElement.value = inputValue.replace(/[^\w\s]/g, ''); // Remove special characters from the input
+                }
+
+                if (hasNumbers) {
+                    showMessage('Please enter text only, without numbers.');
+                    inputElement.value = inputValue.replace(/\d/g, ''); // Remove numbers from the input
+                }
+            }
+        </script>
     }
