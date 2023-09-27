@@ -1,5 +1,6 @@
 ﻿using Document_Management.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Document_Management.Controllers
 {
@@ -14,7 +15,7 @@ namespace Document_Management.Controllers
             _dbcontext = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
             var userrole = HttpContext.Session.GetString("userrole");
 
@@ -24,14 +25,9 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            //int pageSize = 10; // Number of items per page
-            //int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
-
-            var logs = _dbcontext.Logs
+            var logs = await _dbcontext.Logs
                 .OrderByDescending(u => u.Date)
-                .ToList();
-
-            //var model = await PaginatedList<LogsModel>.CreateAsync(logs, pageIndex, pageSize);
+                .ToListAsync();
 
             return View(logs);
         }

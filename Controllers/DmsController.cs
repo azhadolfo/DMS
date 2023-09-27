@@ -15,7 +15,7 @@ namespace Document_Management.Controllers
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
-        //Passing the dbcontext in to another variable
+        //Inject the services in to another variable
         public DmsController(IWebHostEnvironment hostingEnvironment, ApplicationDbContext context, UserRepo userRepo)
         {
             _hostingEnvironment = hostingEnvironment;
@@ -114,29 +114,6 @@ namespace Document_Management.Controllers
             return View(fileDocument);
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> DownloadFile(int? page)
-        //{
-        //    int pageSize = 10; // Number of items per page
-        //    int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
-
-        //    // Retrieve the files from the database and project them into FileViewModel
-        //    var fileViewModels = _dbcontext.FileDocuments
-        //        .Select(file => new FileDocument
-        //        {
-        //            Name = file.Name,
-        //            Location = file.Location,
-        //            DateUploaded = file.DateUploaded,
-        //            Description = file.Description,
-        //            Department = file.Department
-        //        })
-        //        .OrderBy(u => u.Department);
-
-        //    var model = await PaginatedList<FileDocument>.CreateAsync(fileViewModels, pageIndex, pageSize);
-
-        //    return View(model);
-        //}
-
         public IActionResult DownloadFile()
         {
             var username = HttpContext.Session.GetString("username");
@@ -167,10 +144,6 @@ namespace Document_Management.Controllers
                 return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
             }
 
-            //// If any of the user's departments are allowed, continue with your code to display files
-            //int pageSize = 10; // Number of items per page
-            //int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
-
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             var folderPath = Path.Combine(wwwrootPath, folderName); // wwwroot/Files/null
             var pdfFiles = Directory.GetFiles(folderPath, "*.pdf").Select(Path.GetFileName);
@@ -189,8 +162,6 @@ namespace Document_Management.Controllers
                     Username = file.Username
                 })
                 .OrderByDescending(u => u.DateUploaded).ToListAsync();
-
-            //var model = await PaginatedList<FileDocument>.CreateAsync(fileDocuments, pageIndex, pageSize);
 
             return View(fileDocuments);
         }

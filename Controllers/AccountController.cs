@@ -1,8 +1,6 @@
 ﻿using Document_Management.Data;
-using Document_Management.Hubs;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,13 +12,10 @@ namespace Document_Management.Controllers
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
-        private readonly IHubContext<NotificationHub> _notificationHub;
-
         //Passing the dbcontext in to another variable
-        public AccountController(ApplicationDbContext context, IHubContext<NotificationHub> notificationHub)
+        public AccountController(ApplicationDbContext context)
         {
             _dbcontext = context;
-            _notificationHub = notificationHub;
         }
 
         //Action for Account/Index
@@ -29,14 +24,9 @@ namespace Document_Management.Controllers
             var username = HttpContext.Session.GetString("username");
             if (!string.IsNullOrEmpty(username))
             {
-                //int pageSize = 10; // Number of items per page
-                //int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
-
                 var users = await _dbcontext.Account
                     .OrderBy(u => u.EmployeeNumber)
                     .ToListAsync();
-
-                //var model = await PaginatedList<Register>.CreateAsync(users, pageIndex, pageSize);
 
                 return View(users);
             }
@@ -128,7 +118,7 @@ namespace Document_Management.Controllers
 
         //Post for Action Account/Login
         [HttpPost]
-        public async Task<IActionResult> Login(string username, string password)
+        public IActionResult Login(string username, string password)
         {
             if (ModelState.IsValid)
             {
@@ -140,10 +130,6 @@ namespace Document_Management.Controllers
                     HttpContext.Session.SetString("username", user.Username); // Store username in session
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
                     HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user role in session
-
-                    //await _notificationHub.SendNotificationToClient("", username);
-
-                    //await _notificationHub.Clients.All.SendAsync("ReceivedNotification", "");
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -332,10 +318,8 @@ namespace Document_Management.Controllers
         //Action for Account/Logout and remove the session
         public IActionResult Logout()
         {
-            // Clear the session
             HttpContext.Session.Clear();
 
-            // Redirect to the login page or any other appropriate page
             return RedirectToAction("Index", "Home");
         }
 
