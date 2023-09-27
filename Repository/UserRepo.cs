@@ -13,9 +13,14 @@ namespace Document_Management.Repository
             this.dbContext = dbContext;
         }
 
-        public async Task<Register> GetUserDetails(string username, string password)
+        public async Task<Register?> GetUserDetails(string username, string password)
         {
             return await dbContext.Account.FirstOrDefaultAsync(user => user.Username == username && user.Password == password);
+        }
+
+        public async Task<FileDocument?> CheckIfFileExists(string originalfile)
+        {
+            return await dbContext.FileDocuments.FirstOrDefaultAsync(file => file.OriginalFilename == originalfile);
         }
     }
 }

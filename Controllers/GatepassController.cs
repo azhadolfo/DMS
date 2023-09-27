@@ -7,7 +7,6 @@ using System.Text;
 
 namespace Document_Management.Controllers
 {
-    
     public class GatepassController : Controller
     {
         //public IActionResult Index()
@@ -17,6 +16,7 @@ namespace Document_Management.Controllers
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
+
         private readonly IHubContext<NotificationHub> _notificationHub;
 
         //Passing the dbcontext in to another variable
@@ -76,7 +76,6 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-          
             ViewBag.users = _dbcontext.Gatepass.ToList();
 
             return View();
