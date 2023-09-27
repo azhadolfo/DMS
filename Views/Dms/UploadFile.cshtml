@@ -15,15 +15,25 @@
         <div class="mb-3">
             <label asp-for="Name" class="control-label"></label>
             <div class="col">
-                <input name="file" type="file" class="form-control" accept=".pdf"/>
+                <input name="file" type="file" class="form-control w-" accept=".pdf" style="width:130px"/>
                 <span asp-validation-for="Name" class="text-danger"></span>
-                <small class="text-muted">Maximum file size allowed: 5MB</small> <!-- Reminder message -->
+                <small class="text-muted">Maximum file size allowed: 5MB</small>
             </div>
+        </div>     
+
+        <!-- Add a hidden field to store the selected file name -->
+        <input type="hidden" asp-for="OriginalFilename" />
+
+        <!-- Add the following span element to display the selected file name -->
+        <div class="mb-3">
+            <label class="control-label">File Name:</label>
+            <span id="selectedFileName" class="text-muted">No file selected</span>
         </div>
+
         <div class="mb-3">
             <label asp-for="Department" class="control-label"></label>
             <div class="col">
-                <select asp-for="Department" class="form-control">
+                <select asp-for="Department" class="form-select">
                     <option selected disabled value="">Choose the department to which this file should be assigned.</option>
                     <option value="Accounting">Accounting</option>
                     <option value="MIS">MIS</option>
@@ -46,7 +56,6 @@
     </form>
 </div>
 
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
@@ -56,6 +65,27 @@
         document.addEventListener("DOMContentLoaded", function () {
             const fileInput = document.querySelector('input[type="file"]');
             const form = document.querySelector('form');
+            const selectedFileNameSpan = document.getElementById('selectedFileName');
+            const hiddenFileNameInput = document.querySelector('input[type="hidden"][name="OriginalFilename"]');
+
+            // Function to update the selected file name
+            function updateSelectedFileName() {
+                if (fileInput.files.length > 0) {
+                    const fileName = fileInput.files[0].name;
+                    selectedFileNameSpan.textContent = fileName;
+                    hiddenFileNameInput.value = fileName; // Update the hidden input's value
+                } else {
+                    // If no file is selected, retain the previous file name
+                    selectedFileNameSpan.textContent = hiddenFileNameInput.value || 'No file selected';
+                }
+            }
+
+            // Call the updateSelectedFileName function on page load
+            updateSelectedFileName();
+
+            fileInput.addEventListener('change', function () {
+                updateSelectedFileName();
+            });
 
             form.addEventListener("submit", function (event) {
                 const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
@@ -66,14 +96,14 @@
                     if (fileSize > maxFileSize) {
                         event.preventDefault();
                         Swal.fire(
-                            'Opps',
-                            'File size exceeds the maximum limit of 5MB.!',
+                            'Oops',
+                            'File size exceeds the maximum limit of 5MB!',
                             'error'
-                        )
+                        );
                     }
                 }
             });
         });
     </script>
-
 }
+

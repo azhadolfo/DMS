@@ -1,5 +1,4 @@
 ﻿using Document_Management.Data;
-using Document_Management.Hubs;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +12,10 @@ namespace Document_Management.Controllers
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
-        private NotificationHub _notificationHub;
-
         //Passing the dbcontext in to another variable
-        public AccountController(ApplicationDbContext context, NotificationHub notificationHub)
+        public AccountController(ApplicationDbContext context)
         {
             _dbcontext = context;
-            _notificationHub = notificationHub;
         }
 
         //Action for Account/Index
@@ -28,12 +24,9 @@ namespace Document_Management.Controllers
             var username = HttpContext.Session.GetString("username");
             if (!string.IsNullOrEmpty(username))
             {
-                //int pageSize = 10; // Number of items per page
-                //int pageIndex = page ?? 1; // Default to page 1 if no page number is specified
-
-                var users = await _dbcontext.Account.OrderBy(u => u.EmployeeNumber).ToListAsync();
-
-                //var model = await PaginatedList<Register>.CreateAsync(users, pageIndex, pageSize);
+                var users = await _dbcontext.Account
+                    .OrderBy(u => u.EmployeeNumber)
+                    .ToListAsync();
 
                 return View(users);
             }
@@ -64,8 +57,11 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
-                var usernameExists = _dbcontext.Account.Any(u => u.Username == user.Username);
-                var employeeNumberExists = _dbcontext.Account.Any(u => u.EmployeeNumber == user.EmployeeNumber);
+                var usernameExists = _dbcontext.Account
+                    .Any(u => u.Username == user.Username);
+
+                var employeeNumberExists = _dbcontext.Account
+                    .Any(u => u.EmployeeNumber == user.EmployeeNumber);
 
                 if (usernameExists && employeeNumberExists)
                 {
@@ -122,18 +118,18 @@ namespace Document_Management.Controllers
 
         //Post for Action Account/Login
         [HttpPost]
-        public async Task<IActionResult> Login(string username, string password)
+        public IActionResult Login(string username, string password)
         {
             if (ModelState.IsValid)
             {
-                var user = _dbcontext.Account.FirstOrDefault(u => u.Username == username);
+                var user = _dbcontext.Account
+                    .FirstOrDefault(u => u.Username == username);
+
                 if (user != null && user.Password == HashPassword(password))
                 {
                     HttpContext.Session.SetString("username", user.Username); // Store username in session
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
                     HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user role in session
-
-                    //await _notificationHub.SendNotificationToClient("", username);
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -158,7 +154,8 @@ namespace Document_Management.Controllers
             }
 
             // Retrieve the user from the database
-            var user = _dbcontext.Account.FirstOrDefault(x => x.Id == id);
+            var user = _dbcontext.Account
+                .FirstOrDefault(x => x.Id == id);
 
             // Split the comma-separated AccessFolders into a list of selected departments
             if (!string.IsNullOrEmpty(user.AccessFolders))
@@ -176,7 +173,9 @@ namespace Document_Management.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(Register model, string[] AccessFolders, string newPassword, string newConfirmPassword)
         {
-            var user = await _dbcontext.Account.FindAsync(model.Id);
+            var user = await _dbcontext.Account
+                .FindAsync(model.Id);
+
             var username = HttpContext.Session.GetString("username");
 
             if (string.IsNullOrEmpty(username))
@@ -266,7 +265,9 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var employee = await _dbcontext.Account.FindAsync(id);
+            var employee = await _dbcontext.Account
+                .FindAsync(id);
+
             if (employee != null)
             {
                 _dbcontext.Account.Remove(employee);
@@ -294,7 +295,9 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> ChangePassword(Register model)
         {
             var username = HttpContext.Session.GetString("username")?.ToLower();
-            var user = await _dbcontext.Account.FirstOrDefaultAsync(x => x.Username == username);
+
+            var user = await _dbcontext.Account
+                .FirstOrDefaultAsync(x => x.Username == username);
 
             if (user != null)
             {
@@ -315,20 +318,10 @@ namespace Document_Management.Controllers
         //Action for Account/Logout and remove the session
         public IActionResult Logout()
         {
-            // Clear the session
             HttpContext.Session.Clear();
 
-            // Disconnect the user from signalr hub when they logout
-            var username = HttpContext.Session.GetString("username");
-            if (!string.IsNullOrEmpty(username))
-            {
-                _notificationHub.OnDisconnectedAsync(null).Wait(); // Disconnect the user 
-            }
-
-            // Redirect to the login page or any other appropriate page
             return RedirectToAction("Index", "Home");
         }
-
 
         // Hash the password using a salt
         public static string HashPassword(string password)
