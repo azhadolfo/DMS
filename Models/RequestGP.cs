@@ -9,43 +9,41 @@ namespace Document_Management.Models
         public int Id { get; set; }
 
         [Required]
-        [Display(Name = "Last Name:")]
+        [Display(Name = "Last Name")]
         public string LastName { get; set; } = null!;
 
         [Required]
-        [Display(Name = "First Name:")]
+        [Display(Name = "First Name")]
         public string FirstName { get; set; } = null!;
 
         [Required]
-        [Display(Name = "Middle Name:")]
+        [Display(Name = "Middle Name")]
         public string MiddleName { get; set; } = null!;
 
         [Required]
         [IntegerValidator]
-        [Display(Name = "Contact:")]
+        [Display(Name = "Contact")]
         public Int64 Contact { get; set; }
 
         [Required]
-        [Display(Name = "Gatepass Id No.:")]
+        [Display(Name = "Gatepass Id")]
         public int GatepassId { get; set; }
 
-        //[Required]
-        //[Display(Name = "Purpose:")]
-        //public string Purpose { get; set; } = null!;
-
+        [Display(Name = "Remarks")]
         public string Status { get; set; } = "";
 
+        [Display(Name = "Username")]
         public string Username { get; set; } = "";
 
         [Required]
-        [Display(Name = "Area:")]
+        [Display(Name = "Area")]
         public string Area { get; set; } = null!;
 
         [Required]
         public string Items { get; set; } = null!;
 
         [Required]
-        [Display(Name = "Schedule Date:")]
+        [Display(Name = "Schedule Date")]
         public DateTime Schedule { get; set; }
     }
 }

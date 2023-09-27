@@ -17,16 +17,16 @@
     <thead>
         <tr>
             <th class="text-primary ">Full Name</th>
-            <th class="text-primary ">Contact</th>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
             @if (userrole == "validator")
             {
-            <th class="text-primary ">GatepassId</th>
+                    <th class="text-primary ">@Html.DisplayNameFor(model => model.GatepassId)</th>
             }
-            <th class="text-primary ">Area</th>
-            <th class="text-primary ">Remarks</th>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Status)</th>
              @if (userrole == "validator")
             {
-                <th class="text-primary ">Schedule</th>
+                    <th class="text-primary ">@Html.DisplayNameFor(model => model.Schedule)</th>
             }
             <th></th>
 
