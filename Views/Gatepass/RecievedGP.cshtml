@@ -35,17 +35,13 @@
     <tbody>
         @foreach (var user in (List<Document_Management.Models.RequestGP>)ViewBag.users)
         {
-
-
             if (userrole == "validator")
             {
-               
                     <tr class="align-middle">
                         <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
                         <td>@user.Contact</td>
                         <td>@user.GatepassId</td>
                         <td>@user.Area</td>
-                        @* <td>@user.Items</td> *@
                         <td>@user.Status</td>
                         <td>@user.Schedule</td>
 
@@ -66,8 +62,6 @@
                         <td class="w-25">@(user.LastName + ",  " + user.FirstName + "  " + user.MiddleName)</td>
                         <td>@user.Contact</td>
                         <td>@user.Area</td>
-                        @* <td>@user.Items</td> *@
-                       @* <td>@user.Schedule</td> *@
                         <td>@user.Status</td>
 
                         <td class="w-50">
@@ -80,7 +74,6 @@
 
                 }  
 
-           
         }
     </tbody>
 </table>
