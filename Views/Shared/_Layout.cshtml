@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="~/DocumentManagement.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
 
 </head>
 <body>
@@ -95,9 +96,6 @@
                                 <a class="nav-link" asp-area="" asp-controller="Logs" asp-action="Index">Logs</a>
                             </li>
                         }
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="ChatDemo">Chat Demo</a>
-                        </li>
                         @*   <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
                         </li> *@
@@ -146,6 +144,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
     <script src="~/js/notification.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
