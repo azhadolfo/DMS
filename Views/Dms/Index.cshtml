@@ -1,0 +1,61 @@
+﻿@model IEnumerable<Document_Management.Models.FileDocument>
+
+
+@{
+    ViewData["Title"] = "Uploaded Files";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var userrole = Context.Session.GetString("userrole")?.ToLower();
+}
+
+<partial name="_Notification" />
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="UploadFile" class="btn btn-primary rounded">Upload New</a>
+</p>
+<table class="table table-hover" id="myTable">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateUploaded)
+            </th>
+            @if (userrole == "admin")
+            {
+                <th>
+                    Uploaded By
+                </th>
+            }           
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr class="align-text-bottom">
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateUploaded)
+            </td>
+            @if (userrole == "admin") {
+                 <td>
+                     @Html.DisplayFor(modelItem => item.Username)
+                 </td>
+            }            
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Edit</a> 
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

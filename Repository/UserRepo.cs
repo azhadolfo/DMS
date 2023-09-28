@@ -20,7 +20,27 @@ namespace Document_Management.Repository
 
         public async Task<FileDocument?> CheckIfFileExists(string originalfile)
         {
-            return await dbContext.FileDocuments.FirstOrDefaultAsync(file => file.OriginalFilename == originalfile);
+            return await dbContext
+                .FileDocuments
+                .FirstOrDefaultAsync(file => file.OriginalFilename == originalfile);
+        }
+
+        public async Task<List<FileDocument>> DisplayAllUploadedFiles()
+        {
+            return await dbContext.FileDocuments
+                .ToListAsync();
+        }
+
+        public async Task<List<FileDocument>> DisplayUploadedFiles(string username)
+        {
+            return await dbContext.FileDocuments
+                .Where(file => file.Username == username)
+                .ToListAsync();
+        }
+
+        public async Task<FileDocument?> GetUploadedFiles(int id)
+        {
+            return await dbContext.FileDocuments.FindAsync(id);
         }
     }
 }

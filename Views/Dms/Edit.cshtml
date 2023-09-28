@@ -1,0 +1,45 @@
+﻿@model Document_Management.Models.FileDocument
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>Details</h4>
+<hr />
+<div class="row">
+    <div class="container">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="mb-3">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" disabled/>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Department" class="control-label"></label>
+                <input asp-for="Department" class="form-control" disabled/>
+                <span asp-validation-for="Department" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5" autofocus></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="DateUploaded" class="control-label"></label>
+                <input asp-for="DateUploaded" class="form-control" disabled/>
+                <span asp-validation-for="DateUploaded" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <input type="submit" value="Update" class="btn btn-outline-success rounded" />
+                <a asp-action="Index" class="btn btn-outline-primary rounded">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
