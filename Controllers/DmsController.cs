@@ -165,5 +165,71 @@ namespace Document_Management.Controllers
 
             return View(fileDocuments);
         }
+
+        //GET the uploaded files
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var username = HttpContext.Session.GetString("username");
+            var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (userrole == "admin")
+            {
+                var files = await _userRepo.DisplayAllUploadedFiles();
+                return View(files);
+            }
+            else
+            {
+                var files = await _userRepo.DisplayUploadedFiles(username);
+                return View(files);
+            }
+        }
+
+        //GET for Editing
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var files = await _userRepo.GetUploadedFiles(id);
+            return View(files);
+        }
+
+        //POST for Editing
+        [HttpPost]
+        public async Task<IActionResult> Edit(FileDocument model)
+        {
+            var username = HttpContext.Session.GetString("username");
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var file = await _dbcontext.FileDocuments
+                .FindAsync(model.Id);
+
+            if (file == null)
+            {
+                return NotFound();
+            }
+
+            if (file.Description != model.Description)
+            {
+                file.Description = model.Description;
+
+                // Implementing the logs
+                LogsModel logs = new(username, $"Update the details of file# {file.Id}.");
+                _dbcontext.Logs.Add(logs);
+
+                await _dbcontext.SaveChangesAsync();
+                TempData["success"] = "File details updated successfully";
+                return RedirectToAction("Index");
+            }
+
+            return RedirectToAction("Edit");
+        }
     }
 }

@@ -13,7 +13,7 @@
 <div class="row">
     <div class="col">
         <form asp-action="Create" class="needs-validation">
-            <div asp-validation-summary="All" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="mb-3">
                 <label asp-for="EmployeeNumber" class="form-label"></label>
                 <input asp-for="EmployeeNumber" type="number" value="" class="form-control" />
