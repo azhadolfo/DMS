@@ -28,9 +28,13 @@ connection.on("ReceivedNotification", function (message) {
 });
 
 connection.on("ReceivedPersonalNotification", function (message, username) {
-    Swal.fire(
-        'Success',
-        message,
-        'success'
-    )
+    Swal.fire({
+        title: 'Success',
+        text: message,
+        icon: 'success',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            location.reload();
+        }
+    });
 });

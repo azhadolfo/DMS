@@ -33,14 +33,9 @@
             </div>
         </div>
 
-        @* <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="email" placeholder="Enter your email">
-        </div> *@
-
         <div class="mb-3">
             <label asp-for="Area" class="form-label"></label>
-            <select class="form-control" asp-for="Area">
+            <select class="form-select" asp-for="Area">
                 <option value="" selected disabled>Select available area</option>
                 <option value="Cubao">Cubao</option>
                 <option value="Eastwood">Eastwood</option>
@@ -60,11 +55,6 @@
             <input asp-for="Schedule" type="datetime-local" class="form-control" />
             <span asp-validation-for="Schedule" class="text-danger"></span>
         </div>
-
-        @* <div class="mb-3">
-            <label asp-for="Purpose" class="form-label"></label>
-            <textarea asp-for="Purpose" class="form-control" rows="10" placeholder="Enter your purpose"></textarea>
-        </div> *@
 
         <div class="mb-3">
             <label class="form-label">Inform to bring out of the Premises the following items:</label>
