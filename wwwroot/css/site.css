@@ -25,13 +25,8 @@ input::-webkit-inner-spin-button {
 
 input[type=number] {
     -moz-appearance: textfield;
-<<<<<<< HEAD
-}
-=======
 }
 
 @page {
     margin: 0;
 }
-
->>>>>>> b3894f229df651b3939786d28aff8a348be380d8
