@@ -50,7 +50,7 @@ namespace Document_Management.Models
         public string Items { get; set; } = null!;
 
         [Required]
-        [Display(Name = "Date & Time of Visit")]
+        [Display(Name = "Date & Time")]
         public DateTime Schedule { get; set; }
     }
 }
