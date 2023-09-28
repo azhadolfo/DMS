@@ -38,28 +38,54 @@
         {
             if (userrole == "validator")
             {
-                    <tr class="align-middle">
-                        <td>@user.LastName @user.FirstName @user.MiddleName</td>
-                        <td>@user.Contact</td>
-                        <td>@user.GatepassId</td>
-                        <td>@user.Area</td>
-                        <td>@user.Status</td>
-                        <td>@user.Schedule</td>
-                        <td>@user.Username</td>
+                    if(user.IsRead != true && user.Status == "Approved")
+                    {
+                        <tr class="align-middle table-active">
+                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@string.Format($"0{user.Contact}")</td>
+                            <td>@user.GatepassId</td>
+                            <td>@user.Area</td>
+                            <td>@user.Status</td>
+                            <td>@user.Schedule</td>
+                            <td>@user.Username</td>
 
-                        <td>
-                        @if (user.Status == "Approved")
-            {
-                            <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
-            }
-                        </td>
-                    </tr>
+                            <td>
+                                @if (user.Status == "Approved")
+                                {
+                                    <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr class="align-middle">
+                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@string.Format($"0{user.Contact}")</td>
+                            <td>@user.GatepassId</td>
+                            <td>@user.Area</td>
+                            <td>@user.Status</td>
+                            <td>@user.Schedule</td>
+                            <td>@user.Username</td>
+
+                            <td>
+                                @if (user.Status == "Approved")
+                                {
+                                    <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                   
                 
             }
 
             @if (user.Username == username && userrole != "validator")
                 {
-                    <tr class="align-middle">
+
+                    if (user.IsRead != true && user.Status == "Approved")
+                    {
+                        <tr class="align-middle table-active">
                     
                         <td>@user.LastName @user.FirstName @user.MiddleName</td>
                         <td>@user.Contact</td>
@@ -74,6 +100,25 @@
                         }
                         </td>
                     </tr>
+                    }
+                    else
+                    {
+                        <tr class="align-middle">
+
+                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@user.Contact</td>
+                            <td>@user.Area</td>
+                            <td>@user.Status</td>
+                            <td>@user.Schedule</td>
+
+                            <td>
+                                @if (user.Status == "Approved")
+                                {
+                                    <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
+                                }
+                            </td>
+                        </tr>
+                        }
 
                 }  
 

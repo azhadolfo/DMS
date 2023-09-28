@@ -52,5 +52,7 @@ namespace Document_Management.Models
         [Required]
         [Display(Name = "Date & Time")]
         public DateTime Schedule { get; set; }
+
+        public Boolean IsRead { get; set; }
     }
 }
