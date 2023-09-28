@@ -4,115 +4,75 @@
     ViewData["Title"] = "Details";
 }
 
-
-@* <hr /> *@
-<div class="container position-relative">
-                    <div class="text-center" >
-        <h5><strong>FILPRIDE RESOURCES, INC.</strong></h5>
-            <h6> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</h6><br>
-            <h5>  GATE PASS</h5>
-        <h5 style="position: absolute; top: -10px; right: 5px; color: red"><em>GATEPASS ID: @Html.DisplayFor(model => model.GatepassId)</em></h5>
-                        
-                    </div>
-</div>
-<div class="container position-relative">
-    <h5>DATE: @Html.DisplayFor(model => model.Schedule)</h5>
-    <h5 style="position: absolute; top: -1px; right: 5px;">AREA: @Html.DisplayFor(model => model.Area)</h5>
-    <h5>COMPANY NAME: FILPRIDE RESOURCES, INC.</h5><br />
-<h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
-<h6>to bring out of the Premises the following items:</h6>
-    <p class="mb-0 mt-0 text-start">
-        <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
- 
-    </p>
-
-
-    <br /><br />
-    <img src="~/img/sampleSign-removebg-preview.png" width="200px" height="150px" style="position: absolute; top: 95px; right: 200px; bottom: 300px; left: -5px;">
-
-    <h6>LEONARD A. ANDULAN</h6>
-    <hr class="w-25" />
-    <h6>Authorized Signature</h6><br />
-    <hr class="w-25" />
-    <h6>Noted by:</h6><br />
-</div>
-<hr />
-<hr />
 <div class="container position-relative">
     <div class="text-center">
-        <h5><strong>FILPRIDE RESOURCES, INC.</strong></h5>
-        <h6> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</h6><br>
-        <h5>  GATE PASS</h5>
-        <h5 style="position: absolute; top: -10px; right: 5px; color: red"><em>GATEPASS ID: @Html.DisplayFor(model => model.GatepassId)</em></h5>
+        <h6><strong>FILPRIDE RESOURCES, INC.</strong></h6>
+        <p> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</p>
+        <h6>  GATE PASS</h6>
+        <h6 style="position: absolute; top: -10px; right: 5px; color: red"><em>GATEPASS ID: @Html.DisplayFor(model => model.GatepassId)</em></h6>
 
     </div>
 </div>
 <div class="container position-relative">
-    <h5>DATE: @Html.DisplayFor(model => model.Schedule)</h5>
-    <h5 style="position: absolute; top: -1px; right: 5px;">AREA: @Html.DisplayFor(model => model.Area)</h5>
-    <h5>COMPANY NAME: FILPRIDE RESOURCES, INC.</h5><br />
+    <h6>DATE: @Html.DisplayFor(model => model.Schedule)</h6>
+    <h6 style="position: absolute; top: -1px; right: 5px;">AREA: @Html.DisplayFor(model => model.Area)</h6>
+    <h6>COMPANY NAME: FILPRIDE RESOURCES, INC.</h6><br />
     <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
     <h6>to bring out of the Premises the following items:</h6>
-    <p align-justify>
+    <p>
         <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
-
     </p>
 
-
-    <br /><br />
-    <img src="~/img/sampleSign-removebg-preview.png" width="200px" height="150px" style="position: absolute; top: 95px; right: 200px; bottom: 300px; left: -5px;">
-
-    <h6>LEONARD A. ANDULAN</h6>
-    <hr class="w-25" />
-    <h6>Authorized Signature</h6><br />
-    <hr class="w-25" />
-    <h6>Noted by:</h6><br />
+    <div style="position: relative; top: -50px;">
+        <img src="~/img/sampleSign-removebg-preview.png" width="200px" height="150px" style="right: 200px; left: -20px;">
+    </div>
+    <div style="position: relative; top: -120px;">
+        <h6>LEONARD A. ANDULAN</h6>
+        <hr class="w-25" />
+        <p>Authorized Signature</p><br />
+        <hr class="w-25" />
+        <p>Noted by:</p>
+    </div>
 </div>
-   @*  <table class="table table-responsive table-borderless">
-        <thead>
-            <tr class="">
-                <th class="text-primary ">Full Name</th>
-                <td>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</td>
-            </tr>
-            <tr>
-                <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
-                <td>@Html.DisplayFor(model => model.Contact)</td>
-        </tr>
-            <tr>
-                <th class="text-primary w-25">@Html.DisplayNameFor(model => model.GatepassId)</th>
-                <td>@Html.DisplayFor(model => model.GatepassId)</td>
-        </tr>
-            @* <tr>
-                <th class="text-primary ">@Html.DisplayNameFor(model => model.ScheduleDate)</th>
-                <td>@Html.DisplayFor(model => model.ScheduleDate)</td>
-        </tr>
-            <tr>
-                <th class="text-primary ">Purpose</th>
-                <td>@Html.DisplayFor(model => model.Purpose)</td>
-        </tr> 
-            <tr>
-                <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
-                <td>@Html.DisplayFor(model => model.Area)</td>
-            </tr>
-            <tr>
-                <th class="text-primary ">Items</th>
-                <td>@Html.DisplayFor(model => model.Items)</td>
-            </tr>
-            <tr>
-                <th class="text-primary ">Status</th>
-                <td>@Html.DisplayFor(model => model.Status)</td>
-        </tr>
-                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Purpose)</th> 
+<div style="position: relative; top: -120px;">
+<hr />
+<hr />
+</div>
+<div style="position: relative; top: -120px;">
+<div class="container position-relative">
+    <div class="text-center">
+        <h6><strong>FILPRIDE RESOURCES, INC.</strong></h6>
+        <p> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</p>
+        <h6>  GATE PASS</h6>
+        <h6 style="position: absolute; top: -10px; right: 5px; color: red"><em>GATEPASS ID: @Html.DisplayFor(model => model.GatepassId)</em></h6>
 
-            
-        </thead>
-        <tbody>
+    </div>
+</div>
+<div class="container position-relative">
+    <h6>DATE: @Html.DisplayFor(model => model.Schedule)</h6>
+    <h6 style="position: absolute; top: -1px; right: 5px;">AREA: @Html.DisplayFor(model => model.Area)</h6>
+    <h6>COMPANY NAME: FILPRIDE RESOURCES, INC.</h6><br />
+    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
+    <h6>to bring out of the Premises the following items:</h6>
+    <p>
+        <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
+    </p>
 
-        </tbody>
-    </table> *@
+        <div style="position: relative; top: -50px;">
+            <img src="~/img/sampleSign-removebg-preview.png" width="200px" height="150px" style="right: 200px; left: -20px;">
+        </div>
+        <div style="position: relative; top: -120px;">
+            <h6>LEONARD A. ANDULAN</h6>
+            <hr class="w-25" />
+            <p>Authorized Signature</p><br />
+            <hr class="w-25" />
+            <p>Noted by:</p>
+        </div>
+</div>
+</div>
 
     <a class="btn btn-success" onclick="printPage()" id="printButton">Print</a>
-        <a asp-action="RecievedGP" id="otherButton">Back</a>
+    <a asp-action="RecievedGP" class="btn" id="otherButton">Back</a>
 
 @section Scripts{
     <script>
@@ -132,6 +92,14 @@
                 otherButton.style.visibility = "hidden";
             }
 
+            // Get all paragraph elements
+            var paragraphs = document.querySelectorAll("p");
+
+            // Set the font size of all paragraph elements to 12px
+            for (var i = 0; i < paragraphs.length; i++) {
+                paragraphs[i].style.fontSize = "12px";
+            }
+
             // Call the print function
             window.print();
 
@@ -142,8 +110,6 @@
             if (otherButton) {
                 otherButton.style.visibility = "visible";
             }
-
-           
 
             // Restore the header and footer's visibility after printing (optional)
             document.querySelector("header").style.display = "";
