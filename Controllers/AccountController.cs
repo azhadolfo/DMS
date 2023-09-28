@@ -185,40 +185,54 @@ namespace Document_Management.Controllers
 
             if (user != null)
             {
-                // Update the user properties
-                user.EmployeeNumber = model.EmployeeNumber;
-                user.FirstName = model.FirstName;
-                user.LastName = model.LastName;
-                user.Department = model.Department;
-                user.Username = model.Username;
-                user.Role = model.Role;
+                // Check if there are any changes in user data
+                bool dataChanged = user.EmployeeNumber != model.EmployeeNumber ||
+                                   user.FirstName != model.FirstName ||
+                                   user.LastName != model.LastName ||
+                                   user.Department != model.Department ||
+                                   user.Username != model.Username ||
+                                   user.Role != model.Role ||
+                                   (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword)) ||
+                                   !Enumerable.SequenceEqual(user.AccessFolders?.Split(','), AccessFolders ?? new string[0]);
 
-                // Check if a new password is provided
-                if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
+                if (dataChanged)
                 {
-                    // Hash and update the new password
-                    user.Password = HashPassword(newPassword);
-                    user.Password = HashPassword(newConfirmPassword);
-                }
+                    // Update the user properties
+                    user.EmployeeNumber = model.EmployeeNumber;
+                    user.FirstName = model.FirstName;
+                    user.LastName = model.LastName;
+                    user.Department = model.Department;
+                    user.Username = model.Username;
+                    user.Role = model.Role;
 
-                // Join the selected departments into a comma-separated string
-                if (AccessFolders != null && AccessFolders.Length > 0)
-                {
-                    user.AccessFolders = string.Join(",", AccessFolders);
-                }
-                else
-                {
-                    // Handle the case where no departments are selected
-                    user.AccessFolders = string.Empty;
-                }
+                    // Check if a new password is provided
+                    if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
+                    {
+                        // Hash and update the new password
+                        user.Password = HashPassword(newPassword);
+                        user.ConfirmPassword = HashPassword(newConfirmPassword);
+                    }
 
-                // Implementing the logs
-                LogsModel logs = new(username, $"Update user: {user.Username}");
-                _dbcontext.Logs.Add(logs);
+                    // Join the selected departments into a comma-separated string
+                    if (AccessFolders != null && AccessFolders.Length > 0)
+                    {
+                        user.AccessFolders = string.Join(",", AccessFolders);
+                    }
+                    else
+                    {
+                        // Handle the case where no departments are selected
+                        user.AccessFolders = string.Empty;
+                    }
 
-                await _dbcontext.SaveChangesAsync();
-                TempData["success"] = "User updated successfully";
-                return RedirectToAction("Index");
+                    // Implementing the logs
+                    LogsModel logs = new(username, $"Update user: {user.Username}");
+                    _dbcontext.Logs.Add(logs);
+
+                    await _dbcontext.SaveChangesAsync();
+                    TempData["success"] = "User updated successfully";
+                    return RedirectToAction("Index");
+                }
+                return RedirectToAction("Edit");
             }
 
             return RedirectToAction("Index");
