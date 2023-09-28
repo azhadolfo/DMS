@@ -52,7 +52,7 @@
 
             <div class="mb-3">
                 <label asp-for="Schedule" class="form-label"></label>
-                <input asp-for="Schedule" type="datetime-local" class="form-control" />
+                <input asp-for="Schedule" type="datetime-local" class="form-control" id="dateTimePicker" name="dateTimePicker" />
                 <span asp-validation-for="Schedule" class="text-danger"></span>
             </div>
 
@@ -69,11 +69,9 @@
         @{
             await Html.RenderPartialAsync("_ValidationScriptsPartial");
         }
-        @* <script>
+        <script>
             function limitAndCheckInput(inputElement, maxLength) {
                 var inputValue = inputElement.value;
-
-
 
                 // Limit the input length
                 var currentLength = inputElement.value.length;
@@ -112,5 +110,21 @@
                     inputElement.value = inputValue.replace(/\d/g, ''); // Remove numbers from the input
                 }
             }
-        </script> *@
+        </script>
+        <script>
+            // Get the current date and time as a string in the format YYYY-MM-DDTHH:MM
+            function getCurrentDateTime() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0'); // Add 1 to month because it's 0-based
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+
+            // Set the min attribute to the current date and time
+            document.getElementById("dateTimePicker").min = getCurrentDateTime();
+        </script>
+
     }
