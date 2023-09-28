@@ -76,7 +76,9 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            ViewBag.users = _dbcontext.Gatepass.ToList();
+            ViewBag.users = _dbcontext.Gatepass
+                .OrderByDescending(user => user.Schedule)
+                    .ToList();
 
             return View();
         }
