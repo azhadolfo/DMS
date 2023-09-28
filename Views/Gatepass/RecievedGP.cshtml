@@ -13,22 +13,23 @@
 <h1>@ViewData["Title"]</h1>
 
 <div class="table-responsive">
-    <table class="table" id="myTable">
+    <table class="table table-hover" id="myTable">
     <thead>
         <tr>
             <th class="text-primary ">Full Name</th>
-            <th class="text-primary ">Contact</th>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
             @if (userrole == "validator")
             {
-            <th class="text-primary ">GatepassId</th>
+                    <th class="text-primary ">@Html.DisplayNameFor(model => model.GatepassId)</th>
             }
-            <th class="text-primary ">Area</th>
-            <th class="text-primary ">Remarks</th>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Status)</th>
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Schedule)</th>
              @if (userrole == "validator")
             {
-                <th class="text-primary ">Schedule</th>
+                    <th class="text-primary ">Requested by</th>
             }
-            <th></th>
+                <th></th>
 
         </tr>
     </thead>
@@ -37,32 +38,60 @@
         {
             if (userrole == "validator")
             {
-                    <tr class="align-middle">
-                        <td>@user.LastName @user.FirstName @user.MiddleName</td>
-                        <td>@user.Contact</td>
-                        <td>@user.GatepassId</td>
-                        <td>@user.Area</td>
-                        <td>@user.Status</td>
-                        <td>@user.Schedule</td>
+                    if(user.IsRead != true && user.Status == "Approved")
+                    {
+                        <tr class="align-middle table-active">
+                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@string.Format($"0{user.Contact}")</td>
+                            <td>@user.GatepassId</td>
+                            <td>@user.Area</td>
+                            <td>@user.Status</td>
+                            <td>@user.Schedule</td>
+                            <td>@user.Username</td>
 
-                        <td>
-                        @if (user.Status == "Approved")
-            {
-                            <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
-            }
-                        </td>
-                    </tr>
+                            <td>
+                                @if (user.Status == "Approved")
+                                {
+                                    <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr class="align-middle">
+                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@string.Format($"0{user.Contact}")</td>
+                            <td>@user.GatepassId</td>
+                            <td>@user.Area</td>
+                            <td>@user.Status</td>
+                            <td>@user.Schedule</td>
+                            <td>@user.Username</td>
+
+                            <td>
+                                @if (user.Status == "Approved")
+                                {
+                                    <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                   
                 
             }
 
             @if (user.Username == username && userrole != "validator")
                 {
-                    <tr class="align-middle">
+
+                    if (user.IsRead != true && user.Status == "Approved")
+                    {
+                        <tr class="align-middle table-active">
                     
                         <td>@user.LastName @user.FirstName @user.MiddleName</td>
                         <td>@user.Contact</td>
                         <td>@user.Area</td>
                         <td>@user.Status</td>
+                        <td>@user.Schedule</td>
 
                         <td>
                         @if (user.Status == "Approved")
@@ -71,6 +100,25 @@
                         }
                         </td>
                     </tr>
+                    }
+                    else
+                    {
+                        <tr class="align-middle">
+
+                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@user.Contact</td>
+                            <td>@user.Area</td>
+                            <td>@user.Status</td>
+                            <td>@user.Schedule</td>
+
+                            <td>
+                                @if (user.Status == "Approved")
+                                {
+                                    <a asp-action="Generate" asp-route-id="@user.Id" class="btn btn-secondary">Preview</a>
+                                }
+                            </td>
+                        </tr>
+                        }
 
                 }  
 

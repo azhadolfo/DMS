@@ -1,23 +1,24 @@
 ﻿@model Document_Management.Models.RequestGP
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Preview";
+    string fullName = Model.LastName + ", " + Model.FirstName + " " + Model.MiddleName;
 }
 
 <div class="container position-relative">
     <div class="text-center">
         <h6><strong>FILPRIDE RESOURCES, INC.</strong></h6>
-        <p> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</p>
+        <p>Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</p>
         <h6>  GATE PASS</h6>
-        <h6 style="position: absolute; top: -10px; right: 5px; color: red"><em>GATEPASS ID: @Html.DisplayFor(model => model.GatepassId)</em></h6>
+        <h6 style="position: absolute; top: -10px; right: 5px; color: red"><em>@Html.DisplayNameFor(model => model.GatepassId): @Html.DisplayFor(model => model.GatepassId)</em></h6>
 
     </div>
 </div>
 <div class="container position-relative">
     <h6>DATE: @Html.DisplayFor(model => model.Schedule)</h6>
-    <h6 style="position: absolute; top: -1px; right: 5px;">AREA: @Html.DisplayFor(model => model.Area)</h6>
+    <h6 style="position: absolute; top: -1px; right: 5px;">@Html.DisplayNameFor(model => model.Area): @Html.DisplayFor(model => model.Area)</h6>
     <h6>COMPANY NAME: FILPRIDE RESOURCES, INC.</h6><br />
-    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
+    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => fullName)</u></h6>
     <h6>to bring out of the Premises the following items:</h6>
     <p>
         <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
@@ -44,15 +45,15 @@
         <h6><strong>FILPRIDE RESOURCES, INC.</strong></h6>
         <p> Tower B, Phoenix Sun Business Park E. Rodriguez,Ave. Brgy. Libis 1110 QC</p>
         <h6>  GATE PASS</h6>
-        <h6 style="position: absolute; top: -10px; right: 5px; color: red"><em>GATEPASS ID: @Html.DisplayFor(model => model.GatepassId)</em></h6>
+            <h6 style="position: absolute; top: -10px; right: 5px; color: red"><em>@Html.DisplayNameFor(model => model.GatepassId): @Html.DisplayFor(model => model.GatepassId)</em></h6>
 
     </div>
 </div>
 <div class="container position-relative">
     <h6>DATE: @Html.DisplayFor(model => model.Schedule)</h6>
-    <h6 style="position: absolute; top: -1px; right: 5px;">AREA: @Html.DisplayFor(model => model.Area)</h6>
+        <h6 style="position: absolute; top: -1px; right: 5px;">@Html.DisplayNameFor(model => model.Area): @Html.DisplayFor(model => model.Area)</h6>
     <h6>COMPANY NAME: FILPRIDE RESOURCES, INC.</h6><br />
-    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName)</u></h6>
+        <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => fullName)</u></h6>
     <h6>to bring out of the Premises the following items:</h6>
     <p>
         <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>

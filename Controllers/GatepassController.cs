@@ -168,7 +168,9 @@ namespace Document_Management.Controllers
 
             if (!string.IsNullOrEmpty(username))
             {
-                ViewBag.users = _dbcontext.Gatepass.ToList();
+                ViewBag.users = _dbcontext.Gatepass
+                    .OrderByDescending(user => user.Schedule)
+                    .ToList();
                 return View();
             }
             else
@@ -178,13 +180,19 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult Generate(int id)
+        public async Task<IActionResult> Generate(int id, RequestGP ifRead)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
             if (requestGP == null)
             {
                 return NotFound();
+            }
+
+            if (ifRead.IsRead != true)
+            {
+                requestGP.IsRead = true;
+                await _dbcontext.SaveChangesAsync();
             }
 
             return View(requestGP);
