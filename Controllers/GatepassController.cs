@@ -77,7 +77,7 @@ namespace Document_Management.Controllers
             }
 
             ViewBag.users = _dbcontext.Gatepass
-                .OrderByDescending(user => user.Schedule)
+                .OrderByDescending(user => user.Id)
                     .ToList();
 
             return View();
@@ -171,7 +171,7 @@ namespace Document_Management.Controllers
             if (!string.IsNullOrEmpty(username))
             {
                 ViewBag.users = _dbcontext.Gatepass
-                    .OrderByDescending(user => user.Schedule)
+                    .OrderByDescending(user => user.Id)
                     .ToList();
                 return View();
             }
