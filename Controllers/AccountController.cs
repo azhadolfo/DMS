@@ -184,6 +184,11 @@ namespace Document_Management.Controllers
             var user = _dbcontext.Account
                 .FirstOrDefault(x => x.Id == id);
 
+            if (user == null)
+            {
+                return NotFound();
+            }
+
             // Split the comma-separated AccessFolders into a list of selected departments
             if (!string.IsNullOrEmpty(user.AccessFolders))
             {
