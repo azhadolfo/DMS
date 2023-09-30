@@ -173,6 +173,10 @@ namespace Document_Management.Migrations
                     b.Property<long>("Contact")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("Ex")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(40)

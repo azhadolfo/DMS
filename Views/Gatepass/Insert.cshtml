@@ -69,11 +69,9 @@
         @{
             await Html.RenderPartialAsync("_ValidationScriptsPartial");
         }
-        @* <script>
+        <script>
             function limitAndCheckInput(inputElement, maxLength) {
                 var inputValue = inputElement.value;
-
-
 
                 // Limit the input length
                 var currentLength = inputElement.value.length;
@@ -112,5 +110,5 @@
                     inputElement.value = inputValue.replace(/\d/g, ''); // Remove numbers from the input
                 }
             }
-        </script> *@
+        </script>
     }
