@@ -1,4 +1,13 @@
 ﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var userModuleAccess = Context.Session.GetString("usermoduleaccess");
+    var userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
+
+    var userrole = Context.Session.GetString("userrole")?.ToLower();
+
+}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,10 +40,12 @@
                                 <span class="visually-hidden">(current)</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Index">Employees</a>
-                        </li>
-                      
+                        @if (userrole == "admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Index">Users</a>
+                            </li>
+                        }                                        
                         <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Gatepass</a>
                         <div class="dropdown-menu">
@@ -48,19 +59,18 @@
                         <a class="dropdown-item" href="#">Separated link</a> *@
                         </div>
                         </li> 
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Document Management</a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-controller="Dms" asp-action="UploadFile">Upload File</a>
-                                <a class="dropdown-item" asp-controller="Dms" asp-action="DownloadFile">Download File</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-controller="Dms" asp-action="Index">Uploaded Files</a>
-                            </div>
-                        </li>
-                        @{
-                            var userrole = Context.Session.GetString("userrole")?.ToLower();                          
-                        }
+                        @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "DMS"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Document Management</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-controller="Dms" asp-action="UploadFile">Upload File</a>
+                                    <a class="dropdown-item" asp-controller="Dms" asp-action="DownloadFile">Download File</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" asp-controller="Dms" asp-action="Index">Uploaded Files</a>
+                                </div>
+                            </li>
+                        }                      
                         @if (userrole == "admin")
                         {
                             <li class="nav-item">
