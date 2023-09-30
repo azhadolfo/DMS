@@ -35,6 +35,7 @@ namespace Document_Management.Models
         [DataType(DataType.Password)]
         public string Password { get; set; } = null!;
 
+        [NotMapped]
         [Required(ErrorMessage = "Confirm Password is required.")]
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
@@ -48,5 +49,6 @@ namespace Document_Management.Models
         public string Department { get; set; } = null!;
 
         public string AccessFolders { get; set; } = null!;
+        public string ModuleAccess { get; set; } = null!;
     }
 }
