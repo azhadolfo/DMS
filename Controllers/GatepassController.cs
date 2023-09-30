@@ -187,7 +187,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Generate(int id, RequestGP ifRead)
+        public async Task<IActionResult> Generate(int id, RequestGP ifRead, string inputText)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
@@ -201,18 +201,12 @@ namespace Document_Management.Controllers
                 requestGP.IsRead = true;
                 await _dbcontext.SaveChangesAsync();
             }
+            string url = HttpContext.Request.Scheme + "://" + HttpContext.Request.Host + HttpContext.Request.Path + HttpContext.Request.QueryString;
 
-            return View(requestGP);
-        }
-
-        [HttpPost]
-        public IActionResult Generate(string inputText)
-        {
-            inputText = "https://www.youtube.com/watch?v=4Vq1F5tP_68&t=197s";
             using (MemoryStream ms = new MemoryStream())
             {
                 QRCodeGenerator qRCodeGenerator = new QRCodeGenerator();
-                QRCodeData qRCodeData = qRCodeGenerator.CreateQrCode(inputText, QRCodeGenerator.ECCLevel.Q);
+                QRCodeData qRCodeData = qRCodeGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
                 QRCode qRCode = new QRCode(qRCodeData);
                 using (Bitmap oBitmap = qRCode.GetGraphic(20))
                 {
@@ -220,6 +214,13 @@ namespace Document_Management.Controllers
                     ViewBag.QrCode = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
                 }
             }
+            return View(requestGP);
+        }
+
+        [HttpPost]
+        public IActionResult Generate()
+        {
+            
             return View();
         }
     }
