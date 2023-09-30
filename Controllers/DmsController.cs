@@ -16,9 +16,7 @@ namespace Document_Management.Controllers
 
         private readonly string? userRole;
 
-        private readonly string[]? userAccess;
-
-        private bool HasAccess;
+        private readonly bool HasAccess;
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
@@ -36,7 +34,7 @@ namespace Document_Management.Controllers
                 userRole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
                 username = httpContextAccessor.HttpContext.Session.GetString("username");
                 var userModuleAccess = httpContextAccessor.HttpContext.Session.GetString("usermoduleaccess");
-                userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
+                var userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
 
                 if (userRole == "admin" || userAccess.Any(module => module.Trim() == "DMS"))
                 {
@@ -47,7 +45,6 @@ namespace Document_Management.Controllers
             {
                 userRole = null; // or set a default value as needed
                 username = null;
-                userAccess = null;
             }
         }
 
@@ -93,8 +90,6 @@ namespace Document_Management.Controllers
                             TempData["error"] = "This file already exists in our database!";
                             return View(fileDocument);
                         }
-
-                        var username = HttpContext.Session.GetString("username");
 
                         if (string.IsNullOrEmpty(username))
                         {
