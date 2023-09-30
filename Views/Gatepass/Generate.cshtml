@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Preview";
-    string fullName = Model.LastName + ", " + Model.FirstName + " " + Model.MiddleName;
 }
 
 <div class="container position-relative">
@@ -18,14 +17,14 @@
     <h6>DATE: @Html.DisplayFor(model => model.Schedule)</h6>
     <h6 style="position: absolute; top: -1px; right: 5px;">@Html.DisplayNameFor(model => model.Area): @Html.DisplayFor(model => model.Area)</h6>
     <h6>COMPANY NAME: FILPRIDE RESOURCES, INC.</h6><br />
-    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => fullName)</u></h6>
+    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName).</u></h6>
     <h6>to bring out of the Premises the following items:</h6>
     <p>
         <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
     </p>
 
     <div style="position: relative; top: -50px;">
-        <img src="~/img/sampleSign-removebg-preview.png" width="200px" height="150px" style="right: 200px; left: -20px;">
+        <img src="~/img/sampleSign-removebg-preview.png" width="200" height="150" style="right: 200px; left: -20px;">
     </div>
     <div style="position: relative; top: -120px;">
         <h6>LEONARD A. ANDULAN</h6>
@@ -35,9 +34,14 @@
         <p>Noted by:</p>
     </div>
 </div>
-<div style="position: relative; top: -120px;">
-<hr />
-<hr />
+<div style="position: relative; top: -120px; ">
+    @if (ViewBag.QRCode != null)
+    {
+        <img src="@ViewBag.QRCode" style="width:200px; height:200px; position: absolute; top: -201px; right: 5px;" />
+    }
+    <hr />
+    
+    <hr />
 </div>
 <div style="position: relative; top: -120px;">
 <div class="container position-relative">
@@ -53,14 +57,14 @@
     <h6>DATE: @Html.DisplayFor(model => model.Schedule)</h6>
         <h6 style="position: absolute; top: -1px; right: 5px;">@Html.DisplayNameFor(model => model.Area): @Html.DisplayFor(model => model.Area)</h6>
     <h6>COMPANY NAME: FILPRIDE RESOURCES, INC.</h6><br />
-        <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => fullName)</u></h6>
+        <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName).</u></h6>
     <h6>to bring out of the Premises the following items:</h6>
     <p>
         <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
     </p>
 
         <div style="position: relative; top: -50px;">
-            <img src="~/img/sampleSign-removebg-preview.png" width="200px" height="150px" style="right: 200px; left: -20px;">
+            <img src="~/img/sampleSign-removebg-preview.png" width="200" height="150" style="right: 200px; left: -20px;">
         </div>
         <div style="position: relative; top: -120px;">
             <h6>LEONARD A. ANDULAN</h6>
@@ -70,6 +74,12 @@
             <p>Noted by:</p>
         </div>
 </div>
+</div>
+<div style="position: relative; top: -120px; ">
+    @if (ViewBag.QRCode != null)
+    {
+        <img src="@ViewBag.QRCode" style="width:200px; height:200px; position: absolute; top: -301px; right: 5px;" />
+    }
 </div>
 
     <a class="btn btn-success" onclick="printPage()" id="printButton">Print</a>

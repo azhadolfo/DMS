@@ -27,7 +27,6 @@ namespace Document_Management.Models
         public string MiddleName { get; set; } = null!;
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Employee Number must be a positive integer.")]
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Contact Number must be a 10-digit number.")]
         [Display(Name = "Contact")]
         public Int64 Contact { get; set; }
