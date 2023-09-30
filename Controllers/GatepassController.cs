@@ -1,8 +1,13 @@
 ﻿using Document_Management.Data;
 using Document_Management.Hubs;
 using Document_Management.Models;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.VisualStudio.Web.CodeGeneration;
+using QRCoder;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Text;
 
 namespace Document_Management.Controllers
@@ -198,6 +203,24 @@ namespace Document_Management.Controllers
             }
 
             return View(requestGP);
+        }
+
+        [HttpPost]
+        public IActionResult Generate(string inputText)
+        {
+            inputText = "https://www.youtube.com/watch?v=4Vq1F5tP_68&t=197s";
+            using (MemoryStream ms = new MemoryStream())
+            {
+                QRCodeGenerator qRCodeGenerator = new QRCodeGenerator();
+                QRCodeData qRCodeData = qRCodeGenerator.CreateQrCode(inputText, QRCodeGenerator.ECCLevel.Q);
+                QRCode qRCode = new QRCode(qRCodeData);
+                using (Bitmap oBitmap = qRCode.GetGraphic(20))
+                {
+                    oBitmap.Save(ms, ImageFormat.Png);
+                    ViewBag.QrCode = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+                }
+            }
+            return View();
         }
     }
 }
