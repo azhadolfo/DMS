@@ -53,7 +53,5 @@ namespace Document_Management.Models
         public DateTime Schedule { get; set; }
 
         public Boolean IsRead { get; set; }
-
-        public string Ex { get; set; } = "";
     }
 }
