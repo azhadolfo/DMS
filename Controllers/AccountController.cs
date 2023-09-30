@@ -59,10 +59,14 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            if (userrole != "admin")
+            if (string.IsNullOrEmpty(username))
             {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                if (userrole != "admin")
+                {
+                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                }
+                return RedirectToAction("Login", "Account");
             }
 
             return View(new Register());
@@ -128,7 +132,11 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            if (string.IsNullOrEmpty(username))
+            {
+                return View();
+            }
+            return RedirectToAction("Index", "Home");
         }
 
         //Post for Action Account/Login
@@ -162,15 +170,24 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            if (userrole != "admin")
+            if (string.IsNullOrEmpty(username))
             {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                if (userrole != "admin")
+                {
+                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                }
+                return RedirectToAction("Login", "Account");
             }
 
             // Retrieve the user from the database
             var user = _dbcontext.Account
                 .FirstOrDefault(x => x.Id == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
 
             // Split the comma-separated AccessFolders into a list of selected departments
             if (!string.IsNullOrEmpty(user.AccessFolders))
@@ -269,10 +286,14 @@ namespace Document_Management.Controllers
         // GET: Account/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (userrole != "admin")
+            if (string.IsNullOrEmpty(username))
             {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                if (userrole != "admin")
+                {
+                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                }
+                return RedirectToAction("Login", "Account");
             }
 
             if (id == null || _dbcontext.Account == null)
