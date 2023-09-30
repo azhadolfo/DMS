@@ -1,8 +1,13 @@
 ﻿using Document_Management.Data;
 using Document_Management.Hubs;
 using Document_Management.Models;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.VisualStudio.Web.CodeGeneration;
+using QRCoder;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Text;
 
 namespace Document_Management.Controllers
@@ -76,7 +81,9 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            ViewBag.users = _dbcontext.Gatepass.ToList();
+            ViewBag.users = _dbcontext.Gatepass
+                .OrderByDescending(user => user.Id)
+                    .ToList();
 
             return View();
         }
@@ -169,7 +176,7 @@ namespace Document_Management.Controllers
             if (!string.IsNullOrEmpty(username))
             {
                 ViewBag.users = _dbcontext.Gatepass
-                    .OrderByDescending(user => user.Schedule)
+                    .OrderByDescending(user => user.Id)
                     .ToList();
                 return View();
             }
@@ -180,7 +187,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Generate(int id, RequestGP ifRead)
+        public async Task<IActionResult> Generate(int id, RequestGP ifRead, string inputText)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 
@@ -194,8 +201,27 @@ namespace Document_Management.Controllers
                 requestGP.IsRead = true;
                 await _dbcontext.SaveChangesAsync();
             }
+            string url = HttpContext.Request.Scheme + "://" + HttpContext.Request.Host + HttpContext.Request.Path + HttpContext.Request.QueryString;
 
+            using (MemoryStream ms = new MemoryStream())
+            {
+                QRCodeGenerator qRCodeGenerator = new QRCodeGenerator();
+                QRCodeData qRCodeData = qRCodeGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
+                QRCode qRCode = new QRCode(qRCodeData);
+                using (Bitmap oBitmap = qRCode.GetGraphic(20))
+                {
+                    oBitmap.Save(ms, ImageFormat.Png);
+                    ViewBag.QrCode = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+                }
+            }
             return View(requestGP);
+        }
+
+        [HttpPost]
+        public IActionResult Generate()
+        {
+            
+            return View();
         }
     }
 }
