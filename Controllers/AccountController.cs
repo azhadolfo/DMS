@@ -105,7 +105,6 @@ namespace Document_Management.Controllers
                     user.ModuleAccess = string.Join(",", ModuleAccess);
 
                     user.Password = HashPassword(user.Password);
-                    user.ConfirmPassword = HashPassword(user.ConfirmPassword);
                     _dbcontext.Account.Add(user);
 
                     //Implementing the logs
@@ -230,7 +229,6 @@ namespace Document_Management.Controllers
                     {
                         // Hash and update the new password
                         user.Password = HashPassword(newPassword);
-                        user.ConfirmPassword = HashPassword(newConfirmPassword);
                     }
 
                     // Join the selected departments into a comma-separated string
@@ -352,7 +350,6 @@ namespace Document_Management.Controllers
                 }
 
                 user.Password = HashPassword(model.Password);
-                user.ConfirmPassword = HashPassword(model.ConfirmPassword);
                 await _dbcontext.SaveChangesAsync();
             }
 

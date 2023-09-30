@@ -35,6 +35,7 @@ namespace Document_Management.Models
         [DataType(DataType.Password)]
         public string Password { get; set; } = null!;
 
+        [NotMapped]
         [Required(ErrorMessage = "Confirm Password is required.")]
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
