@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Preview";
+    var username = Context.Session.GetString("username");
 }
 
 <div class="container position-relative">
@@ -41,8 +42,12 @@
     }
     <hr />
     
-    <hr />
+    
 </div>
+@if (username != null)
+{
+<hr />
+
 <div style="position: relative; top: -120px;">
 <div class="container position-relative">
     <div class="text-center">
@@ -76,14 +81,17 @@
 </div>
 </div>
 <div style="position: relative; top: -120px; ">
-    @if (ViewBag.QRCode != null)
-    {
-        <img src="@ViewBag.QRCode" style="width:200px; height:200px; position: absolute; top: -301px; right: 5px;" />
-    }
+        @if (ViewBag.QRCode != null)
+        {
+            <img src="@ViewBag.QRCode" style="width:200px; height:200px; position: absolute; top: -301px; right: 5px;" />
+        }
 </div>
 
+    
     <a class="btn btn-success" onclick="printPage()" id="printButton">Print</a>
     <a asp-action="RecievedGP" class="btn" id="otherButton">Back</a>
+    }
+    
 
 @section Scripts{
     <script>
