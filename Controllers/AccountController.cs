@@ -12,18 +12,37 @@ namespace Document_Management.Controllers
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
+        private readonly string? userrole;
+        private readonly string? username;
+
         //Passing the dbcontext in to another variable
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _dbcontext = context;
+
+            // Ensure that HttpContext and the session value are not null
+            if (httpContextAccessor.HttpContext != null)
+            {
+                userrole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
+                username = httpContextAccessor.HttpContext.Session.GetString("username");
+            }
+            else
+            {
+                userrole = null; // or set a default value as needed
+            }
         }
 
         //Action for Account/Index
         public async Task<IActionResult> Index()
         {
-            var username = HttpContext.Session.GetString("username");
             if (!string.IsNullOrEmpty(username))
             {
+                if (userrole != "admin")
+                {
+                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                }
+
                 var users = await _dbcontext.Account
                     .OrderBy(u => u.EmployeeNumber)
                     .ToListAsync();
@@ -40,8 +59,6 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
-
             if (userrole != "admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
@@ -53,7 +70,7 @@ namespace Document_Management.Controllers
 
         //Post for the Action Account/Create
         [HttpPost]
-        public IActionResult Create(Register user, string[] AccessFolders)
+        public IActionResult Create(Register user, string[] AccessFolders, string[] ModuleAccess)
         {
             if (ModelState.IsValid)
             {
@@ -81,12 +98,11 @@ namespace Document_Management.Controllers
                     return View(user); // Return the user object that failed validation
                 }
 
-                var username = HttpContext.Session.GetString("username");
-
                 if (!string.IsNullOrEmpty(username))
                 {
                     // Join selected departments into a comma-separated string
                     user.AccessFolders = string.Join(",", AccessFolders);
+                    user.ModuleAccess = string.Join(",", ModuleAccess);
 
                     user.Password = HashPassword(user.Password);
                     user.ConfirmPassword = HashPassword(user.ConfirmPassword);
@@ -129,7 +145,8 @@ namespace Document_Management.Controllers
                 {
                     HttpContext.Session.SetString("username", user.Username); // Store username in session
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
-                    HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user role in session
+                    HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user folder access in session
+                    HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess); // Store user module access in session
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -146,7 +163,6 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
             if (userrole != "admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
@@ -171,15 +187,18 @@ namespace Document_Management.Controllers
 
         //Post for the Action Account/Edit
         [HttpPost]
-        public async Task<IActionResult> Edit(Register model, string[] AccessFolders, string newPassword, string newConfirmPassword)
+        public async Task<IActionResult> Edit(Register model, string[] AccessFolders, string[] ModuleAccess, string newPassword, string newConfirmPassword)
         {
             var user = await _dbcontext.Account
                 .FindAsync(model.Id);
 
-            var username = HttpContext.Session.GetString("username");
-
             if (string.IsNullOrEmpty(username))
             {
+                if (userrole != "admin")
+                {
+                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                }
                 return RedirectToAction("Login", "Account");
             }
 
@@ -193,7 +212,8 @@ namespace Document_Management.Controllers
                                    user.Username != model.Username ||
                                    user.Role != model.Role ||
                                    (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword)) ||
-                                   !Enumerable.SequenceEqual(user.AccessFolders?.Split(','), AccessFolders ?? new string[0]);
+                                   !Enumerable.SequenceEqual(user.AccessFolders?.Split(','), AccessFolders ?? new string[0]) ||
+                                   !Enumerable.SequenceEqual(user.ModuleAccess?.Split(','), ModuleAccess ?? new string[0]);
 
                 if (dataChanged)
                 {
@@ -224,6 +244,16 @@ namespace Document_Management.Controllers
                         user.AccessFolders = string.Empty;
                     }
 
+                    if (ModuleAccess != null && ModuleAccess.Length > 0)
+                    {
+                        user.ModuleAccess = string.Join(",", ModuleAccess);
+                    }
+                    else
+                    {
+                        // Handle the case where no departments are selected
+                        user.ModuleAccess = string.Empty;
+                    }
+
                     // Implementing the logs
                     LogsModel logs = new(username, $"Update user: {user.Username}");
                     _dbcontext.Logs.Add(logs);
@@ -241,7 +271,6 @@ namespace Document_Management.Controllers
         // GET: Account/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
             if (userrole != "admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
@@ -272,10 +301,14 @@ namespace Document_Management.Controllers
                 return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
             }
 
-            var username = HttpContext.Session.GetString("username");
-
             if (string.IsNullOrEmpty(username))
             {
+                if (userrole != "admin")
+                {
+                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                }
+
                 return RedirectToAction("Login", "Account");
             }
 
@@ -308,8 +341,6 @@ namespace Document_Management.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangePassword(Register model)
         {
-            var username = HttpContext.Session.GetString("username")?.ToLower();
-
             var user = await _dbcontext.Account
                 .FirstOrDefaultAsync(x => x.Username == username);
 

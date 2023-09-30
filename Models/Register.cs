@@ -48,5 +48,6 @@ namespace Document_Management.Models
         public string Department { get; set; } = null!;
 
         public string AccessFolders { get; set; } = null!;
+        public string ModuleAccess { get; set; } = null!;
     }
 }
