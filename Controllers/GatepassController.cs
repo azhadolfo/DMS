@@ -187,7 +187,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Generate(int id, RequestGP ifRead, string inputText)
+        public async Task<IActionResult> Generate(int id, RequestGP ifRead)
         {
             var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
 

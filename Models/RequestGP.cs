@@ -29,7 +29,7 @@ namespace Document_Management.Models
         [Required]
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Contact Number must be a 10-digit number.")]
         [Display(Name = "Contact")]
-        public Int64 Contact { get; set; }
+        public long Contact { get; set; }
 
         [Required]
         [Display(Name = "Gatepass Id")]
@@ -52,6 +52,6 @@ namespace Document_Management.Models
         [Display(Name = "Date & Time")]
         public DateTime Schedule { get; set; }
 
-        public Boolean IsRead { get; set; }
+        public bool IsRead { get; set; }
     }
 }
