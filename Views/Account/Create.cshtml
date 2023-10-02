@@ -1,4 +1,5 @@
-﻿@model Document_Management.Models.Register
+﻿@using Document_Management.Models.Enums
+@model Document_Management.Models.Register
 
 @{
     ViewData["Title"] = "Register";
@@ -29,17 +30,13 @@
                 <input asp-for="LastName" class="form-control" />
                 <span asp-validation-for="LastName" class="text-danger"></span>
             </div>
-            <div class="mb-3">
+             <div class="mb-3">
                 <label asp-for="Department" class="form-label"></label>
-                <select class="form-control" asp-for="Department">
-                    <option value="" selected disabled>Select the user's department</option>
-                    <option value="Accounting">Accounting</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="MIS">MIS</option>
-                </select>
+                @Html.DropDownListFor(m => m.Department,
+                new SelectList(Enum.GetValues(typeof(Departments))),
+                new { @class = "form-control" })
                 <span asp-validation-for="Department" class="text-danger"></span>
-            </div>
+             </div>   
             <div class="mb-3">
                 <label asp-for="Username" class="form-label"></label>
                 <input asp-for="Username" class="form-control" />
@@ -57,7 +54,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Access Folders:</label>
-                @foreach (var department in new List<string> { "Accounting", "Finance", "Marketing", "MIS" })
+                    @foreach (var department in Enum.GetNames(typeof(Departments)))
                 {
                     <div>
                         <input type="checkbox" name="AccessFolders" value="@department" /> @department
@@ -75,12 +72,9 @@
             </div>
             <div class="mb-3">
                 <label asp-for="Role" class="form-label"></label>
-                <select class="form-control" asp-for="Role">
-                    <option value="" selected disabled>Select the user's role</option>
-                    <option value="Admin">Admin</option>
-                    <option value="User">User</option>
-                    <option value="Validator">Validator</option>
-                </select>
+                @Html.DropDownListFor(m => m.Role,
+                new SelectList(Enum.GetValues(typeof(Roles))),
+                new { @class = "form-control" })
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
             <div class="mb-3">
