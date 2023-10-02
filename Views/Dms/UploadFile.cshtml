@@ -42,6 +42,16 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="Category" class="control-label"></label>
+            <div class="col">
+                @Html.DropDownListFor(m => m.Category,
+                new SelectList(Enum.GetValues(typeof(Categories))),
+                new { @class = "form-control" })
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
             <label asp-for="Description" class="form-label"></label>
             <div class="col">
                 <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or keywords that will help us find the file later."></textarea>

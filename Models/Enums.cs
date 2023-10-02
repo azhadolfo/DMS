@@ -14,4 +14,12 @@
         User,
         Validator
     }
+
+    public enum Categories
+    {
+        Voucher,
+        Cheque,
+        OrderSlip,
+        Memo
+    }
 }

@@ -105,7 +105,7 @@ namespace Document_Management.Controllers
                         filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
 
                         // Determine the subdirectory based on the selected department
-                        var departmentSubdirectory = Path.Combine("Files", fileDocument.Department);
+                        var departmentSubdirectory = Path.Combine("Files", fileDocument.Department, fileDocument.Category);
 
                         // Combine the subdirectory with the web root path
                         var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
