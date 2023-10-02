@@ -52,7 +52,8 @@
 
             <div class="mb-3">
                 <label asp-for="Schedule" class="form-label"></label>
-                <input asp-for="Schedule" type="datetime-local" class="form-control" />
+                <input asp-for="Schedule" type="datetime-local" class="form-control"
+                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
                 <span asp-validation-for="Schedule" class="text-danger"></span>
             </div>
 

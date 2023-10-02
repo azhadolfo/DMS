@@ -27,7 +27,7 @@ namespace Document_Management.Models
         public string MiddleName { get; set; } = null!;
 
         [Required]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Contact Number must be a 10-digit number.")]
+        [RegularExpression(@"^((\+63)|)\d{10}$", ErrorMessage = "Contact Number must be a valid Philippine phone number.")]
         [Display(Name = "Contact")]
         public long Contact { get; set; }
 
