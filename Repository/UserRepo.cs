@@ -42,5 +42,14 @@ namespace Document_Management.Repository
         {
             return await dbContext.FileDocuments.FindAsync(id);
         }
+
+        public string? GetFolderName(string categoryName)
+        {
+            var files = dbContext
+               .FileDocuments
+               .FirstOrDefault(file => file.Category == categoryName);
+
+            return files.Department;
+        }
     }
 }

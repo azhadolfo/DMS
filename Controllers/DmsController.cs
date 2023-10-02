@@ -128,7 +128,7 @@ namespace Document_Management.Controllers
                         _dbcontext.FileDocuments.Add(fileDocument);
 
                         //Implementing the logs
-                        LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department");
+                        LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department in Sub Category of {fileDocument.Category}");
                         _dbcontext.Logs.Add(logs);
 
                         _dbcontext.SaveChanges();
@@ -173,9 +173,20 @@ namespace Document_Management.Controllers
             return View(folders);
         }
 
-        public async Task<IActionResult> DisplayFiles(string folderName)
+        public IActionResult SubCategory(string folderName)
         {
-            ViewData["folderName"] = folderName; // Using ViewData
+            ViewData["folderName"] = folderName;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
 
             // Retrieve the user's department from the session or any other method you're using
             var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
@@ -191,13 +202,23 @@ namespace Document_Management.Controllers
             }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
-            var folderPath = Path.Combine(wwwrootPath, folderName); // wwwroot/Files/null
+            var subcategoriesPath = Path.Combine(wwwrootPath, folderName);
+            var categories = Directory.GetDirectories(subcategoriesPath).Select(Path.GetFileName);
+            return View(categories);
+        }
+
+        public async Task<IActionResult> DisplayFiles(string folderName, string subCategory)
+        {
+            ViewData["folderName"] = folderName;
+
+            var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
+            var folderPath = Path.Combine(wwwrootPath, folderName, subCategory); // wwwroot/Files/Department/SubCategory
             var pdfFiles = Directory.GetFiles(folderPath, "*.pdf").Select(Path.GetFileName);
 
             // Assuming you have a list of FileDocument objects in your database
             // You can filter them based on folderName and select the relevant properties
             var fileDocuments = await _dbcontext.FileDocuments
-                .Where(file => file.Department == folderName && pdfFiles.Contains(file.Name))
+                .Where(file => file.Category == subCategory && pdfFiles.Contains(file.Name))
                 .Select(file => new FileDocument
                 {
                     Name = file.Name,
@@ -205,7 +226,8 @@ namespace Document_Management.Controllers
                     DateUploaded = file.DateUploaded,
                     Description = file.Description,
                     Department = file.Department,
-                    Username = file.Username
+                    Username = file.Username,
+                    Category = file.Category
                 })
                 .OrderByDescending(u => u.DateUploaded).ToListAsync();
 
