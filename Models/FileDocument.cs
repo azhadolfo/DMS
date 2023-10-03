@@ -30,5 +30,8 @@ namespace Document_Management.Models
         public DateTime DateUploaded { get; set; }
 
         public string? Username { get; set; }
+
+        [Display(Name = "Sub Category")]
+        public string? Category { get; set; }
     }
 }
