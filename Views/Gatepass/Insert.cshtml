@@ -36,8 +36,12 @@
 
             <div class="mb-3">
                 <label asp-for="Area" class="form-label"></label>
-                <select asp-for="Area" class="form-select" asp-items="Html.GetEnumSelectList<Area>()">
+                <select asp-for="Area" class="form-select">
                     <option value="" selected disabled>Select available area</option>
+                    @foreach (var area in Enum.GetValues(typeof(Area)))
+                    {
+                    <option value="@area">@Enum.GetName(typeof(Area), area)</option>
+                    }
                 </select>
                 <span asp-validation-for="Area" class="text-danger"></span>
             </div>
