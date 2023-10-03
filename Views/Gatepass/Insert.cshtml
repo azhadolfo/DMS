@@ -1,4 +1,5 @@
-﻿@model Document_Management.Models.RequestGP
+﻿@using Document_Management.Models.Enums
+@model Document_Management.Models.RequestGP
 
 @{
     ViewData["Title"] = "Request Gatepass";
@@ -35,11 +36,8 @@
 
             <div class="mb-3">
                 <label asp-for="Area" class="form-label"></label>
-                <select class="form-select" asp-for="Area">
+                <select asp-for="Area" class="form-select" asp-items="Html.GetEnumSelectList<Area>()">
                     <option value="" selected disabled>Select available area</option>
-                    <option value="Cubao">Cubao</option>
-                    <option value="Eastwood">Eastwood</option>
-                    <option value="Market-Market">Market-Market</option>
                 </select>
                 <span asp-validation-for="Area" class="text-danger"></span>
             </div>
