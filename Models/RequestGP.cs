@@ -27,7 +27,7 @@ namespace Document_Management.Models
         public string MiddleName { get; set; } = null!;
 
         [Required]
-        [RegularExpression(@"^(9)\d{9}$", ErrorMessage = "Contact Number must be a valid Philippine phone number.")]
+        [RegularExpression(@"^(9)\d{9}$", ErrorMessage = "Contact Number must be a valid Philippine phone number. +63")]
         [Display(Name = "Contact", Prompt = "Contact number +63")]
         public long Contact { get; set; }
 
