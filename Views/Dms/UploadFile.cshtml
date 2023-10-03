@@ -34,9 +34,13 @@
         <div class="mb-3">
             <label asp-for="Department" class="control-label"></label>
             <div class="col">
-                @Html.DropDownListFor(m => m.Department,
-                new SelectList(Enum.GetValues(typeof(Departments))),
-                new { @class = "form-control" })
+                <select asp-for="Department" class="form-select" id="departmentDropdown" onchange="changeCategory()">
+                    <option value="" selected disabled>-- Select the department --</option>
+                    @foreach (var department in Enum.GetValues(typeof(Departments)))
+                    {
+                        <option value="@department">@Enum.GetName(typeof(Departments), department)</option>
+                    }
+                </select>
                 <span asp-validation-for="Department" class="text-danger"></span>
             </div>
         </div>
@@ -44,9 +48,9 @@
         <div class="mb-3">
             <label asp-for="Category" class="control-label"></label>
             <div class="col">
-                @Html.DropDownListFor(m => m.Category,
-                new SelectList(Enum.GetValues(typeof(Categories))),
-                new { @class = "form-control" })
+                <select asp-for="Category" class="form-select" id="categoryDropdown">
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                </select>
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
         </div>
@@ -111,6 +115,33 @@
                 }
             });
         });
+
+        function changeCategory() {
+            var department = document.getElementById("departmentDropdown").value;
+
+            var categories;
+            switch (department) {
+                case "Accounting":
+                    categories = ["AcctCategories", "AcctCategories"];
+                    break;
+                case "Finance":
+                    categories = ["FinCategories1", "FinCategories2"];
+                    break;
+                default:
+                    categories = ["FinCategories3", "FinCategories4"];
+            }
+
+            var categoryDropdown = document.getElementById("categoryDropdown");
+            categoryDropdown.innerHTML = "";
+            for (var i = 0; i < categories.length; i++) {
+                var option = document.createElement("option");
+                option.value = categories[i];
+                option.text = categories[i];
+                categoryDropdown.appendChild(option);
+            }
+        }
+
     </script>
+
 }
 
