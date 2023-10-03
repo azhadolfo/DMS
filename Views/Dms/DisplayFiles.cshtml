@@ -24,7 +24,7 @@
             {
                 <tr class="align-items-center">
                     <td>
-                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
+                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Category + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
                     </td>
                     <td>@file.Name</td>
                     <td>@file.DateUploaded</td>
@@ -37,5 +37,5 @@
 </div>
 
 <div class="text-center">
-    <a asp-action="DownloadFile" class="btn btn-secondary mt-3" id="backToFolderList">Back to Folder List</a>
+    <a href="@Url.Action("SubCategory", "Dms", new { folderName = ViewData["folderName"] })" class="btn btn-secondary mt-3" id="backToFolderList">Back to Category List</a>
 </div>
