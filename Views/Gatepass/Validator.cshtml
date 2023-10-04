@@ -11,7 +11,7 @@
     <div class="table-responsive">
         <table class="table table-hover" id="myTable" >
             <thead>
-                <tr>
+                <tr class="text-nowrap">
                     <th class="text-primary ">Full Name</th>
                     <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
                     <th class="text-primary ">@Html.DisplayNameFor(model => model.GatepassId)</th>
@@ -29,7 +29,7 @@
                         {
                         <tr class="align-middle">
                             <td >@user.LastName @user.FirstName @user.MiddleName</td>
-                            <td>@user.Contact</td>
+                            <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.GatepassId</td>
                             <td>@user.Area</td>
                             <td>@user.Schedule</td>
