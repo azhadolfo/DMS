@@ -1,4 +1,6 @@
-﻿namespace Document_Management.Models.Enums
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Document_Management.Models.Enums
 {
     public enum Departments
     {
@@ -21,5 +23,13 @@
         Cheque,
         OrderSlip,
         Memo
+    }
+
+    public enum Area
+    {
+        Cubao,
+        Eastwood,
+        [Display(Name = "Market-Market")]
+        MarketMarket
     }
 }

@@ -15,7 +15,7 @@
 <div class="table-responsive">
     <table class="table table-hover" id="myTable">
     <thead>
-        <tr>
+        <tr class="text-nowrap">
             <th class="text-primary ">Full Name</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
             @if (userrole == "validator")
@@ -80,8 +80,7 @@
                             </td>
                         </tr>
                     }
-                   
-                
+  
             }
 
             @if (user.Username == username && userrole != "validator")
