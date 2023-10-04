@@ -209,7 +209,31 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> DisplayFiles(string folderName, string subCategory)
         {
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
             ViewData["folderName"] = folderName;
+
+            // Retrieve the user's department from the session or any other method you're using
+            var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+
+            // Split the userDepartment string into individual department names
+            var userDepartments = userAccessFolders.Split(',');
+
+            // Check if any of the user's departments allow access to the specified folderName
+            if (!userDepartments.Any(dep => dep.Trim() == folderName))
+            {
+                TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
+            }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             var folderPath = Path.Combine(wwwrootPath, folderName, subCategory); // wwwroot/Files/Department/SubCategory

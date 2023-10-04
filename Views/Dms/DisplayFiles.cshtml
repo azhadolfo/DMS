@@ -11,11 +11,11 @@
 <div class="table-responsive">
     <table id="myTable" class="table table-hover">
         <thead>
-            <tr>
+            <tr class="text-nowrap">
                 <th></th>
                 <th>File Name</th>
                 <th>Date Upload</th>
-                <th>Username</th>
+                <th>Uploaded By</th>
                 <th>Description</th>
             </tr>
         </thead>
@@ -37,5 +37,5 @@
 </div>
 
 <div class="text-center">
-    <a href="@Url.Action("SubCategory", "Dms", new { folderName = ViewData["folderName"] })" class="btn btn-secondary mt-3" id="backToFolderList">Back to Category List</a>
+    <a href="@Url.Action("SubCategory", "Dms", new { folderName = ViewData["folderName"] })" class="btn btn-outline-primary mt-3" id="backToFolderList">Back to Category List</a>
 </div>

@@ -32,9 +32,13 @@
             </div>
              <div class="mb-3">
                 <label asp-for="Department" class="form-label"></label>
-                @Html.DropDownListFor(m => m.Department,
-                new SelectList(Enum.GetValues(typeof(Departments))),
-                new { @class = "form-control" })
+                    <select asp-for="Department" class="form-select">
+                        <option value="" selected disabled>-- Select user department --</option>
+                        @foreach (var department in Enum.GetValues(typeof(Departments)))
+                    {
+                        <option value="@department">@Enum.GetName(typeof(Departments), department)</option>
+                    }
+                    </select>
                 <span asp-validation-for="Department" class="text-danger"></span>
              </div>   
             <div class="mb-3">
@@ -72,9 +76,13 @@
             </div>
             <div class="mb-3">
                 <label asp-for="Role" class="form-label"></label>
-                @Html.DropDownListFor(m => m.Role,
-                new SelectList(Enum.GetValues(typeof(Roles))),
-                new { @class = "form-control" })
+                    <select asp-asp-for="Category" class="form-select">
+                        <option value="" selected disabled>-- Select user role --</option>
+                        @foreach (var department in Enum.GetValues(typeof(Roles)))
+                    {
+                        <option value="@department">@Enum.GetName(typeof(Roles), department)</option>
+                    }
+                    </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
             <div class="mb-3">
