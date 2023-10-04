@@ -29,7 +29,6 @@ namespace Document_Management.Models.Enums
     {
         Cubao,
         Eastwood,
-        [Display(Name = "Market-Market")]
-        MarketMarket
+        Market_Market
     }
 }

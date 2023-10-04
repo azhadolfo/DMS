@@ -40,9 +40,11 @@
                     <option value="" selected disabled>Select available area</option>
                     @foreach (var area in Enum.GetValues(typeof(Area)))
                     {
-                    <option value="@area">@Enum.GetName(typeof(Area), area)</option>
+                        string areaName = Enum.GetName(typeof(Area), area);
+                        <option value="@area">@areaName.Replace("_", " ")</option>
                     }
                 </select>
+
                 <span asp-validation-for="Area" class="text-danger"></span>
             </div>
 

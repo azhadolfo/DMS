@@ -51,6 +51,11 @@ namespace Document_Management.Controllers
                 {
                     gpInfo.Username = username;
                 }
+
+                var selectedArea = gpInfo.Area; //Market_Market
+
+                gpInfo.Area = selectedArea.Replace("_", " "); // "Market_Market" read "_" pass to " "
+
                 _dbcontext.Gatepass.Add(gpInfo);
                 gpInfo.Status = "Pending";
                 _dbcontext.SaveChanges();
