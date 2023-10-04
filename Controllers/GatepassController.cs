@@ -12,7 +12,6 @@ namespace Document_Management.Controllers
 {
     public class GatepassController : Controller
     {
-
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
@@ -53,6 +52,11 @@ namespace Document_Management.Controllers
                 }
                 _dbcontext.Gatepass.Add(gpInfo);
                 gpInfo.Status = "Pending";
+
+                //Implementing the logs
+                LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.GatepassId}");
+                _dbcontext.Logs.Add(logs);
+
                 _dbcontext.SaveChanges();
                 TempData["success"] = "Request created successfully";
                 var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == "leo").ToList();
@@ -102,6 +106,8 @@ namespace Document_Management.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
             }
+            var username = HttpContext.Session.GetString("userrole")?.ToLower();
+
             var client = await _dbcontext.Gatepass.FindAsync(id);
             //if (client != null)
             //{
@@ -111,6 +117,11 @@ namespace Document_Management.Controllers
             if (client != null)
             {
                 client.Status = "Approved";
+
+                //Implementing the logs
+                LogsModel logs = new(username, $"Approved Gatepass {client.GatepassId}");
+                _dbcontext.Logs.Add(logs);
+
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Approved successfully";
                 var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
@@ -142,11 +153,18 @@ namespace Document_Management.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
             }
+            var username = HttpContext.Session.GetString("userrole")?.ToLower();
+
             var client = await _dbcontext.Gatepass.FindAsync(id);
 
             if (client != null)
             {
                 client.Status = "Disapproved";
+
+                //Implementing the logs
+                LogsModel logs = new(username, $"Disapproved Gatepass {client.GatepassId}");
+                _dbcontext.Logs.Add(logs);
+
                 await _dbcontext.SaveChangesAsync();
                 TempData["success"] = "Disapproved successfully";
                 var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
@@ -194,7 +212,6 @@ namespace Document_Management.Controllers
 
             //int gatepassId = requestGP.GatepassId;
             string url = HttpContext.Request.Scheme + "://" + HttpContext.Request.Host + HttpContext.Request.Path + HttpContext.Request.QueryString;
-            
 
             using (MemoryStream ms = new MemoryStream())
             {
