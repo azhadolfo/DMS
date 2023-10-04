@@ -39,3 +39,14 @@ function DisplayPersonalNotification(message, title) {
 $(document).ready(function () {
     $('#myTable').DataTable();
 });
+
+$(document).ready(function () {
+    $("#categoryDropdown").select2({
+        placeholder: "Select a category...",
+        allowClear: true
+    });
+    $("#departmentDropdown").select2({
+        placeholder: "Select a department...",
+        allowClear: true
+    });
+});
