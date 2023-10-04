@@ -1,4 +1,5 @@
-﻿@model Document_Management.Models.RequestGP
+﻿@using Document_Management.Models.Enums
+@model Document_Management.Models.RequestGP
 
 @{
     ViewData["Title"] = "Request Gatepass";
@@ -19,15 +20,15 @@
                 <label class="form-label">Full Name</label>
                 <div class="row">
                     <div class="col">
-                        <input asp-for="LastName" type="text" class="form-control" placeholder="Last Name" id="textInput" oninput="checkTextTyping(this)" />
+                        <input asp-for="LastName" type="text" class="form-control" id="textInput" oninput="checkTextTyping(this)" />
                         <span asp-validation-for="LastName" class="text-danger"></span>
                     </div>
                     <div class="col">
-                        <input asp-for="FirstName" type="text" class="form-control" placeholder="First Name" id="textInput" oninput="checkTextTyping(this)" />
+                        <input asp-for="FirstName" type="text" class="form-control" id="textInput" oninput="checkTextTyping(this)" />
                         <span asp-validation-for="FirstName" class="text-danger"></span>
                     </div>
                     <div class="col">
-                        <input asp-for="MiddleName" type="text" class="form-control" placeholder="Middle Name" id="textInput" oninput="checkTextTyping(this)" />
+                        <input asp-for="MiddleName" type="text" class="form-control" id="textInput" oninput="checkTextTyping(this)" />
                         <span asp-validation-for="MiddleName" class="text-danger"></span>
                     </div>
                 </div>
@@ -35,30 +36,32 @@
 
             <div class="mb-3">
                 <label asp-for="Area" class="form-label"></label>
-                <select class="form-select" asp-for="Area">
+                <select asp-for="Area" class="form-select select2" id="my-dropdown">
                     <option value="" selected disabled>Select available area</option>
-                    <option value="Cubao">Cubao</option>
-                    <option value="Eastwood">Eastwood</option>
-                    <option value="Market-Market">Market-Market</option>
+                    @foreach (var area in Enum.GetValues(typeof(Area)))
+                    {
+                    <option value="@area">@Enum.GetName(typeof(Area), area)</option>
+                    }
                 </select>
                 <span asp-validation-for="Area" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Contact" class="form-label"></label>
-                <input asp-for="Contact" type="number" class="form-control" oninput="limitAndCheckInput(this, 10)" placeholder="Contact Number +63" />
+                <input asp-for="Contact" type="number" class="form-control" oninput="limitAndCheckInput(this, 10)" />
                 <span asp-validation-for="Contact" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Schedule" class="form-label"></label>
-                <input asp-for="Schedule" type="datetime-local" class="form-control" />
+                <input asp-for="Schedule" type="datetime-local" class="form-control"
+                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
                 <span asp-validation-for="Schedule" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Inform to bring out of the Premises the following items:</label>
-                <textarea asp-for="Items" class="form-control" rows="10" placeholder="Your items"></textarea>
+                <textarea asp-for="Items" class="form-control" rows="10"></textarea>
                 <span asp-validation-for="Items" class="text-danger"></span>
             </div>
 
@@ -94,7 +97,6 @@
             function showMessage(message) {
             }
 
-
             function checkTextTyping(inputElement) {
                 var inputValue = inputElement.value;
                 var hasNumbers = /\d/.test(inputValue); // Regular expression to check for numbers
@@ -110,5 +112,9 @@
                     inputElement.value = inputValue.replace(/\d/g, ''); // Remove numbers from the input
                 }
             }
+
+            $(function () {
+                $("#my-dropdown").select2();
+            });
         </script>
     }
