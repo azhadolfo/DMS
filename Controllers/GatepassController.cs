@@ -39,7 +39,7 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
         }
-
+        //Request gatepass
         [HttpPost]
         public async Task<IActionResult> Insert(RequestGP gpInfo)
         {

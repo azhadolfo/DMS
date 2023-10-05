@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<Document_Management.Models.RequestGP>
 
 @{
+    //Get
     var usersCount = (ViewBag.users as List<Document_Management.Models.RequestGP>)?.Count ?? 0;
     var username = Context.Session.GetString("username");
     var userrole = Context.Session.GetString("userrole")?.ToLower();
