@@ -28,7 +28,7 @@ namespace Document_Management.Models
 
         [Required]
         [RegularExpression(@"^(9)\d{9}$", ErrorMessage = "Contact Number must be a valid Philippine phone number. +63")]
-        [Display(Name = "Contact", Prompt = "Contact number +63")]
+        [Display(Prompt = "Contact number +63")]
         public long Contact { get; set; }
 
         [Required]
@@ -38,11 +38,9 @@ namespace Document_Management.Models
         [Display(Name = "Remarks")]
         public string Status { get; set; } = "";
 
-        [Display(Name = "Username")]
         public string Username { get; set; } = "";
 
         [Required]
-        [Display(Name = "Area")]
         public string Area { get; set; } = null!;
 
         [Required]
@@ -50,7 +48,6 @@ namespace Document_Management.Models
         public string Items { get; set; } = null!;
 
         [Required]
-        [Display(Name = "Date & Time")]
         public DateTime Schedule { get; set; }
 
         public bool IsRead { get; set; }
