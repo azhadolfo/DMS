@@ -79,6 +79,12 @@ namespace Document_Management.Controllers
                     return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
                 }
 
+                if (file.ContentType != "application/pdf")
+                {
+                    TempData["error"] = "Please upload pdf file only!";
+                    return View(fileDocument);
+                }
+
                 try
                 {
                     if (ModelState.IsValid && file != null && file.Length > 0)
