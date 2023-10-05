@@ -38,6 +38,7 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
         }
+
         //Request gatepass
         [HttpPost]
         public async Task<IActionResult> Insert(RequestGP gpInfo)
@@ -61,9 +62,9 @@ namespace Document_Management.Controllers
                 //Implementing the logs
                 LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.GatepassId}");
                 _dbcontext.Logs.Add(logs);
-                
+
                 gpInfo.DateRequested = DateTime.Now;
-                
+
                 _dbcontext.SaveChanges();
                 TempData["success"] = "Request created successfully";
                 var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == "leo").ToList();
@@ -80,7 +81,7 @@ namespace Document_Management.Controllers
         public IActionResult Validator()
         {
             var username = HttpContext.Session.GetString("userrole")?.ToLower();
-            if (!(username == "validator"))
+            if (!(username == "validator" || username == "admin"))
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
