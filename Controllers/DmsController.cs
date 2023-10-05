@@ -79,6 +79,12 @@ namespace Document_Management.Controllers
                     return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
                 }
 
+                if (file.ContentType != "application/pdf")
+                {
+                    TempData["error"] = "Please upload pdf file only!";
+                    return View(fileDocument);
+                }
+
                 try
                 {
                     if (ModelState.IsValid && file != null && file.Length > 0)
@@ -140,6 +146,7 @@ namespace Document_Management.Controllers
                     else
                     {
                         TempData["error"] = "Please fill out all the required data.";
+                        return View(fileDocument);
                     }
                 }
                 catch (Exception ex)
@@ -175,7 +182,7 @@ namespace Document_Management.Controllers
 
         public IActionResult SubCategory(string folderName)
         {
-            ViewData["folderName"] = folderName;
+            ViewBag.FolderName = folderName;
 
             if (string.IsNullOrEmpty(username))
             {
@@ -220,7 +227,7 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            ViewData["folderName"] = folderName;
+            ViewBag.FolderName = folderName;
 
             // Retrieve the user's department from the session or any other method you're using
             var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
