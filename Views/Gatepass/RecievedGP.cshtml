@@ -27,6 +27,7 @@
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Schedule)</th>
              @if (userrole == "validator")
             {
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.DateRequested)</th>
                 <th class="text-primary ">Requested by</th>
             }
                 <th></th>
@@ -49,6 +50,7 @@
                             @if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
                             @if (user.Status == "Pending"){<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
                             <td>@user.Schedule</td>
+                            <td>@user.DateRequested</td>
                             <td>@user.Username</td>
 
                             <td>
@@ -70,6 +72,7 @@
                             else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
                             else {<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
                             <td>@user.Schedule</td>
+                            <td>@user.DateRequested</td>
                             <td>@user.Username</td>
 
                             <td>

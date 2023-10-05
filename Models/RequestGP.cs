@@ -52,6 +52,7 @@ namespace Document_Management.Models
 
         public bool IsRead { get; set; }
 
+        [Display(Name = "Date Requested")]
         public DateTime DateRequested { get; set; }
     }
 }
