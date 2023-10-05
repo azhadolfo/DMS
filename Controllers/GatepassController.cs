@@ -38,7 +38,7 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
         }
-
+        //Request gatepass
         [HttpPost]
         public async Task<IActionResult> Insert(RequestGP gpInfo)
         {
@@ -50,13 +50,20 @@ namespace Document_Management.Controllers
                 {
                     gpInfo.Username = username;
                 }
+
+                var selectedArea = gpInfo.Area; //Market_Market
+
+                gpInfo.Area = selectedArea.Replace("_", " "); // "Market_Market" read "_" pass to " "
+
                 _dbcontext.Gatepass.Add(gpInfo);
                 gpInfo.Status = "Pending";
 
                 //Implementing the logs
                 LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.GatepassId}");
                 _dbcontext.Logs.Add(logs);
-
+                
+                gpInfo.DateRequested = DateTime.Now;
+                
                 _dbcontext.SaveChanges();
                 TempData["success"] = "Request created successfully";
                 var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == "leo").ToList();

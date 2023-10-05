@@ -36,10 +36,12 @@ function DisplayPersonalNotification(message, title) {
     }, 1300);
 }
 
+//sorting
 $(document).ready(function () {
     $('#myTable').DataTable();
 });
 
+//dropwdown
 $(document).ready(function () {
     $("#categoryDropdown").select2({
         placeholder: "Select a category...",

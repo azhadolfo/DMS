@@ -37,12 +37,14 @@
             <div class="mb-3">
                 <label asp-for="Area" class="form-label"></label>
                 <select asp-for="Area" class="form-select select2" id="my-dropdown">
-                    <option value="" selected disabled>Select available area</option>
                     @foreach (var area in Enum.GetValues(typeof(Area)))
                     {
-                    <option value="@area">@Enum.GetName(typeof(Area), area)</option>
+                        // Enum list in dropdown(select2)
+                        string areaName = Enum.GetName(typeof(Area), area);
+                        <option value="@area">@areaName.Replace("_", " ")</option>
                     }
                 </select>
+
                 <span asp-validation-for="Area" class="text-danger"></span>
             </div>
 
@@ -70,13 +72,14 @@
     </div>
     @section Scripts{
         @{
+            // Asp-for validation make realtime
             await Html.RenderPartialAsync("_ValidationScriptsPartial");
         }
         <script>
             function limitAndCheckInput(inputElement, maxLength) {
                 var inputValue = inputElement.value;
 
-                // Limit the input length
+                // Limit the input length in contact
                 var currentLength = inputElement.value.length;
                 maxLength = maxLength || 10;
 
@@ -84,7 +87,7 @@
                     inputElement.value = inputElement.value.substring(0, maxLength);
                 }
             }
-
+            // Limit the input length in contact
             const contactInput = document.querySelector("#Contact");
 
             contactInput.addEventListener("input", function () {
@@ -94,6 +97,7 @@
                 }
             });
 
+            //Validation input text only in Last, First, and Middle Name
             function showMessage(message) {
             }
 
@@ -113,8 +117,12 @@
                 }
             }
 
-            $(function () {
-                $("#my-dropdown").select2();
+            //dropdown
+            $(document).ready(function () {
+                $("#my-dropdown").select2({
+                    placeholder: "Select available area...",
+                    allowClear: true
+                });
             });
         </script>
     }
