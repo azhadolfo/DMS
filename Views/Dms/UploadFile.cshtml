@@ -50,6 +50,10 @@
             <div class="col">
                 <select asp-for="Category" class="form-select" id="categoryDropdown">
                     <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var department in Enum.GetValues(typeof(Categories)))
+                    {
+                        <option value="@department">@Enum.GetName(typeof(Categories), department)</option>
+                    }
                 </select>
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
@@ -116,30 +120,30 @@
             });
         });
 
-        function changeCategory() {
-            var department = document.getElementById("departmentDropdown").value;
+        // function changeCategory() {
+        //     var department = document.getElementById("departmentDropdown").value;
 
-            var categories;
-            switch (department) {
-                case "Accounting":
-                    categories = ["AcctCategories1", "AcctCategories2"];
-                    break;
-                case "Finance":
-                    categories = ["FinCategories1", "FinCategories2"];
-                    break;
-                default:
-                    categories = ["FinCategories3", "FinCategories4"];
-            }
+        //     var categories;
+        //     switch (department) {
+        //         case "Accounting":
+        //             categories = ["AcctCategories1", "AcctCategories2"];
+        //             break;
+        //         case "Finance":
+        //             categories = ["FinCategories1", "FinCategories2"];
+        //             break;
+        //         default:
+        //             categories = ["FinCategories3", "FinCategories4"];
+        //     }
 
-            var categoryDropdown = document.getElementById("categoryDropdown");
-            categoryDropdown.innerHTML = "";
-            for (var i = 0; i < categories.length; i++) {
-                var option = document.createElement("option");
-                option.value = categories[i];
-                option.text = categories[i];
-                categoryDropdown.appendChild(option);
-            }
-        }
+        //     var categoryDropdown = document.getElementById("categoryDropdown");
+        //     categoryDropdown.innerHTML = "";
+        //     for (var i = 0; i < categories.length; i++) {
+        //         var option = document.createElement("option");
+        //         option.value = categories[i];
+        //         option.text = categories[i];
+        //         categoryDropdown.appendChild(option);
+        //     }
+        // }
 
     </script>
 
