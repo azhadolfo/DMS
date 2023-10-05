@@ -16,7 +16,7 @@
     <table class="table table-hover" id="myTable">
     <thead>
         <tr class="text-nowrap">
-            <th class="text-primary ">Full Name</th>
+                <th class="text-primary ">Requested by</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
             @if (userrole == "validator")
             {
@@ -28,7 +28,6 @@
              @if (userrole == "validator")
             {
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.DateRequested)</th>
-                <th class="text-primary ">Requested by</th>
             }
                 <th></th>
 
@@ -51,7 +50,6 @@
                             @if (user.Status == "Pending"){<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
                             <td>@user.Schedule</td>
                             <td>@user.DateRequested</td>
-                            <td>@user.Username</td>
 
                             <td>
                                 @if (user.Status == "Approved")
