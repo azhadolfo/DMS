@@ -29,7 +29,7 @@
                         @if (user.Status == "Pending")
                         {
                         <tr class="align-middle">
-                            <td >@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td >@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.GatepassId</td>
                             <td>@user.Area</td>
