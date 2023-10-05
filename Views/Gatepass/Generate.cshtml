@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Preview";
     var username = Context.Session.GetString("username");
+    var fullname = Model.LastName +", "+ Model.FirstName +" "+ Model.MiddleName;
 }
 
 <div class="container position-relative">
@@ -18,7 +19,7 @@
     <h6>DATE: @Html.DisplayFor(model => model.Schedule)</h6>
     <h6 style="position: absolute; top: -1px; right: 5px;">@Html.DisplayNameFor(model => model.Area): @Html.DisplayFor(model => model.Area)</h6>
     <h6>COMPANY NAME: FILPRIDE RESOURCES, INC.</h6><br />
-    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName).</u></h6>
+    <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => fullname).</u></h6>
     <h6>to bring out of the Premises the following items:</h6>
     <p>
         <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
@@ -60,7 +61,7 @@
     <h6>DATE: @Html.DisplayFor(model => model.Schedule)</h6>
         <h6 style="position: absolute; top: -1px; right: 5px;">@Html.DisplayNameFor(model => model.Area): @Html.DisplayFor(model => model.Area)</h6>
     <h6>COMPANY NAME: FILPRIDE RESOURCES, INC.</h6><br />
-        <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => model.LastName), @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.MiddleName).</u></h6>
+        <h6>To the Security Guard on Duty Please allow the bearer  <u>@Html.DisplayFor(model => fullname).</u></h6>
     <h6>to bring out of the Premises the following items:</h6>
     <p>
         <u>&nbsp;@Html.DisplayFor(model => model.Items)&nbsp;</u>
