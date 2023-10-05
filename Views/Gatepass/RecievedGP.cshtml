@@ -41,7 +41,7 @@
                     if(user.IsRead != true && user.Status == "Approved")
                     {
                         <tr class="align-middle table-active">
-                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.GatepassId</td>
                             <td>@user.Area</td>
@@ -62,7 +62,7 @@
                     else
                     {
                         <tr class="align-middle">
-                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.GatepassId</td>
                             <td>@user.Area</td>
@@ -90,7 +90,7 @@
                     {
                         <tr class="align-middle table-active">
                     
-                        <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                        <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                         <td>@string.Format($"0{user.Contact}")</td>
                         <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
@@ -110,7 +110,7 @@
                     {
                         <tr class="align-middle">
 
-                            <td>@user.LastName @user.FirstName @user.MiddleName</td>
+                            <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
