@@ -27,7 +27,7 @@
                 @foreach (var user in (List<Document_Management.Models.RequestGP>)ViewBag.users)
                 {
 
-                    @if (user.Status == "Pending" )
+                    @if (user.Status == "Pending" && user.Schedule >= DateTime.Now)
                         {
                         <tr class="align-middle">
                             <td>@user.Id</td>

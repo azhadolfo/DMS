@@ -20,14 +20,14 @@
                 <th class="text-primary ">ID</th>
                 <th class="text-primary ">Requested by</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
-            @if (userrole == "validator")
+            @if (userrole == "validator" || userrole == "admin")
             {
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.GatepassId)</th>
             }
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Status)</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Schedule)</th>
-             @if (userrole == "validator")
+                @if (userrole == "validator" || userrole == "admin")
             {
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.DateRequested)</th>
             }
@@ -38,7 +38,7 @@
     <tbody>
         @foreach (var user in (List<Document_Management.Models.RequestGP>)ViewBag.users)
         {
-            if (userrole == "validator")
+            if (userrole == "validator" || userrole == "admin")
             {
                     if(user.IsRead != true && user.Status == "Approved")
                     {
@@ -49,8 +49,9 @@
                             <td>@user.GatepassId</td>
                             <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
-                            @if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
-                            @if (user.Status == "Pending"){<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
+                            else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
+                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-danger">OVER DUE</span></td>}
+                            else {<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
                             <td>@user.Schedule</td>
                             <td>@user.DateRequested</td>
 
@@ -72,6 +73,7 @@
                             <td>@user.Area</td>
                              @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
                             else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
+                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-danger">OVER DUE</span></td>}
                             else {<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
                             <td>@user.Schedule</td>
                             <td>@user.DateRequested</td>
@@ -87,7 +89,7 @@
   
             }
 
-            @if (user.Username == username && userrole != "validator")
+                @if (user.Username == username && userrole != "validator" && userrole != "admin")
                 {
 
                     if (user.IsRead != true && user.Status == "Approved")
@@ -99,6 +101,7 @@
                         <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
                             else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
+                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-danger">OVER DUE</span></td>}
                             else {<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
                         <td>@user.Schedule</td>
 
@@ -119,6 +122,7 @@
                             <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
                             @if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
+                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-danger">OVER DUE</span></td>}
                             @if (user.Status == "Pending"){<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
                             <td>@user.Schedule</td>
 
