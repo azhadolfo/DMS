@@ -41,6 +41,14 @@ $(document).ready(function () {
     $('#myTable').DataTable();
 });
 
+//own table in gatepass
+$(document).ready(function () {
+    $('#myOwnTable').DataTable({
+        "order": [[0, "desc"]] // Sort the first column (ID) in descending order
+        // You can customize sorting options as needed
+    });
+});
+
 //dropwdown
 $(document).ready(function () {
     $("#categoryDropdown").select2({

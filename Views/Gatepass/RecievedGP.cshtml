@@ -14,9 +14,10 @@
 <h1>@ViewData["Title"]</h1>
 
 <div class="table-responsive">
-    <table class="table table-hover" id="myTable">
+    <table class="table table-hover" id="myOwnTable">
     <thead>
         <tr class="text-nowrap">
+                <th class="text-primary ">ID</th>
                 <th class="text-primary ">Requested by</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
             @if (userrole == "validator")
@@ -42,6 +43,7 @@
                     if(user.IsRead != true && user.Status == "Approved")
                     {
                         <tr class="align-middle table-active">
+                            <td>@user.Id</td>
                             <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.GatepassId</td>
@@ -63,6 +65,7 @@
                     else
                     {
                         <tr class="align-middle">
+                            <td>@user.Id</td>
                             <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.GatepassId</td>
@@ -90,7 +93,7 @@
                     if (user.IsRead != true && user.Status == "Approved")
                     {
                         <tr class="align-middle table-active">
-                    
+                        <td>@user.Id</td>
                         <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                         <td>@string.Format($"0{user.Contact}")</td>
                         <td>@user.Area</td>
@@ -110,7 +113,7 @@
                     else
                     {
                         <tr class="align-middle">
-
+                            <td>@user.Id</td>
                             <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.Area</td>
