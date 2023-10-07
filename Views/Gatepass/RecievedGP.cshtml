@@ -50,7 +50,7 @@
                             <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
                             else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
-                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-danger">VOID</span></td>}
+                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-dark">VOID</span></td>}
                             else {<td><span class="badge rounded-pill bg-warning">PENDING</span></td>}
                             <td>@user.Schedule</td>
                             <td>@user.DateRequested</td>
@@ -73,7 +73,10 @@
                             <td>@user.Area</td>
                              @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
                             else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
-                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-danger">VOID</span></td>}
+                            else if (user.Schedule! < DateTime.Now)
+                            {
+                                <td><span class="badge rounded-pill bg-dark">VOID</span></td>
+                            }
                             else {<td><span class="badge rounded-pill bg-warning">PENDING</span></td>}
                             <td>@user.Schedule</td>
                             <td>@user.DateRequested</td>
@@ -101,7 +104,10 @@
                         <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
                             else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
-                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-danger">VOID</span></td>}
+                            else if (user.Schedule! < DateTime.Now)
+                            {
+                                <td><span class="badge rounded-pill bg-dark">VOID</span></td>
+                            }
                             else {<td><span class="badge rounded-pill bg-warning">PENDING</span></td>}
                         <td>@user.Schedule</td>
 
@@ -122,7 +128,7 @@
                             <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
                             @if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
-                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-danger">VOID</span></td>}
+                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-dark">VOID</span></td>}
                             @if (user.Status == "Pending"){<td><span class="badge rounded-pill bg-warning">PENDING</span></td>}
                             <td>@user.Schedule</td>
 

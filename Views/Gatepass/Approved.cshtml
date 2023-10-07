@@ -65,7 +65,13 @@
 <div>
     <form asp-action="Approved">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Confirm Approve" class="btn btn-success" /> |
-        <a asp-action="Validator">Back to List</a>
+        <input type="submit" name="approvalAction" value="Confirm Approve" class="btn btn-success" /> |
+        <input type="submit" name="approvalAction" value="Confirm Disapprove" class="btn btn-danger" />
     </form>
+    <br />
+    <a asp-action="Validator">Back to List</a>
+    @* <form asp-action="Disapproved">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Confirm Disapprove" class="btn btn-danger" /> |
+    </form> *@
 </div>
