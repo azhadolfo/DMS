@@ -52,6 +52,12 @@ namespace Document_Management.Controllers
                     gpInfo.Username = username;
                 }
 
+                if (gpInfo.Schedule < DateTime.Now.AddHours(2))
+                {
+                    TempData["error"] = "Please input a date more than 2 hours from now.";
+                    return View(gpInfo);
+                }
+
                 var selectedArea = gpInfo.Area; //Market_Market
 
                 gpInfo.Area = selectedArea.Replace("_", " "); // "Market_Market" read "_" pass to " "
@@ -60,7 +66,7 @@ namespace Document_Management.Controllers
                 gpInfo.Status = "Pending";
 
                 //Implementing the logs
-                LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.GatepassId}");
+                LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.Id}");
                 _dbcontext.Logs.Add(logs);
 
                 gpInfo.DateRequested = DateTime.Now;
@@ -108,81 +114,52 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost, ActionName("Approved")]
-        public async Task<IActionResult> Approved(int id)
+        public async Task<IActionResult> Approved(int id, string approvalAction)
         {
             if (_dbcontext.Gatepass == null)
             {
-                return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
-            }
-            var username = HttpContext.Session.GetString("userrole")?.ToLower();
-
-            var client = await _dbcontext.Gatepass.FindAsync(id);
-            //if (client != null)
-            //{
-            //    _dbcontext.Gatepass.Remove(client);
-            //}
-
-            if (client != null)
-            {
-                client.Status = "Approved";
-
-                //Implementing the logs
-                LogsModel logs = new(username, $"Approved Gatepass {client.GatepassId}");
-                _dbcontext.Logs.Add(logs);
-
-                await _dbcontext.SaveChangesAsync();
-                TempData["success"] = "Approved successfully";
-                var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
-                foreach (var hubConnection in hubConnections)
-                {
-                    await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "Your request has been approved", client.Username);
-                }
-            }
-            return RedirectToAction(nameof(Validator));
-        }
-
-        [HttpGet]
-        public IActionResult Disapproved(int? id)
-        {
-            var requestGP = _dbcontext.Gatepass.FirstOrDefault(x => x.Id == id);
-
-            if (requestGP == null)
-            {
-                return NotFound();
+                return Problem("Entity set 'ApplicationDbContext.Account' is null.");
             }
 
-            return View(requestGP);
-        }
-
-        [HttpPost, ActionName("Disapproved")]
-        public async Task<IActionResult> Disapproved(int id)
-        {
-            if (_dbcontext.Gatepass == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
-            }
             var username = HttpContext.Session.GetString("userrole")?.ToLower();
 
             var client = await _dbcontext.Gatepass.FindAsync(id);
 
             if (client != null)
             {
-                client.Status = "Disapproved";
-
-                //Implementing the logs
-                LogsModel logs = new(username, $"Disapproved Gatepass {client.GatepassId}");
-                _dbcontext.Logs.Add(logs);
-
-                await _dbcontext.SaveChangesAsync();
-                TempData["success"] = "Disapproved successfully";
-                var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
-                foreach (var hubConnection in hubConnections)
+                if (approvalAction == "Confirm Approve")
                 {
-                    await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "Your request has been disapproved", client.Username);
+                    // Approve logic
+                    client.Status = "Approved";
+                    LogsModel logs = new(username, $"Approved Gatepass {client.Id}");
+                    _dbcontext.Logs.Add(logs);
+                    await _dbcontext.SaveChangesAsync();
+                    TempData["success"] = "Approved successfully";
+                    var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
+                    foreach (var hubConnection in hubConnections)
+                    {
+                        await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "Your request has been approved", client.Username);
+                    }
+                }
+                else if (approvalAction == "Confirm Disapprove")
+                {
+                    // Disapprove logic
+                    client.Status = "Disapproved";
+                    LogsModel logs = new(username, $"Disapproved Gatepass {client.Id}");
+                    _dbcontext.Logs.Add(logs);
+                    await _dbcontext.SaveChangesAsync();
+                    TempData["success"] = "Disapproved successfully";
+                    var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
+                    foreach (var hubConnection in hubConnections)
+                    {
+                        await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "Your request has been disapproved", client.Username);
+                    }
                 }
             }
+
             return RedirectToAction(nameof(Validator));
         }
+
 
         [HttpGet]
         public IActionResult RecievedGP()
