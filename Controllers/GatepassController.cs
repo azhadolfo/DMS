@@ -52,6 +52,12 @@ namespace Document_Management.Controllers
                     gpInfo.Username = username;
                 }
 
+                if (gpInfo.Schedule < DateTime.Now.AddHours(2))
+                {
+                    TempData["error"] = "Please input a date more than 2 hours from now.";
+                    return View(gpInfo);
+                }
+
                 var selectedArea = gpInfo.Area; //Market_Market
 
                 gpInfo.Area = selectedArea.Replace("_", " "); // "Market_Market" read "_" pass to " "
