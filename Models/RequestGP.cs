@@ -6,6 +6,7 @@ namespace Document_Management.Models
     public class RequestGP
     {
         [Key]
+        [Display(Name = "Gatepass ID")]
         public int Id { get; set; }
 
         [Required]
