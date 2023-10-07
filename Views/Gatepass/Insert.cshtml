@@ -31,6 +31,7 @@
             <div class="mb-3">
                 <label asp-for="Area" class="form-label"></label>
                 <select asp-for="Area" class="form-select select2" id="my-dropdown">
+                    <option value="" selected disabled>Select available area...</option>
                     @foreach (var area in Enum.GetValues(typeof(Area)))
                     {
                         // Enum list in dropdown(select2)
