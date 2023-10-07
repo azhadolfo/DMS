@@ -31,10 +31,6 @@ namespace Document_Management.Models
         [Display(Prompt = "Contact number +63")]
         public long Contact { get; set; }
 
-        [Required]
-        [Display(Name = "Gatepass Id")]
-        public int GatepassId { get; set; }
-
         [Display(Name = "Remarks")]
         public string Status { get; set; } = "";
 
