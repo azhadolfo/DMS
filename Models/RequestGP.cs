@@ -6,6 +6,7 @@ namespace Document_Management.Models
     public class RequestGP
     {
         [Key]
+        [Display(Name = "Gatepass ID")]
         public int Id { get; set; }
 
         [Required]
@@ -30,10 +31,6 @@ namespace Document_Management.Models
         [RegularExpression(@"^(9)\d{9}$", ErrorMessage = "Contact Number must be a valid Philippine phone number. +63")]
         [Display(Prompt = "Contact number +63")]
         public long Contact { get; set; }
-
-        [Required]
-        [Display(Name = "Gatepass Id")]
-        public int GatepassId { get; set; }
 
         [Display(Name = "Remarks")]
         public string Status { get; set; } = "";

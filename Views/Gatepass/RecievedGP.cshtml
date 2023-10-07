@@ -14,19 +14,16 @@
 <h1>@ViewData["Title"]</h1>
 
 <div class="table-responsive">
-    <table class="table table-hover" id="myTable">
+    <table class="table table-hover" id="myOwnTable">
     <thead>
         <tr class="text-nowrap">
+                <th class="text-primary ">@Html.DisplayNameFor(model => model.Id)</th>
                 <th class="text-primary ">Requested by</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
-            @if (userrole == "validator")
-            {
-                <th class="text-primary ">@Html.DisplayNameFor(model => model.GatepassId)</th>
-            }
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Status)</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Schedule)</th>
-             @if (userrole == "validator")
+                @if (userrole == "validator" || userrole == "admin")
             {
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.DateRequested)</th>
             }
@@ -37,18 +34,19 @@
     <tbody>
         @foreach (var user in (List<Document_Management.Models.RequestGP>)ViewBag.users)
         {
-            if (userrole == "validator")
+            if (userrole == "validator" || userrole == "admin")
             {
                     if(user.IsRead != true && user.Status == "Approved")
                     {
                         <tr class="align-middle table-active">
+                            <td>@user.Id</td>
                             <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
-                            <td>@user.GatepassId</td>
                             <td>@user.Area</td>
-                            @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
-                            @if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
-                            @if (user.Status == "Pending"){<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
+                            @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
+                            else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
+                            else if (user.Schedule !< DateTime.Now){<td><span class="badge rounded-pill bg-dark">VOID</span></td>}
+                            else {<td><span class="badge rounded-pill bg-warning">PENDING</span></td>}
                             <td>@user.Schedule</td>
                             <td>@user.DateRequested</td>
 
@@ -63,13 +61,17 @@
                     else
                     {
                         <tr class="align-middle">
+                            <td>@user.Id</td>
                             <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
-                            <td>@user.GatepassId</td>
                             <td>@user.Area</td>
-                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
-                            else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
-                            else {<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
+                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
+                            else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
+                            else if (user.Schedule! < DateTime.Now)
+                            {
+                                <td><span class="badge rounded-pill bg-dark">VOID</span></td>
+                            }
+                            else {<td><span class="badge rounded-pill bg-warning">PENDING</span></td>}
                             <td>@user.Schedule</td>
                             <td>@user.DateRequested</td>
 
@@ -84,19 +86,23 @@
   
             }
 
-            @if (user.Username == username && userrole != "validator")
+                @if (user.Username == username && userrole != "validator" && userrole != "admin")
                 {
 
                     if (user.IsRead != true && user.Status == "Approved")
                     {
                         <tr class="align-middle table-active">
-                    
+                        <td>@user.Id</td>
                         <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                         <td>@string.Format($"0{user.Contact}")</td>
                         <td>@user.Area</td>
-                            @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
-                            else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
-                            else {<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
+                            @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
+                            else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
+                            else if (user.Schedule! < DateTime.Now)
+                            {
+                                <td><span class="badge rounded-pill bg-dark">VOID</span></td>
+                            }
+                            else {<td><span class="badge rounded-pill bg-warning">PENDING</span></td>}
                         <td>@user.Schedule</td>
 
                         <td>
@@ -110,13 +116,17 @@
                     else
                     {
                         <tr class="align-middle">
-
+                            <td>@user.Id</td>
                             <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
                             <td>@user.Area</td>
-                            @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">Approved</span></td>}
-                            @if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">Disapproved</span></td>}
-                            @if (user.Status == "Pending"){<td><span class="badge rounded-pill bg-warning">Pending</span></td>}
+                            @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
+                            @if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
+                            else if (user.Schedule! < DateTime.Now)
+                            {
+                                <td><span class="badge rounded-pill bg-dark">VOID</span></td>
+                            }
+                            @if (user.Status == "Pending"){<td><span class="badge rounded-pill bg-warning">PENDING</span></td>}
                             <td>@user.Schedule</td>
 
                             <td>
