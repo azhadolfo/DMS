@@ -20,10 +20,6 @@
                 <th class="text-primary ">ID</th>
                 <th class="text-primary ">Requested by</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Contact)</th>
-            @if (userrole == "validator" || userrole == "admin")
-            {
-                <th class="text-primary ">@Html.DisplayNameFor(model => model.GatepassId)</th>
-            }
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Area)</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Status)</th>
                 <th class="text-primary ">@Html.DisplayNameFor(model => model.Schedule)</th>
@@ -46,7 +42,6 @@
                             <td>@user.Id</td>
                             <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
-                            <td>@user.GatepassId</td>
                             <td>@user.Area</td>
                             @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
                             else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}
@@ -69,7 +64,6 @@
                             <td>@user.Id</td>
                             <td>@user.LastName, @user.FirstName @user.MiddleName</td>
                             <td>@string.Format($"0{user.Contact}")</td>
-                            <td>@user.GatepassId</td>
                             <td>@user.Area</td>
                              @if (user.Status == "Approved"){<td><span class="badge rounded-pill bg-success">APPROVED</span></td>}
                             else if (user.Status == "Disapproved"){<td><span class="badge rounded-pill bg-danger">DISAPPROVED</span></td>}

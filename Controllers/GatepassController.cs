@@ -60,7 +60,7 @@ namespace Document_Management.Controllers
                 gpInfo.Status = "Pending";
 
                 //Implementing the logs
-                LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.GatepassId}");
+                LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.Id}");
                 _dbcontext.Logs.Add(logs);
 
                 gpInfo.DateRequested = DateTime.Now;
@@ -125,7 +125,7 @@ namespace Document_Management.Controllers
                 {
                     // Approve logic
                     client.Status = "Approved";
-                    LogsModel logs = new(username, $"Approved Gatepass {client.GatepassId}");
+                    LogsModel logs = new(username, $"Approved Gatepass {client.Id}");
                     _dbcontext.Logs.Add(logs);
                     await _dbcontext.SaveChangesAsync();
                     TempData["success"] = "Approved successfully";
@@ -139,7 +139,7 @@ namespace Document_Management.Controllers
                 {
                     // Disapprove logic
                     client.Status = "Disapproved";
-                    LogsModel logs = new(username, $"Disapproved Gatepass {client.GatepassId}");
+                    LogsModel logs = new(username, $"Disapproved Gatepass {client.Id}");
                     _dbcontext.Logs.Add(logs);
                     await _dbcontext.SaveChangesAsync();
                     TempData["success"] = "Disapproved successfully";
