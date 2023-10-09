@@ -34,7 +34,7 @@
         <div class="mb-3">
             <label asp-for="Department" class="control-label"></label>
             <div class="col">
-                <select asp-for="Department" class="form-select" id="departmentDropdown" onchange="changeCategory()">
+                <select asp-for="Department" class="form-select" id="departmentDropdown">
                     <option value="" selected disabled>-- Select the department --</option>
                     @foreach (var department in Enum.GetValues(typeof(Departments)))
                     {
@@ -50,9 +50,9 @@
             <div class="col">
                 <select asp-for="Category" class="form-select" id="categoryDropdown">
                     <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var department in Enum.GetValues(typeof(Categories)))
+                    @foreach (var category in Enum.GetValues(typeof(Categories)))
                     {
-                        <option value="@department">@Enum.GetName(typeof(Categories), department)</option>
+                        <option value="@category">@Enum.GetName(typeof(Categories), category)</option>
                     }
                 </select>
                 <span asp-validation-for="Category" class="text-danger"></span>
