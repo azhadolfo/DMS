@@ -76,7 +76,7 @@
             </div>
             <div class="mb-3">
                 <label asp-for="Role" class="form-label"></label>
-                    <select asp-asp-for="Category" class="form-select">
+                    <select asp-for="Role" class="form-select">
                         <option value="" selected disabled>-- Select user role --</option>
                         @foreach (var department in Enum.GetValues(typeof(Roles)))
                     {

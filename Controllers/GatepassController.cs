@@ -65,11 +65,11 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 gpInfo.Status = "Pending";
 
-                //Implementing the logs
-                LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.Id}");
-                _dbcontext.Logs.Add(logs);
-
                 gpInfo.DateRequested = DateTime.Now;
+
+                //Implementing the logs
+                LogsModel logs = new(username, $"Requested a new gatepass in {gpInfo.Area}");
+                _dbcontext.Logs.Add(logs);
 
                 _dbcontext.SaveChanges();
                 TempData["success"] = "Request created successfully";
@@ -86,8 +86,8 @@ namespace Document_Management.Controllers
 
         public IActionResult Validator()
         {
-            var username = HttpContext.Session.GetString("userrole")?.ToLower();
-            if (!(username == "validator" || username == "admin"))
+            var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
+            if (!(userrole == "validator" || userrole == "admin"))
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
@@ -121,7 +121,8 @@ namespace Document_Management.Controllers
                 return Problem("Entity set 'ApplicationDbContext.Account' is null.");
             }
 
-            var username = HttpContext.Session.GetString("userrole")?.ToLower();
+            var userrrole = HttpContext.Session.GetString("userrole")?.ToLower();
+            var username = HttpContext.Session.GetString("username");
 
             var client = await _dbcontext.Gatepass.FindAsync(id);
 
@@ -159,7 +160,6 @@ namespace Document_Management.Controllers
 
             return RedirectToAction(nameof(Validator));
         }
-
 
         [HttpGet]
         public IActionResult RecievedGP()
