@@ -65,11 +65,11 @@ namespace Document_Management.Controllers
                 _dbcontext.Gatepass.Add(gpInfo);
                 gpInfo.Status = "Pending";
 
-                //Implementing the logs
-                LogsModel logs = new(username, $"Requesting Gatepass {gpInfo.Id}");
-                _dbcontext.Logs.Add(logs);
-
                 gpInfo.DateRequested = DateTime.Now;
+
+                //Implementing the logs
+                LogsModel logs = new(username, $"Requested a new gatepass in {gpInfo.Area}");
+                _dbcontext.Logs.Add(logs);
 
                 _dbcontext.SaveChanges();
                 TempData["success"] = "Request created successfully";
