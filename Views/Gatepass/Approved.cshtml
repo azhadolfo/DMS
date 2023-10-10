@@ -4,10 +4,8 @@
     ViewData["Title"] = "Gatepass Details";
 }
 
-<h1>Approve Request</h1>
-
 <div>
-    <h4>@ViewData["Title"]</h4>
+    <h1>@ViewData["Title"]</h1>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
@@ -47,7 +45,7 @@
             @Html.DisplayFor(model => model.Area)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Items)
+            Items:
         </dt>
         <dd class="col-sm-10">
             <p>
@@ -59,8 +57,8 @@
 <div>
     <form asp-action="Approved">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" name="approvalAction" value="Confirm Approve" class="btn btn-success" /> |
-        <input type="submit" name="approvalAction" value="Confirm Disapprove" class="btn btn-danger" />
+        <input type="submit" name="approvalAction" value="Approve" class="btn btn-success" /> |
+        <input type="submit" name="approvalAction" value="Disapprove" class="btn btn-danger" />
     </form>
     <br />
     <a asp-action="Validator">Back to List</a>

@@ -32,7 +32,7 @@ namespace Document_Management.Models
         [Display(Prompt = "Contact number +63")]
         public long Contact { get; set; }
 
-        [Display(Name = "Remarks")]
+        [Display(Name = "Status")]
         public string Status { get; set; } = "";
 
         public string Username { get; set; } = "";
