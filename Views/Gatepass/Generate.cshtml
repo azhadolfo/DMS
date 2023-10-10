@@ -4,8 +4,9 @@
     ViewData["Title"] = "Preview";
     var username = Context.Session.GetString("username");
     var fullname = Model.LastName +", "+ Model.FirstName +" "+ Model.MiddleName;
-}
 
+}
+<br />
 <div class="container position-relative">
     <div class="text-center">
         <h6><strong>FILPRIDE RESOURCES, INC.</strong></h6>
@@ -43,7 +44,7 @@
     }
     <hr />
 </div>
-@if (username != null)
+@if (username != null && username == Model.Username)
 {
         <hr style="position: relative; top: -120px; "/>
 
@@ -87,7 +88,7 @@
 </div>
 
     <a class="btn btn-success" onclick="printPage()" id="printButton">Print</a>
-    <a asp-action="RecievedGP" class="btn" id="otherButton">Back</a>
+    <a asp-action="ReceivedGP" class="btn" id="otherButton">Back</a>
     }
 
 @section Scripts{
