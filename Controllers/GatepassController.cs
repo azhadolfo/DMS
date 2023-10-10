@@ -21,6 +21,8 @@ namespace Document_Management.Controllers
 
         private readonly string? userRole;
 
+        private readonly bool HasAccess;
+
         //Passing the dbcontext in to another variable
         public GatepassController(ApplicationDbContext context, IHubContext<NotificationHub> notification, IHttpContextAccessor httpContextAccessor)
         {
@@ -31,6 +33,13 @@ namespace Document_Management.Controllers
             {
                 userRole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
                 username = httpContextAccessor.HttpContext.Session.GetString("username");
+                var userModuleAccess = httpContextAccessor.HttpContext.Session.GetString("usermoduleaccess");
+                var userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
+
+                if (userRole == "admin" || userAccess.Any(module => module.Trim() == "Gatepass"))
+                {
+                    HasAccess = true;
+                }
             }
             else
             {
@@ -45,6 +54,12 @@ namespace Document_Management.Controllers
         {
             if (!string.IsNullOrEmpty(username))
             {
+                if (!HasAccess)
+                {
+                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                }
+
                 return View();
             }
             else
@@ -59,6 +74,7 @@ namespace Document_Management.Controllers
         {
             if (ModelState.IsValid)
             {
+
                 if (username != null)
                 {
                     gpInfo.Username = username;
@@ -169,9 +185,13 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult RecievedGP()
+        public IActionResult ReceivedGP()
         {
-
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
             if (!string.IsNullOrEmpty(username))
             {
                 ViewBag.users = _dbcontext.Gatepass
