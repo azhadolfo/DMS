@@ -17,18 +17,32 @@ namespace Document_Management.Controllers
 
         private readonly IHubContext<NotificationHub> _notificationHub;
 
+        private readonly string? username;
+
+        private readonly string? userRole;
+
         //Passing the dbcontext in to another variable
-        public GatepassController(ApplicationDbContext context, IHubContext<NotificationHub> notification)
+        public GatepassController(ApplicationDbContext context, IHubContext<NotificationHub> notification, IHttpContextAccessor httpContextAccessor)
         {
             _dbcontext = context;
             _notificationHub = notification;
+
+            if (httpContextAccessor.HttpContext != null)
+            {
+                userRole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
+                username = httpContextAccessor.HttpContext.Session.GetString("username");
+            }
+            else
+            {
+                userRole = null; // or set a default value as needed
+                username = null;
+            }
         }
 
         //RequestGatepass
         [HttpGet]
         public IActionResult Insert()
         {
-            var username = HttpContext.Session.GetString("username");
             if (!string.IsNullOrEmpty(username))
             {
                 return View();
@@ -43,8 +57,6 @@ namespace Document_Management.Controllers
         [HttpPost]
         public async Task<IActionResult> Insert(RequestGP gpInfo)
         {
-            var username = HttpContext.Session.GetString("username");
-
             if (ModelState.IsValid)
             {
                 if (username != null)
@@ -86,8 +98,7 @@ namespace Document_Management.Controllers
 
         public IActionResult Validator()
         {
-            var userrole = HttpContext.Session.GetString("userrole")?.ToLower();
-            if (!(userrole == "validator" || userrole == "admin"))
+            if (!(userRole == "validator" || userRole == "admin"))
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
@@ -118,17 +129,15 @@ namespace Document_Management.Controllers
         {
             if (_dbcontext.Gatepass == null)
             {
-                return Problem("Entity set 'ApplicationDbContext.Account' is null.");
+                return Problem("Entity set 'ApplicationDbContext.Gatepass' is null.");
             }
-
-            var userrrole = HttpContext.Session.GetString("userrole")?.ToLower();
-            var username = HttpContext.Session.GetString("username");
 
             var client = await _dbcontext.Gatepass.FindAsync(id);
 
             if (client != null)
             {
-                if (approvalAction == "Confirm Approve")
+                var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
+                if (approvalAction == "Approve")
                 {
                     // Approve logic
                     client.Status = "Approved";
@@ -136,13 +145,12 @@ namespace Document_Management.Controllers
                     _dbcontext.Logs.Add(logs);
                     await _dbcontext.SaveChangesAsync();
                     TempData["success"] = "Approved successfully";
-                    var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
                     foreach (var hubConnection in hubConnections)
                     {
                         await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "Your request has been approved", client.Username);
                     }
                 }
-                else if (approvalAction == "Confirm Disapprove")
+                else if (approvalAction == "Disapprove")
                 {
                     // Disapprove logic
                     client.Status = "Disapproved";
@@ -150,7 +158,6 @@ namespace Document_Management.Controllers
                     _dbcontext.Logs.Add(logs);
                     await _dbcontext.SaveChangesAsync();
                     TempData["success"] = "Disapproved successfully";
-                    var hubConnections = _dbcontext.HubConnections.Where(h => h.Username == client.Username).ToList();
                     foreach (var hubConnection in hubConnections)
                     {
                         await _notificationHub.Clients.Client(hubConnection.ConnectionId).SendAsync("ReceivedPersonalNotification", "Your request has been disapproved", client.Username);
@@ -164,7 +171,6 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult RecievedGP()
         {
-            var username = HttpContext.Session.GetString("username");
 
             if (!string.IsNullOrEmpty(username))
             {
