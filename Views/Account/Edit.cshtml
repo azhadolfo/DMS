@@ -11,7 +11,8 @@
 <hr />
 <div class="row">
     <div class="col">
-        <form asp-action="Edit" class="needs-validation">
+        <form asp-action="Edit" method="post" class="needs-validation">
+            @Html.AntiForgeryToken()
             <div class="mb-3">
                 <label asp-for="EmployeeNumber" class="form-label"></label>
                 <input asp-for="EmployeeNumber" class="form-control" />

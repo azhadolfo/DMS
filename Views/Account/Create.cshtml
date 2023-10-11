@@ -13,7 +13,8 @@
 <hr />
 <div class="row">
     <div class="col">
-        <form asp-action="Create" class="needs-validation">
+            <form asp-action="Create" method="post" class="needs-validation">
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="mb-3">
                 <label asp-for="EmployeeNumber" class="form-label"></label>
@@ -85,7 +86,7 @@
                     </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
-            <div class="mb-3">
+            <div class="mb-3">  
                 <input type="submit" value="Save" class="btn btn-outline-success rounded" />
                 <a asp-action="Index" class="btn btn-outline-primary rounded">Back to List</a>
             </div>

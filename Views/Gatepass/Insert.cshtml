@@ -7,7 +7,8 @@
 <partial name="_Notification">
     <div class="container mt-5">
         <h1>@ViewData["Title"]</h1>
-        <form asp-action="Insert">
+        <form asp-action="Insert" method="post">
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="mb-3">

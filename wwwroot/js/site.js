@@ -74,7 +74,6 @@ $(document).ready(function () {
     });
 });
 
-
 //dropwdown
 $(document).ready(function () {
     $("#categoryDropdown").select2({
