@@ -70,11 +70,11 @@ namespace Document_Management.Controllers
 
         //Request gatepass
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Insert(RequestGP gpInfo)
         {
             if (ModelState.IsValid)
             {
-
                 if (username != null)
                 {
                     gpInfo.Username = username;

@@ -74,6 +74,7 @@ namespace Document_Management.Controllers
 
         //Post for the Action Account/Create
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Create(Register user, string[] AccessFolders, string[] ModuleAccess)
         {
             if (ModelState.IsValid)
@@ -203,6 +204,7 @@ namespace Document_Management.Controllers
 
         //Post for the Action Account/Edit
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Register model, string[] AccessFolders, string[] ModuleAccess, string newPassword, string newConfirmPassword)
         {
             var user = await _dbcontext.Account
