@@ -18,7 +18,6 @@ namespace Document_Management.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
         }
     }
 }

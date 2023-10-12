@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Document_Management.Models.Enums
+﻿namespace Document_Management.Models.Enums
 {
     public enum Departments
     {

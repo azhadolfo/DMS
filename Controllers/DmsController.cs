@@ -69,6 +69,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile file)
         {
             if (!string.IsNullOrEmpty(username))
@@ -307,6 +308,7 @@ namespace Document_Management.Controllers
 
         //POST for Editing
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(FileDocument model)
         {
             if (string.IsNullOrEmpty(username))
