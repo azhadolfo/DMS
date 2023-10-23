@@ -111,8 +111,18 @@ namespace Document_Management.Controllers
                         var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
                         filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
 
-                        // Determine the subdirectory based on the selected department
-                        var departmentSubdirectory = Path.Combine("Files", fileDocument.Department, fileDocument.Category);
+                        string departmentSubdirectory;
+
+                        if (fileDocument.SubCategory == null)
+                        {
+                            // Determine the subdirectory based on the selected department
+                            departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category);
+                            fileDocument.SubCategory = "N/A";
+                        }
+                        else
+                        {
+                            departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
+                        }                       
 
                         // Combine the subdirectory with the web root path
                         var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);

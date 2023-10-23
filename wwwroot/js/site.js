@@ -84,4 +84,19 @@ $(document).ready(function () {
         placeholder: "Select a department...",
         allowClear: true
     });
+    $("#companyDropdown").select2({
+        placeholder: "Select a company...",
+        allowClear: true
+    });
+    $("#yearDropdown").select2({
+    });
+    $("#subCategoryDropdown").select2({
+        placeholder: "Select a sub-category...",
+    });
+    $("#deliveryDropdown").select2({
+        placeholder: "Select a sub-category...",
+    });
+    $("#governmentDropdown").select2({
+        placeholder: "Select a sub-category...",
+    });
 });
