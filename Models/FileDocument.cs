@@ -18,6 +18,11 @@ namespace Document_Management.Models
         [Display(Name = "File Location")]
         public string? Location { get; set; }
 
+        [Required]
+        public string? Company { get; set; }
+
+        public string? Year { get; set; }
+
         [Required(ErrorMessage = "Department is required.")]
         public string? Department { get; set; }
 
