@@ -122,7 +122,7 @@ namespace Document_Management.Controllers
                         else
                         {
                             departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
-                        }                       
+                        }
 
                         // Combine the subdirectory with the web root path
                         var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
@@ -191,7 +191,7 @@ namespace Document_Management.Controllers
             return View(folders);
         }
 
-        public IActionResult SubCategory(string folderName)
+        public IActionResult CompanyFolder(string folderName)
         {
             ViewBag.FolderName = folderName;
 
@@ -206,27 +206,30 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            // Retrieve the user's department from the session or any other method you're using
-            var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+            //// Retrieve the user's department from the session or any other method you're using
+            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
 
-            // Split the userDepartment string into individual department names
-            var userDepartments = userAccessFolders.Split(',');
+            //// Split the userDepartment string into individual department names
+            //var userDepartments = userAccessFolders.Split(',');
 
-            // Check if any of the user's departments allow access to the specified folderName
-            if (!userDepartments.Any(dep => dep.Trim() == folderName))
-            {
-                TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
-            }
+            //// Check if any of the user's departments allow access to the specified companyFolderName
+            //if (!userDepartments.Any(dep => dep.Trim() == companyFolderName))
+            //{
+            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
+            //}
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
-            var subcategoriesPath = Path.Combine(wwwrootPath, folderName);
-            var categories = Directory.GetDirectories(subcategoriesPath).Select(Path.GetFileName);
-            return View(categories);
+            var companyFolderPath = Path.Combine(wwwrootPath, folderName);
+            var company = Directory.GetDirectories(companyFolderPath).Select(Path.GetFileName);
+            return View(company);
         }
 
-        public async Task<IActionResult> DisplayFiles(string folderName, string subCategory)
+        public IActionResult YearFolder(string companyFolderName, string yearFolderName)
         {
+            ViewBag.CompanyFolder = companyFolderName;
+            ViewBag.YearFolder = yearFolderName;
+
             if (string.IsNullOrEmpty(username))
             {
                 return RedirectToAction("Login", "Account");
@@ -238,7 +241,41 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            ViewBag.FolderName = folderName;
+            //// Retrieve the user's department from the session or any other method you're using
+            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+
+            //// Split the userDepartment string into individual department names
+            //var userDepartments = userAccessFolders.Split(',');
+
+            //// Check if any of the user's departments allow access to the specified companyFolderName
+            //if (!userDepartments.Any(dep => dep.Trim() == companyFolderName))
+            //{
+            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
+            //}
+
+            var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
+            var yearFolderPath = Path.Combine(wwwrootPath, companyFolderName, yearFolderName);
+            var year = Directory.GetDirectories(yearFolderPath).Select(Path.GetFileName);
+            return View(year);
+        }
+
+        public IActionResult DepartmentFolder(string departmentFolderName, string companyFolderName, string yearFolderName)
+        {
+            ViewBag.CompanyFolder = companyFolderName;
+            ViewBag.YearFolder = yearFolderName;
+            ViewBag.DepartmentFolder = departmentFolderName;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
 
             // Retrieve the user's department from the session or any other method you're using
             var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
@@ -246,21 +283,104 @@ namespace Document_Management.Controllers
             // Split the userDepartment string into individual department names
             var userDepartments = userAccessFolders.Split(',');
 
-            // Check if any of the user's departments allow access to the specified folderName
-            if (!userDepartments.Any(dep => dep.Trim() == folderName))
+            // Check if any of the user's departments allow access to the specified companyFolderName
+            if (!userDepartments.Any(dep => dep.Trim() == departmentFolderName))
             {
                 TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
+                return RedirectToAction("YearFolder", new { companyFolderName = companyFolderName, yearFolderName = yearFolderName }); // Redirect to the login page or another appropriate action
             }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
-            var folderPath = Path.Combine(wwwrootPath, folderName, subCategory); // wwwroot/Files/Department/SubCategory
+            var departmentFolderPath = Path.Combine(wwwrootPath, companyFolderName, yearFolderName, departmentFolderName);
+            var department = Directory.GetDirectories(departmentFolderPath).Select(Path.GetFileName);
+            return View(department);
+        }
+
+        public IActionResult SubCategoryFolder(string documentTypeFolderName, string departmentFolderName, string companyFolderName, string yearFolderName)
+        {
+            ViewBag.CompanyFolder = companyFolderName;
+            ViewBag.YearFolder = yearFolderName;
+            ViewBag.DepartmentFolder = departmentFolderName;
+            ViewBag.DocumentTypeFolder = documentTypeFolderName;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
+            //// Retrieve the user's department from the session or any other method you're using
+            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+
+            //// Split the userDepartment string into individual department names
+            //var userDepartments = userAccessFolders.Split(',');
+
+            //// Check if any of the user's departments allow access to the specified companyFolderName
+            //if (!userDepartments.Any(dep => dep.Trim() == companyFolderName))
+            //{
+            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
+            //}
+
+            var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
+            var documentTypeFolderPath = Path.Combine(wwwrootPath, companyFolderName, yearFolderName, departmentFolderName, documentTypeFolderName);
+            var documentType = Directory.GetDirectories(documentTypeFolderPath).Select(Path.GetFileName);
+            return View(documentType);
+        }
+
+        public async Task<IActionResult> DisplayFiles(string departmentFolderName, string companyFolderName, string yearFolderName, string documentTypeFolderName, string? subCategoryFolder)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            //if (!HasAccess)
+            //{
+            //    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            //    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            //}
+
+            ViewBag.CompanyFolder = companyFolderName;
+            ViewBag.YearFolder = yearFolderName;
+            ViewBag.DepartmentFolder = departmentFolderName;
+            ViewBag.CurrentFolder = documentTypeFolderName;
+
+            //// Retrieve the user's department from the session or any other method you're using
+            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+
+            //// Split the userDepartment string into individual department names
+            //var userDepartments = userAccessFolders.Split(',');
+
+            //// Check if any of the user's departments allow access to the specified companyFolderName
+            //if (!userDepartments.Any(dep => dep.Trim() == documentTypeFolderName))
+            //{
+            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
+            //}
+
+            var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
+            string folderPath;
+            if (subCategoryFolder == null)
+            {
+                folderPath = Path.Combine(wwwrootPath, companyFolderName, yearFolderName, departmentFolderName, documentTypeFolderName); // wwwroot/Files/
+            }
+            else
+            {
+                folderPath = Path.Combine(wwwrootPath, companyFolderName, yearFolderName, departmentFolderName, documentTypeFolderName, subCategoryFolder);
+            }
+
             var pdfFiles = Directory.GetFiles(folderPath, "*.pdf").Select(Path.GetFileName);
 
             // Assuming you have a list of FileDocument objects in your database
-            // You can filter them based on folderName and select the relevant properties
+            // You can filter them based on companyFolderName and select the relevant properties
             var fileDocuments = await _dbcontext.FileDocuments
-                .Where(file => file.Category == subCategory && pdfFiles.Contains(file.Name))
+                .Where(file => file.Company == companyFolderName && file.Year == yearFolderName && file.Category == documentTypeFolderName && pdfFiles.Contains(file.Name))
                 .Select(file => new FileDocument
                 {
                     Name = file.Name,
@@ -269,7 +389,10 @@ namespace Document_Management.Controllers
                     Description = file.Description,
                     Department = file.Department,
                     Username = file.Username,
-                    Category = file.Category
+                    Category = file.Category,
+                    Company = file.Company,
+                    Year = file.Year,
+                    SubCategory = file.SubCategory
                 })
                 .OrderByDescending(u => u.DateUploaded).ToListAsync();
 
