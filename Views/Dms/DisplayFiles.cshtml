@@ -24,7 +24,14 @@
             {
                 <tr class="align-items-center">
                     <td>
-                        <a href="@Url.Content("~/Files/" + file.Department + "/" + file.Category + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
+                        @if(file.SubCategory == "N/A")
+                        {
+                            <a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.SubCategory + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
+                        }
                     </td>
                     <td>@file.Name</td>
                     <td>@file.DateUploaded</td>
@@ -37,5 +44,5 @@
 </div>
 
 <div class="text-center">
-    <a href="@Url.Action("SubCategory", "Dms", new { folderName = ViewBag.FolderName })" class="btn btn-outline-primary mt-3" id="backToFolderList">Back to Category List</a>
+    <a href="@Url.Action("DepartmentFolder", "Dms", new { companyFolderName = ViewBag.CompanyFolder, yearFolderName = ViewBag.YearFolder, departmentFolderName = ViewBag.DepartmentFolder})" class="btn btn-outline-primary mt-3" id="backToFolderList">Back to Category List</a>
 </div>
