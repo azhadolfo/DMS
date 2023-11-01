@@ -6,12 +6,13 @@
 <ul class="navbar-nav">
 @if (!string.IsNullOrEmpty(username))
 {
-    <li class="nav-item">
-        <a id="manage" class="nav-link" asp-controller="Account" asp-action="ChangePassword" title="Manage">Hello @HttpContextAccessor.HttpContext?.Session.GetString("username")!</a>
-    </li>
-    <li class="nav-item">
-        <a href="javascript:void(0);" class="nav-link" onclick="confirmLogout()">Logout</a>
-    </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Hello @HttpContextAccessor.HttpContext?.Session.GetString("username")</a>
+            <div class="dropdown-menu">
+                <a id="manage" class="nav-link" asp-controller="Account" asp-action="ChangePassword" title="Manage">Change Password</a>
+                <a href="javascript:void(0);" class="nav-link" onclick="confirmLogout()">Logout</a>
+            </div>
+        </li>
 }
 </ul>
 
