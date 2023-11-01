@@ -81,6 +81,13 @@
                             </li>
                         }
                     </ul>
+                    @if (!string.IsNullOrEmpty(userrole))
+                    {
+                        <form class="d-flex" asp-controller="Dms" asp-action="GeneralSearch">
+                            <input name="search" class="form-control me-sm-2 text-black" type="search" placeholder="Search">
+                            <button class="btn btn-secondary my-2 my-sm-0 rounded" type="submit">Search</button>
+                        </form>
+                    }               
                     <partial name="_LoginPartial" /> 
                 </div>             
             </div>

@@ -42,5 +42,15 @@ namespace Document_Management.Repository
         {
             return await dbContext.FileDocuments.FindAsync(id);
         }
+
+        public async Task<List<FileDocument>> SearchFileAsync(string keyword)
+        {
+            var result = await dbContext
+                .FileDocuments
+                .Where(f => f.Description.Contains(keyword))
+                .ToListAsync();
+
+            return result;
+        }
     }
 }

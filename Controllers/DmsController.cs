@@ -478,5 +478,13 @@ namespace Document_Management.Controllers
 
             return RedirectToAction("Edit");
         }
+
+        public async Task<IActionResult> GeneralSearch(string search)
+        {
+            var result = await _userRepo
+                .SearchFileAsync(search);
+
+            return View(result);
+        }
     }
 }

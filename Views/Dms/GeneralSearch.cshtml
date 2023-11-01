@@ -1,0 +1,34 @@
+﻿@model List<FileDocument>
+@{
+    ViewData["Title"] = "General Search";
+}
+
+<h1>File Search Results</h1>
+<hr />
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr class="text-nowrap table-primary">
+                <th scope="col">File Name</th>
+                <th scope="col">Location Folder</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var file in Model)
+            {
+                <tr class="align-items-center">
+                    <td>@file.Name</td>
+                    @if(file.SubCategory == "N/A")
+                    {
+                      <td>@file.Company > @file.Year > @file.Department </td>
+                    }
+                    else
+                    {
+                      <td>@file.Company > @file.Year > @file.Department > @file.SubCategory</td>
+                    }                                      
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
