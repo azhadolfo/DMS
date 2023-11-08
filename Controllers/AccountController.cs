@@ -155,6 +155,7 @@ namespace Document_Management.Controllers
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
                     HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user folder access in session
                     HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess); // Store user module access in session
+                    HttpContext.Session.SetString("userfirstname", user.FirstName); // Store user module access in session
 
                     return RedirectToAction("Index", "Home");
                 }

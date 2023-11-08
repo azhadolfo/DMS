@@ -47,7 +47,7 @@ namespace Document_Management.Repository
         {
             var result = await dbContext
                 .FileDocuments
-                .Where(f => f.Description.Contains(keyword))
+                .Where(f => f.Description.ToUpper().Contains(keyword))
                 .ToListAsync();
 
             return result;

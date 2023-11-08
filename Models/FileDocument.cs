@@ -36,6 +36,7 @@ namespace Document_Management.Models
 
         public string? Username { get; set; }
 
+        [Required]
         public string? Category { get; set; }
 
         [Display(Name = "Sub Category")]

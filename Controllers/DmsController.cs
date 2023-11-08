@@ -80,16 +80,16 @@ namespace Document_Management.Controllers
                     return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
                 }
 
-                if (file.ContentType != "application/pdf")
-                {
-                    TempData["error"] = "Please upload pdf file only!";
-                    return View(fileDocument);
-                }
-
                 try
                 {
                     if (ModelState.IsValid && file != null && file.Length > 0)
                     {
+                        if (file.ContentType != "application/pdf")
+                        {
+                            TempData["error"] = "Please upload pdf file only!";
+                            return View(fileDocument);
+                        }
+
                         var isFileExist = await _userRepo.CheckIfFileExists(file.FileName);
 
                         if (isFileExist != null)
@@ -107,6 +107,14 @@ namespace Document_Management.Controllers
                         fileDocument.Username = username;
                         fileDocument.OriginalFilename = file.FileName;
 
+                        var selectedCompany = fileDocument.Company;
+                        var selectedDepartment = fileDocument.Department;
+                        var selectedCategory = fileDocument.Category;
+
+                        var formattedCompany = selectedCompany.Replace("_", " ");
+                        var formattedDepartment = selectedDepartment.Replace("_", " ");
+                        var formattedCategory = selectedCategory.Replace("_", " ");
+
                         var filename = Path.GetFileName(file.FileName);
                         var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
                         filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
@@ -116,12 +124,15 @@ namespace Document_Management.Controllers
                         if (fileDocument.SubCategory == null)
                         {
                             // Determine the subdirectory based on the selected department
-                            departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category);
+                            departmentSubdirectory = Path.Combine("Files", formattedCompany, fileDocument.Year, formattedDepartment, formattedCategory);
                             fileDocument.SubCategory = "N/A";
                         }
                         else
                         {
-                            departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
+                            var selectedSubCategory = fileDocument.SubCategory;
+                            var formattedSubCategory = selectedSubCategory.Replace("_", " ");
+
+                            departmentSubdirectory = Path.Combine("Files", formattedCompany, fileDocument.Year, formattedDepartment, formattedCategory, formattedSubCategory);
                         }
 
                         // Combine the subdirectory with the web root path
@@ -142,13 +153,16 @@ namespace Document_Management.Controllers
 
                         fileDocument.Name = filename;
                         fileDocument.Location = filePath;
+                        
+                        
+
                         _dbcontext.FileDocuments.Add(fileDocument);
 
                         //Implementing the logs
                         LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department in Sub Category of {fileDocument.Category}");
                         _dbcontext.Logs.Add(logs);
 
-                        _dbcontext.SaveChanges();
+                        await _dbcontext.SaveChangesAsync();
 
                         TempData["success"] = "File uploaded successfully";
 
@@ -283,8 +297,10 @@ namespace Document_Management.Controllers
             // Split the userDepartment string into individual department names
             var userDepartments = userAccessFolders.Split(',');
 
+            var formattedDepartmentFolder = departmentFolderName.Replace(" ","_");
+
             // Check if any of the user's departments allow access to the specified companyFolderName
-            if (!userDepartments.Any(dep => dep.Trim() == departmentFolderName))
+            if (!userDepartments.Any(dep => dep.Trim() == formattedDepartmentFolder))
             {
                 TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("YearFolder", new { companyFolderName = companyFolderName, yearFolderName = yearFolderName }); // Redirect to the login page or another appropriate action
@@ -482,7 +498,7 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> GeneralSearch(string search)
         {
             var result = await _userRepo
-                .SearchFileAsync(search);
+                .SearchFileAsync(search.ToUpper());
 
             return View(result);
         }
