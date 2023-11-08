@@ -107,14 +107,6 @@ namespace Document_Management.Controllers
                         fileDocument.Username = username;
                         fileDocument.OriginalFilename = file.FileName;
 
-                        var selectedCompany = fileDocument.Company;
-                        var selectedDepartment = fileDocument.Department;
-                        var selectedCategory = fileDocument.Category;
-
-                        var formattedCompany = selectedCompany.Replace("_", " ");
-                        var formattedDepartment = selectedDepartment.Replace("_", " ");
-                        var formattedCategory = selectedCategory.Replace("_", " ");
-
                         var filename = Path.GetFileName(file.FileName);
                         var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
                         filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
@@ -124,15 +116,12 @@ namespace Document_Management.Controllers
                         if (fileDocument.SubCategory == null)
                         {
                             // Determine the subdirectory based on the selected department
-                            departmentSubdirectory = Path.Combine("Files", formattedCompany, fileDocument.Year, formattedDepartment, formattedCategory);
+                            departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category);
                             fileDocument.SubCategory = "N/A";
                         }
                         else
                         {
-                            var selectedSubCategory = fileDocument.SubCategory;
-                            var formattedSubCategory = selectedSubCategory.Replace("_", " ");
-
-                            departmentSubdirectory = Path.Combine("Files", formattedCompany, fileDocument.Year, formattedDepartment, formattedCategory, formattedSubCategory);
+                            departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
                         }
 
                         // Combine the subdirectory with the web root path
@@ -153,16 +142,13 @@ namespace Document_Management.Controllers
 
                         fileDocument.Name = filename;
                         fileDocument.Location = filePath;
-                        
-                        
-
                         _dbcontext.FileDocuments.Add(fileDocument);
 
                         //Implementing the logs
                         LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department in Sub Category of {fileDocument.Category}");
                         _dbcontext.Logs.Add(logs);
 
-                        await _dbcontext.SaveChangesAsync();
+                        _dbcontext.SaveChanges();
 
                         TempData["success"] = "File uploaded successfully";
 
@@ -297,10 +283,8 @@ namespace Document_Management.Controllers
             // Split the userDepartment string into individual department names
             var userDepartments = userAccessFolders.Split(',');
 
-            var formattedDepartmentFolder = departmentFolderName.Replace(" ","_");
-
             // Check if any of the user's departments allow access to the specified companyFolderName
-            if (!userDepartments.Any(dep => dep.Trim() == formattedDepartmentFolder))
+            if (!userDepartments.Any(dep => dep.Trim() == departmentFolderName))
             {
                 TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("YearFolder", new { companyFolderName = companyFolderName, yearFolderName = yearFolderName }); // Redirect to the login page or another appropriate action
