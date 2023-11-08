@@ -11,14 +11,18 @@
         <thead>
             <tr class="text-nowrap table-active">
                 <th scope="col">File Name</th>
+                <th scope="col">Description</th>
                 <th scope="col">Location Folder</th>
+                <th scope="col">Uploaded By</th>
+                <th scope="col">Date</th>
             </tr>
         </thead>
         <tbody>
             @foreach(var file in Model)
             {
                 <tr class="align-items-center">
-                    <td>@file.Name</td>
+                    <td>@file.OriginalFilename</td>
+                    <td>@file.Description</td>
                     @if(file.SubCategory == "N/A")
                     {
                       <td>@file.Company > @file.Year > @file.Department </td>
@@ -26,7 +30,9 @@
                     else
                     {
                       <td>@file.Company > @file.Year > @file.Department > @file.SubCategory</td>
-                    }                                      
+                    }
+                    <td>@file.Username</td>
+                    <td>@file.DateUploaded</td>
                 </tr>
             }
         </tbody>
