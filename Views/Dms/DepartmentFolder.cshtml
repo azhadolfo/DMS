@@ -9,7 +9,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6 offset-md-3">
-            <h1 class="h1 text-center">List of Folder by Year</h1>
+            <h1 class="h1 text-center">List of Folder by Category</h1>
             <br />
             <ul class="list-group">
                 @foreach (var folder in Model)
@@ -40,7 +40,7 @@
                 }
             </ul>
             <div class="text-center">
-                <a href="@Url.Action("YearFolder", "Dms", new { companyFolderName = ViewBag.CompanyFolder, yearFolderName = ViewBag.YearFolder})" class="btn btn-outline-primary mt-3" id="backToFolderList">- Back to Department List -</a>
+                <a href="@Url.Action("YearFolder", "Dms", new { companyFolderName = ViewBag.CompanyFolder, yearFolderName = ViewBag.YearFolder})" class="btn btn-secondary mt-3" id="backToFolderList">- Back to Department List -</a>
             </div>
         </div>
     </div>

@@ -26,11 +26,11 @@
                     <td>
                         @if(file.SubCategory == "N/A")
                         {
-                            <a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
+                            <a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.Name)" download class="btn btn-primary">Download</a>
                         }
                         else
                         {
-                            <a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.SubCategory + "/" + file.Name)" download class="btn btn-info rounded">Download</a>
+                            <a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.SubCategory + "/" + file.Name)" download class="btn btn-primary">Download</a>
                         }
                     </td>
                     <td>@file.Name</td>
@@ -44,5 +44,5 @@
 </div>
 
 <div class="text-center">
-    <a href="@Url.Action("DepartmentFolder", "Dms", new { companyFolderName = ViewBag.CompanyFolder, yearFolderName = ViewBag.YearFolder, departmentFolderName = ViewBag.DepartmentFolder})" class="btn btn-outline-primary mt-3" id="backToFolderList">Back to Category List</a>
+    <a href="@Url.Action("DepartmentFolder", "Dms", new { companyFolderName = ViewBag.CompanyFolder, yearFolderName = ViewBag.YearFolder, departmentFolderName = ViewBag.DepartmentFolder})" class="btn btn-secondary mt-3" id="backToFolderList">Back to Category List</a>
 </div>
