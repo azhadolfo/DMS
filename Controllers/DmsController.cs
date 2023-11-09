@@ -394,7 +394,8 @@ namespace Document_Management.Controllers
                     Category = file.Category,
                     Company = file.Company,
                     Year = file.Year,
-                    SubCategory = file.SubCategory
+                    SubCategory = file.SubCategory,
+                    OriginalFilename = file.OriginalFilename
                 })
                 .OrderByDescending(u => u.DateUploaded).ToListAsync();
 
