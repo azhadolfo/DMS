@@ -47,11 +47,10 @@ namespace Document_Management.Repository
         {
             var results = dbContext.FileDocuments
                 .AsEnumerable() // Switch to client-side evaluation
-                .Where(f => keywords.Any(k => f.Description.ToUpper().Contains(k.ToUpper())))
+                .Where(f => keywords.All(k => f.Description.ToUpper().Contains(k.ToUpper())))
                 .ToList();
 
             return results;
         }
-
     }
 }
