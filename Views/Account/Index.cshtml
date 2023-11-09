@@ -43,7 +43,10 @@
                             @user.FirstName @user.LastName
                         </td>
                         <td>
-                            @Html.DisplayFor(model => user.Department)
+                            @{
+                                var cleanDepartmentName = user.Department.Replace("_", " ");
+                                <p>@cleanDepartmentName</p>
+                            }
                         </td>
                         <td>
                             @Html.DisplayFor(model => user.Username)
