@@ -25,11 +25,15 @@
                     <td>@file.Description</td>
                     @if(file.SubCategory == "N/A")
                     {
-                      <td>@file.Company > @file.Year > @file.Department </td>
+                      <td>
+                          <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category})">@file.Company > @file.Year > @file.Department</a>
+                      </td>
                     }
                     else
                     {
-                      <td>@file.Company > @file.Year > @file.Department > @file.SubCategory</td>
+                      <td>
+                         <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category, subCategoryFolder = file.SubCategory})">@file.Company > @file.Year > @file.Department @file.SubCategory</a>
+                      </td>
                     }
                     <td>@file.Username</td>
                     <td>@file.DateUploaded</td>

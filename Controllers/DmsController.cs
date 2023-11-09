@@ -340,29 +340,31 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            //if (!HasAccess)
-            //{
-            //    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            //    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-            //}
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
 
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
             ViewBag.DepartmentFolder = departmentFolderName;
             ViewBag.CurrentFolder = documentTypeFolderName;
 
-            //// Retrieve the user's department from the session or any other method you're using
-            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+            var cleanDepartmentName = departmentFolderName.Replace("_", " ");
 
-            //// Split the userDepartment string into individual department names
-            //var userDepartments = userAccessFolders.Split(',');
+            // Retrieve the user's department from the session or any other method you're using
+            var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
 
-            //// Check if any of the user's departments allow access to the specified companyFolderName
-            //if (!userDepartments.Any(dep => dep.Trim() == documentTypeFolderName))
-            //{
-            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
-            //}
+            // Split the userDepartment string into individual department names
+            var userDepartments = userAccessFolders.Split(',');
+
+            // Check if any of the user's departments allow access to the specified companyFolderName
+            if (!userDepartments.Any(dep => dep.Trim() == departmentFolderName))
+            {
+                TempData["Denied"] = $"You have no access to {cleanDepartmentName}. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("YearFolder", new { companyFolderName = companyFolderName, yearFolderName = yearFolderName }); // Redirect to the login page or another appropriate action
+            }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             string folderPath;
