@@ -481,8 +481,10 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> GeneralSearch(string search)
         {
+            var keywords = search.Split(' ');
+
             var result = await _userRepo
-                .SearchFileAsync(search.ToUpper());
+                .SearchFileAsync(keywords);
 
             return View(result);
         }
