@@ -484,6 +484,11 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> GeneralSearch(string search)
         {
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var keywords = search.Split(' ');
 
             var result = await _userRepo
