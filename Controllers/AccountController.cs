@@ -247,8 +247,16 @@ namespace Document_Management.Controllers
                     // Check if a new password is provided
                     if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
                     {
-                        // Hash and update the new password
-                        user.Password = HashPassword(newPassword);
+                        if (newPassword == newConfirmPassword)
+                        {
+                            // Hash and update the new password
+                            user.Password = HashPassword(newPassword);
+                        }
+                        else
+                        {
+                            TempData["error"] = "Password is not the same";
+                            return View(model);
+                        }
                     }
 
                     // Join the selected departments into a comma-separated string
