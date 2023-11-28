@@ -11,7 +11,7 @@
 <h1>Upload File</h1>
 <hr />
 
-<div class="container mt-5">
+<div class="container mt-3">
     <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div> 
@@ -140,6 +140,12 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="NumberOfPages" class="form-label"></label>
+            <input asp-for="NumberOfPages" class="form-control" id="numberOfPagesInput" />
+            <span asp-validation-for="NumberOfPages" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
             <label class="form-label">Description (Tags)</label>
             <div class="col">
                 <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or keywords that will help us find the file later."></textarea>
@@ -242,6 +248,23 @@
                 }
 
             });       
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var form = document.querySelector('form');
+
+            form.addEventListener('submit', function (event) {
+                var numberOfPagesValue = parseFloat(document.getElementById('numberOfPagesInput').value);
+
+                // Check if the value is strictly greater than 0
+                if (numberOfPagesValue <= 0) {
+                    event.preventDefault();
+                    alert('Number of pages must be greater than 0.');
+                }
+                // You can add additional validation checks here if needed
+            });
         });
     </script>
 

@@ -145,7 +145,7 @@ namespace Document_Management.Controllers
                         _dbcontext.FileDocuments.Add(fileDocument);
 
                         //Implementing the logs
-                        LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department in Sub Category of {fileDocument.Category}");
+                        LogsModel logs = new(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
                         _dbcontext.Logs.Add(logs);
 
                         _dbcontext.SaveChanges();
@@ -466,9 +466,10 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            if (file.Description != model.Description)
+            if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
             {
                 file.Description = model.Description;
+                file.NumberOfPages = model.NumberOfPages;
 
                 // Implementing the logs
                 LogsModel logs = new(username, $"Update the details of file# {file.Id}.");
