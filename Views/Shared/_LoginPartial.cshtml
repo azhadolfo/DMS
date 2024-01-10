@@ -9,8 +9,8 @@
     <ul class="navbar-nav">
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Hello @HttpContextAccessor.HttpContext?.Session.GetString("userfirstname")</a>
-            <div class="dropdown-menu px-3" style="min-width: 40% !important; position: absolute; border-radius:10%">
-                <a id="manage" class="dropdown-item" asp-controller="Account" asp-action="ChangePassword" title="Manage">Account</a>
+            <div class="dropdown-menu" style="min-width: 40% !important; position: absolute; border-radius:10%">
+                <a id="manage" class="dropdown-item" style="padding-right:40px !important" asp-controller="Account" asp-action="ChangePassword" title="Manage">Account</a>
                 <a href="javascript:void(0);" class="dropdown-item" onclick="confirmLogout()">Logout</a>
             </div>
         </li>
