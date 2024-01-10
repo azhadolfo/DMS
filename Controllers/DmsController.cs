@@ -80,16 +80,16 @@ namespace Document_Management.Controllers
                     return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
                 }
 
-                if (file.ContentType != "application/pdf")
-                {
-                    TempData["error"] = "Please upload pdf file only!";
-                    return View(fileDocument);
-                }
-
                 try
                 {
                     if (ModelState.IsValid && file != null && file.Length > 0)
                     {
+                        if (file.ContentType != "application/pdf")
+                        {
+                            TempData["error"] = "Please upload pdf file only!";
+                            return View(fileDocument);
+                        }
+
                         var isFileExist = await _userRepo.CheckIfFileExists(file.FileName);
 
                         if (isFileExist != null)
@@ -145,7 +145,7 @@ namespace Document_Management.Controllers
                         _dbcontext.FileDocuments.Add(fileDocument);
 
                         //Implementing the logs
-                        LogsModel logs = new(username, $"Upload new file in {fileDocument.Department} Department in Sub Category of {fileDocument.Category}");
+                        LogsModel logs = new(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
                         _dbcontext.Logs.Add(logs);
 
                         _dbcontext.SaveChanges();
@@ -340,29 +340,31 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            //if (!HasAccess)
-            //{
-            //    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            //    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-            //}
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
 
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
             ViewBag.DepartmentFolder = departmentFolderName;
             ViewBag.CurrentFolder = documentTypeFolderName;
 
-            //// Retrieve the user's department from the session or any other method you're using
-            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+            var cleanDepartmentName = departmentFolderName.Replace("_", " ");
 
-            //// Split the userDepartment string into individual department names
-            //var userDepartments = userAccessFolders.Split(',');
+            // Retrieve the user's department from the session or any other method you're using
+            var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
 
-            //// Check if any of the user's departments allow access to the specified companyFolderName
-            //if (!userDepartments.Any(dep => dep.Trim() == documentTypeFolderName))
-            //{
-            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
-            //}
+            // Split the userDepartment string into individual department names
+            var userDepartments = userAccessFolders.Split(',');
+
+            // Check if any of the user's departments allow access to the specified companyFolderName
+            if (!userDepartments.Any(dep => dep.Trim() == departmentFolderName))
+            {
+                TempData["Denied"] = $"You have no access to {cleanDepartmentName}. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("YearFolder", new { companyFolderName = companyFolderName, yearFolderName = yearFolderName }); // Redirect to the login page or another appropriate action
+            }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             string folderPath;
@@ -392,7 +394,8 @@ namespace Document_Management.Controllers
                     Category = file.Category,
                     Company = file.Company,
                     Year = file.Year,
-                    SubCategory = file.SubCategory
+                    SubCategory = file.SubCategory,
+                    OriginalFilename = file.OriginalFilename
                 })
                 .OrderByDescending(u => u.DateUploaded).ToListAsync();
 
@@ -463,9 +466,10 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            if (file.Description != model.Description)
+            if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
             {
                 file.Description = model.Description;
+                file.NumberOfPages = model.NumberOfPages;
 
                 // Implementing the logs
                 LogsModel logs = new(username, $"Update the details of file# {file.Id}.");
@@ -477,6 +481,21 @@ namespace Document_Management.Controllers
             }
 
             return RedirectToAction("Edit");
+        }
+
+        public async Task<IActionResult> GeneralSearch(string search)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var keywords = search.Split(' ');
+
+            var result = await _userRepo
+                .SearchFileAsync(keywords);
+
+            return View(result);
         }
     }
 }

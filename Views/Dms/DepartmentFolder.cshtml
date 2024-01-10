@@ -9,11 +9,12 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6 offset-md-3">
-            <h1 class="h1 text-center">List of Folder by Year</h1>
+            <h1 class="h1 text-center">List of Folder by Category</h1>
             <br />
             <ul class="list-group">
                 @foreach (var folder in Model)
                 {
+                    var cleanFolderName = folder.Replace("_", " ");
 
                     if (folder == "Delivery_Documents" || folder == "Government_Agency_Documents")
                     {
@@ -22,7 +23,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" height="2em" viewBox="0 0 576 512" style="margin-right: 1rem; padding: 0.2rem;">
                                 <path d="M384 480h48c11.4 0 21.9-6 27.6-15.9l112-192c5.8-9.9 5.8-22.1 .1-32.1S555.5 224 544 224H144c-11.4 0-21.9 6-27.6 15.9L48 357.1V96c0-8.8 7.2-16 16-16H181.5c4.2 0 8.3 1.7 11.3 4.7l26.5 26.5c21 21 49.5 32.8 79.2 32.8H416c8.8 0 16 7.2 16 16v32h48V160c0-35.3-28.7-64-64-64H298.5c-17 0-33.3-6.7-45.3-18.7L226.7 50.7c-12-12-28.3-18.7-45.3-18.7H64C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H87.7 384z" />
                             </svg>
-                                @folder
+                                @cleanFolderName
                         </li>
                         </a>
                     }
@@ -33,14 +34,14 @@
                             <svg xmlns="http://www.w3.org/2000/svg" height="2em" viewBox="0 0 576 512" style="margin-right: 1rem; padding: 0.2rem;">
                                 <path d="M384 480h48c11.4 0 21.9-6 27.6-15.9l112-192c5.8-9.9 5.8-22.1 .1-32.1S555.5 224 544 224H144c-11.4 0-21.9 6-27.6 15.9L48 357.1V96c0-8.8 7.2-16 16-16H181.5c4.2 0 8.3 1.7 11.3 4.7l26.5 26.5c21 21 49.5 32.8 79.2 32.8H416c8.8 0 16 7.2 16 16v32h48V160c0-35.3-28.7-64-64-64H298.5c-17 0-33.3-6.7-45.3-18.7L226.7 50.7c-12-12-28.3-18.7-45.3-18.7H64C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H87.7 384z" />
                             </svg>
-                                @folder
+                                @cleanFolderName
                         </li>
                         </a>
                     }
                 }
             </ul>
             <div class="text-center">
-                <a href="@Url.Action("YearFolder", "Dms", new { companyFolderName = ViewBag.CompanyFolder, yearFolderName = ViewBag.YearFolder})" class="btn btn-outline-primary mt-3" id="backToFolderList">- Back to Department List -</a>
+                <a href="@Url.Action("YearFolder", "Dms", new { companyFolderName = ViewBag.CompanyFolder, yearFolderName = ViewBag.YearFolder})" class="btn btn-secondary mt-3" id="backToFolderList">- Back to Department List -</a>
             </div>
         </div>
     </div>

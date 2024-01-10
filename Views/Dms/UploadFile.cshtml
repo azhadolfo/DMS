@@ -11,14 +11,14 @@
 <h1>Upload File</h1>
 <hr />
 
-<div class="container mt-5">
+<div class="container mt-3">
     <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div> 
         <div class="mb-3">
             <label asp-for="Name" class="control-label"></label>
             <div class="col">
-                <input name="file" type="file" class="form-control w-" accept=".pdf" style="width:130px"/>
+                <input id ="fileInput" name="file" type="file" class="form-control w-" accept=".pdf" style="width:110px" />
                 <span asp-validation-for="Name" class="text-danger"></span>
                 <small class="text-muted">Maximum file size allowed: 5MB</small>
             </div>
@@ -140,14 +140,20 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="Description" class="form-label"></label>
+            <label asp-for="NumberOfPages" class="form-label"></label>
+            <input asp-for="NumberOfPages" class="form-control" id="numberOfPagesInput" />
+            <span asp-validation-for="NumberOfPages" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description (Tags)</label>
             <div class="col">
                 <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or keywords that will help us find the file later."></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary rounded">Upload</button>
+        <button id="uploadButton" type="submit" class="btn btn-primary" disabled>Upload</button>
     </form>
 </div>
 
@@ -158,73 +164,51 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const fileInput = document.querySelector('input[type="file"]');
-            const form = document.querySelector('form');
-            const selectedFileNameSpan = document.getElementById('selectedFileName');
-            const hiddenFileNameInput = document.querySelector('input[type="hidden"][name="OriginalFilename"]');
+        const fileInput = document.querySelector('#fileInput'); // Target the file input by its id
+        const form = document.querySelector('form');
+        const selectedFileNameSpan = document.getElementById('selectedFileName');
+        const hiddenFileNameInput = document.querySelector('input[type="hidden"][name="OriginalFilename"]');
+        const uploadButton = document.getElementById('uploadButton'); // Target the "Upload" button by its id
 
-            // Function to update the selected file name
-            function updateSelectedFileName() {
-                if (fileInput.files.length > 0) {
-                    const fileName = fileInput.files[0].name;
-                    selectedFileNameSpan.textContent = fileName;
-                    hiddenFileNameInput.value = fileName; // Update the hidden input's value
-                } else {
-                    // If no file is selected, retain the previous file name
-                    selectedFileNameSpan.textContent = hiddenFileNameInput.value || 'No file selected';
-                }
+        // Function to update the selected file name
+        function updateSelectedFileName() {
+            if (fileInput.files.length > 0) {
+                const fileName = fileInput.files[0].name;
+                console.log(fileName);
+                selectedFileNameSpan.textContent = fileName;
+                hiddenFileNameInput.value = fileName; // Update the hidden input's value
+                uploadButton.removeAttribute('disabled'); // Enable the "Upload" button
+            } else {
+                // If no file is selected, retain the previous file name
+                selectedFileNameSpan.textContent = hiddenFileNameInput.value || 'No file selected';
+                uploadButton.setAttribute('disabled', 'disabled'); // Disable the "Upload" button
             }
+        }
 
-            // Call the updateSelectedFileName function on page load
+        // Call the updateSelectedFileName function on page load
+        updateSelectedFileName();
+
+        fileInput.addEventListener('change', function () {
             updateSelectedFileName();
-
-            fileInput.addEventListener('change', function () {
-                updateSelectedFileName();
-            });
-
-            form.addEventListener("submit", function (event) {
-                const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
-
-                if (fileInput.files.length > 0) {
-                    const fileSize = fileInput.files[0].size;
-
-                    if (fileSize > maxFileSize) {
-                        event.preventDefault();
-                        Swal.fire(
-                            'Oops',
-                            'File size exceeds the maximum limit of 5MB!',
-                            'error'
-                        );
-                    }
-                }
-            });
         });
 
-        // function changeCategory() {
-        //     var department = document.getElementById("departmentDropdown").value;
+        form.addEventListener("submit", function (event) {
+            const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
 
-        //     var categories;
-        //     switch (department) {
-        //         case "Accounting":
-        //             categories = ["AcctCategories1", "AcctCategories2"];
-        //             break;
-        //         case "Finance":
-        //             categories = ["FinCategories1", "FinCategories2"];
-        //             break;
-        //         default:
-        //             categories = ["FinCategories3", "FinCategories4"];
-        //     }
+            if (fileInput.files.length > 0) {
+                const fileSize = fileInput.files[0].size;
 
-        //     var categoryDropdown = document.getElementById("categoryDropdown");
-        //     categoryDropdown.innerHTML = "";
-        //     for (var i = 0; i < categories.length; i++) {
-        //         var option = document.createElement("option");
-        //         option.value = categories[i];
-        //         option.text = categories[i];
-        //         categoryDropdown.appendChild(option);
-        //     }
-        // }
-
+                if (fileSize > maxFileSize) {
+                    event.preventDefault();
+                    Swal.fire(
+                        'Oops',
+                        'File size exceeds the maximum limit of 5MB!',
+                        'error'
+                    );
+                }
+            }
+        });
+    });
     </script>
 
     <script>

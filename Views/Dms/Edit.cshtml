@@ -26,6 +26,11 @@
                 <span asp-validation-for="Department" class="text-danger"></span>
             </div>
             <div class="mb-3">
+                <label asp-for="NumberOfPages" class="control-label"></label>
+                <input asp-for="NumberOfPages" class="form-control" />
+                <span asp-validation-for="NumberOfPages" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
                 <label asp-for="Description" class="control-label"></label>
                 <textarea asp-for="Description" class="form-control" rows="5" autofocus></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
@@ -36,8 +41,8 @@
                 <span asp-validation-for="DateUploaded" class="text-danger"></span>
             </div>
             <div class="mb-3">
-                <input type="submit" value="Update" class="btn btn-outline-success rounded" />
-                <a asp-action="Index" class="btn btn-outline-primary rounded">Back to List</a>
+                <input type="submit" value="Update" class="btn btn-secondary" />
+                <a asp-action="Index" class="btn btn-primary">Back to List</a>
             </div>
         </form>
     </div>

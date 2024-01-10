@@ -36,9 +36,14 @@ namespace Document_Management.Models
 
         public string? Username { get; set; }
 
+        [Required]
         public string? Category { get; set; }
 
         [Display(Name = "Sub Category")]
         public string? SubCategory { get; set; }
+
+        [Display(Name = "Number Of Pages")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please enter a value bigger than 0")]
+        public int NumberOfPages { get; set; }
     }
 }
