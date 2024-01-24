@@ -14,27 +14,27 @@
 <div class="container mt-3">
     <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div> 
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3">
-            <label asp-for="Name" class="control-label"></label>
+            <label asp-for="Name" class="form-label"></label>
             <div class="col">
                 <input id ="fileInput" name="file" type="file" class="form-control w-" accept=".pdf" style="width:110px" />
                 <span asp-validation-for="Name" class="text-danger"></span>
                 <small class="text-muted">Maximum file size allowed: 5MB</small>
             </div>
-        </div>     
+        </div>
 
         <!-- Add a hidden field to store the selected file name -->
         <input type="hidden" asp-for="OriginalFilename" />
 
         <!-- Add the following span element to display the selected file name -->
         <div class="mb-3">
-            <label class="control-label">File Name:</label>
+            <label class="form-label">File Name:</label>
             <span id="selectedFileName" class="text-muted">No file selected</span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="Company" class="control-label"></label>
+            <label asp-for="Company" class="form-label"></label>
             <div class="col">
                 <select asp-for="Company" class="form-select" id="companyDropdown">
                     <option value="" selected disabled>-- Select the company --</option>
@@ -54,7 +54,7 @@
 
 
         <div class="mb-3">
-            <label asp-for="Year" class="control-label"></label>
+            <label asp-for="Year" class="form-label"></label>
             <div class="col">
                 <select asp-for="Year" id="yearDropdown" class="form-select" ></select>
                 <span asp-validation-for="Year" class="text-danger"></span>
@@ -62,7 +62,7 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="Department" class="control-label"></label>
+            <label asp-for="Department" class="form-label"></label>
             <div class="col">
                 <select asp-for="Department" class="form-select" id="departmentDropdown">
                     <option value="" selected disabled>-- Select the department --</option>
@@ -81,7 +81,7 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="Category" class="control-label"></label>
+            <label asp-for="Category" class="form-label"></label>
             <div class="col">
                 <select asp-for="Category" class="form-select" id="categoryDropdown">
                     <option value="" selected disabled>-- Select the category --</option>
@@ -98,10 +98,10 @@
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
         </div>
-        
+
         <!--Delivery Documents Sub Category Dropdown-->
         <div class="mb-3" id="deliverySubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="control-label"></label>
+            <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
                 <select asp-for="SubCategory" class="form-select" id="deliveryDropdown">
                     <option value="" selected disabled>-- Select the sub category --</option>
@@ -121,7 +121,7 @@
 
         <!--Government Agency Documents Sub Category Dropdown-->
         <div class="mb-3" id="governmentSubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="control-label"></label>
+            <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
                 <select asp-for="SubCategory" class="form-select" id="governmentDropdown">
                     <option value="" selected disabled>-- Select the sub category --</option>
@@ -141,7 +141,7 @@
 
         <div class="mb-3">
             <label asp-for="NumberOfPages" class="form-label"></label>
-            <input asp-for="NumberOfPages" class="form-control" id="numberOfPagesInput" />
+            <input asp-for="NumberOfPages" class="form-control"/>
             <span asp-validation-for="NumberOfPages" class="text-danger"></span>
         </div>
 
@@ -214,7 +214,7 @@
     <script>
         var dropdown = document.getElementById('yearDropdown');
         var currentYear = new Date().getFullYear();
-        var yearsInPast = 10; // Number of years in the past
+        var yearsInPast = 20; // Number of years in the past
         var yearsInFuture = 10; // Number of years in the future
 
         // Populate the dropdown with years
@@ -247,7 +247,33 @@
                     $('#governmentSubCategories').hide();
                 }
 
-            });       
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#NumberOfPages").on("focus",function () {
+                var initialValue = $(this).val();
+
+                console.log(initialValue);
+
+                if(initialValue === '0'){
+                    $(this).val('');
+                }
+
+            });
+
+            $("#NumberOfPages").on("blur", function () {
+                var initialValue = $(this).val();
+
+                console.log(initialValue);
+
+                if (initialValue === '') {
+                    $(this).val('0');
+                }
+
+            });
         });
     </script>
 

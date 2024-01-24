@@ -72,6 +72,9 @@ namespace Document_Management.Models.Enums
         [Display(Name = "Delivery Documents")]
         Delivery_Documents,
 
+        [Display(Name = "Employee Data Information")]
+        Employee_Data_Information,
+
         [Display(Name = "End Of Month Reports")]
         End_Of_Month_Reports,
 

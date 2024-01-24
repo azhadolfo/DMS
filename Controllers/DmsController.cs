@@ -497,5 +497,46 @@ namespace Document_Management.Controllers
 
             return View(result);
         }
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (id == 0)
+            {
+                return NotFound();
+            }
+
+            var model = await _dbcontext
+                .FileDocuments
+                .FindAsync(id);
+
+            if (model != null)
+            {
+                try
+                {
+                    if (System.IO.File.Exists(model.Location))
+                    {
+                        System.IO.File.Delete(model.Location);
+                    }
+
+                    _dbcontext.Remove(model);
+                    await _dbcontext.SaveChangesAsync();
+                    TempData["success"] = "File has been deleted.";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    return RedirectToAction("Error");
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
     }
 }
