@@ -1,40 +1,26 @@
 ﻿@using Document_Management.Models.Enums
 @using System.ComponentModel.DataAnnotations;
-@model Document_Management.Models.FileDocument;
+@model Document_Management.Models.FileDocument
 
 @{
-    ViewData["Title"] = "Upload";
+    ViewData["Title"] = "Transfer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<partial name="_Notification" />
-
-<h1>Upload File</h1>
+<h1>Transfer Files</h1>
 <hr />
-
 <div class="row">
     <div class="col">
-    <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
+    <form asp-action="Transfer">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="mb-3">
-            <label asp-for="Name" class="form-label"></label>
-            <div class="col">
-                <input id ="fileInput" name="file" type="file" class="form-control w-" accept=".pdf" style="width:110px" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-                <small class="text-muted">Maximum file size allowed: 5MB</small>
-            </div>
+        <input type="hidden" asp-for="Id" />
+        <div class="form-group mb-3">
+            <label asp-for="OriginalFilename" class="form-label"></label>
+            <input asp-for="OriginalFilename" class="form-control" disabled readonly />
+            <span asp-validation-for="OriginalFilename" class="text-danger"></span>
         </div>
-
-        <!-- Add a hidden field to store the selected file name -->
-        <input type="hidden" asp-for="OriginalFilename" />
-
-        <!-- Add the following span element to display the selected file name -->
-        <div class="mb-3">
-            <label class="form-label">File Name:</label>
-            <span id="selectedFileName" class="text-muted">No file selected</span>
-        </div>
-
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label asp-for="Company" class="form-label"></label>
             <div class="col">
                 <select asp-for="Company" class="form-select" id="companyDropdown" style="width:100%">
@@ -52,17 +38,14 @@
                 <span asp-validation-for="Company" class="text-danger"></span>
             </div>
         </div>
-
-
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label asp-for="Year" class="form-label"></label>
             <div class="col">
                 <select asp-for="Year" id="yearDropdown" class="form-select" style="width:100%"></select>
                 <span asp-validation-for="Year" class="text-danger"></span>
             </div>
         </div>
-
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label asp-for="Department" class="form-label"></label>
             <div class="col">
                 <select asp-for="Department" class="form-select" id="departmentDropdown" style="width:100%">
@@ -80,8 +63,7 @@
                 <span asp-validation-for="Department" class="text-danger"></span>
             </div>
         </div>
-
-        <div class="mb-3">
+        <div class="form-group mb-3">
             <label asp-for="Category" class="form-label"></label>
             <div class="col">
                 <select asp-for="Category" class="form-select" id="categoryDropdown" style="width:100%">
@@ -99,9 +81,8 @@
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
         </div>
-
         <!--Delivery Documents Sub Category Dropdown-->
-        <div class="mb-3" id="deliverySubCategories" style="display: none;">
+        <div class="form-group mb-3" id="deliverySubCategories" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
                 <select asp-for="SubCategory" class="form-select" id="deliveryDropdown" style="width:100%">
@@ -121,10 +102,10 @@
         </div>
 
         <!--Government Agency Documents Sub Category Dropdown-->
-        <div class="mb-3" id="governmentSubCategories" style="display: none;">
+        <div class="form-group mb-3" id="governmentSubCategories" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
-                <select asp-for="SubCategory" class="form-select" id="governmentDropdown" style="width:100%">
+                    <select asp-for="SubCategory" class="form-select" id="governmentDropdown" style="width:100%">
                     <option value="" selected disabled>-- Select the sub category --</option>
                     @foreach (var government in Enum.GetValues(typeof(GovernmentSubCategories)))
                     {
@@ -139,22 +120,10 @@
                 <span asp-validation-for="SubCategory" class="text-danger"></span>
             </div>
         </div>
-
-        <div class="mb-3">
-            <label asp-for="NumberOfPages" class="form-label"></label>
-            <input asp-for="NumberOfPages" class="form-control"/>
-            <span asp-validation-for="NumberOfPages" class="text-danger"></span>
+        <div class="form-group mb-3">
+                <input type="submit" value="Transfer" class="btn btn-secondary" />
+                <a asp-action="Index" class="btn btn-primary">Back</a>
         </div>
-
-        <div class="mb-3">
-            <label class="form-label">Description (Tags)</label>
-            <div class="col">
-                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or keywords that will help us find the file later."></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-        </div>
-
-        <button id="uploadButton" type="submit" class="btn btn-primary" disabled>Upload</button>
     </form>
     </div>
 </div>
@@ -163,55 +132,6 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-        const fileInput = document.querySelector('#fileInput'); // Target the file input by its id
-        const form = document.querySelector('form');
-        const selectedFileNameSpan = document.getElementById('selectedFileName');
-        const hiddenFileNameInput = document.querySelector('input[type="hidden"][name="OriginalFilename"]');
-        const uploadButton = document.getElementById('uploadButton'); // Target the "Upload" button by its id
-
-        // Function to update the selected file name
-        function updateSelectedFileName() {
-            if (fileInput.files.length > 0) {
-                const fileName = fileInput.files[0].name;
-                console.log(fileName);
-                selectedFileNameSpan.textContent = fileName;
-                hiddenFileNameInput.value = fileName; // Update the hidden input's value
-                uploadButton.removeAttribute('disabled'); // Enable the "Upload" button
-            } else {
-                // If no file is selected, retain the previous file name
-                selectedFileNameSpan.textContent = hiddenFileNameInput.value || 'No file selected';
-                uploadButton.setAttribute('disabled', 'disabled'); // Disable the "Upload" button
-            }
-        }
-
-        // Call the updateSelectedFileName function on page load
-        updateSelectedFileName();
-
-        fileInput.addEventListener('change', function () {
-            updateSelectedFileName();
-        });
-
-        form.addEventListener("submit", function (event) {
-            const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
-
-            if (fileInput.files.length > 0) {
-                const fileSize = fileInput.files[0].size;
-
-                if (fileSize > maxFileSize) {
-                    event.preventDefault();
-                    Swal.fire(
-                        'Oops',
-                        'File size exceeds the maximum limit of 5MB!',
-                        'error'
-                    );
-                }
-            }
-        });
-    });
-    </script>
 
     <script>
         var dropdown = document.getElementById('yearDropdown');
@@ -225,61 +145,51 @@
             option.value = i;
             option.text = i;
 
-            console.log(i);
-
             if (i === currentYear) {
                 option.setAttribute('selected', 'selected'); // Set the current year as the default
             }
-
+            dropdown.value = @Model.Year;
             dropdown.appendChild(option);
         }
     </script>
 
     <script>
         $(document).ready(function () {
-            $('#categoryDropdown').change(function () {
-                console.log($(this).val());
-                if ($(this).val() == 'Delivery_Documents') {
+            var dropdown = $('#categoryDropdown');
+            var selectedValue = dropdown.val();
+
+            if (selectedValue === 'Delivery_Documents') {
+                $('#deliverySubCategories').show();
+            } else {
+                $('#deliverySubCategories').hide();
+            }
+
+            if (selectedValue === 'Government_Agency_Documents') {
+                $('#governmentSubCategories').show();
+            } else {
+                $('#governmentSubCategories').hide();
+            }
+
+            // Implement the change event
+            dropdown.change(function () {
+                var newValue = $(this).val();
+                console.log("New value:", newValue);
+
+                // Perform actions based on the new value
+                if (newValue === 'Delivery_Documents') {
                     $('#deliverySubCategories').show();
                 } else {
                     $('#deliverySubCategories').hide();
                 }
 
-                if ($(this).val() == 'Government_Agency_Documents') {
+                if (newValue === 'Government_Agency_Documents') {
                     $('#governmentSubCategories').show();
                 } else {
                     $('#governmentSubCategories').hide();
                 }
-
             });
         });
-    </script>
 
-    <script>
-        $(document).ready(function () {
-            $("#NumberOfPages").on("focus",function () {
-                var initialValue = $(this).val();
-
-                console.log(initialValue);
-
-                if(initialValue === '0'){
-                    $(this).val('');
-                }
-
-            });
-
-            $("#NumberOfPages").on("blur", function () {
-                var initialValue = $(this).val();
-
-                console.log(initialValue);
-
-                if (initialValue === '') {
-                    $(this).val('0');
-                }
-
-            });
-        });
     </script>
 
 }
-

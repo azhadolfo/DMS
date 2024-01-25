@@ -78,17 +78,21 @@ $(document).ready(function () {
 $(document).ready(function () {
     $("#categoryDropdown").select2({
         placeholder: "Select a category...",
-        allowClear: true
+        allowClear: true,
+        width: 'resolve'
     });
     $("#departmentDropdown").select2({
         placeholder: "Select a department...",
-        allowClear: true
+        allowClear: true,
+        width: 'resolve'
     });
     $("#companyDropdown").select2({
         placeholder: "Select a company...",
-        allowClear: true
+        allowClear: true,
+        width: 'resolve'
     });
     $("#yearDropdown").select2({
+        width: 'resolve'
     });
     $("#subCategoryDropdown").select2({
         placeholder: "Select a sub-category...",

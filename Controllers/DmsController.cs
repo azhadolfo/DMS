@@ -206,19 +206,6 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
 
-            //// Retrieve the user's department from the session or any other method you're using
-            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
-
-            //// Split the userDepartment string into individual department names
-            //var userDepartments = userAccessFolders.Split(',');
-
-            //// Check if any of the user's departments allow access to the specified companyFolderName
-            //if (!userDepartments.Any(dep => dep.Trim() == companyFolderName))
-            //{
-            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
-            //}
-
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             var companyFolderPath = Path.Combine(wwwrootPath, folderName);
             var company = Directory.GetDirectories(companyFolderPath).Select(Path.GetFileName);
@@ -240,19 +227,6 @@ namespace Document_Management.Controllers
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
-
-            //// Retrieve the user's department from the session or any other method you're using
-            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
-
-            //// Split the userDepartment string into individual department names
-            //var userDepartments = userAccessFolders.Split(',');
-
-            //// Check if any of the user's departments allow access to the specified companyFolderName
-            //if (!userDepartments.Any(dep => dep.Trim() == companyFolderName))
-            //{
-            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
-            //}
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             var yearFolderPath = Path.Combine(wwwrootPath, companyFolderName, yearFolderName);
@@ -313,19 +287,6 @@ namespace Document_Management.Controllers
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
             }
-
-            //// Retrieve the user's department from the session or any other method you're using
-            //var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
-
-            //// Split the userDepartment string into individual department names
-            //var userDepartments = userAccessFolders.Split(',');
-
-            //// Check if any of the user's departments allow access to the specified companyFolderName
-            //if (!userDepartments.Any(dep => dep.Trim() == companyFolderName))
-            //{
-            //    TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            //    return RedirectToAction("DownloadFile"); // Redirect to the login page or another appropriate action
-            //}
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             var documentTypeFolderPath = Path.Combine(wwwrootPath, companyFolderName, yearFolderName, departmentFolderName, documentTypeFolderName);
@@ -505,6 +466,12 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
             if (id == 0)
             {
                 return NotFound();
@@ -524,6 +491,11 @@ namespace Document_Management.Controllers
                     }
 
                     _dbcontext.Remove(model);
+
+                    // Implementing the logs
+                    LogsModel logs = new(username, $"Delete the file: {model.Name}.");
+                    _dbcontext.Logs.Add(logs);
+
                     await _dbcontext.SaveChangesAsync();
                     TempData["success"] = "File has been deleted.";
                     return RedirectToAction(nameof(Index));
@@ -532,6 +504,111 @@ namespace Document_Management.Controllers
                 {
                     return RedirectToAction("Error");
                 }
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Transfer(int id)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
+            var files = await _userRepo.GetUploadedFiles(id);
+
+            if (files != null)
+            {
+                return View(files);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Transfer(FileDocument model)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
+            var existingModel = await _dbcontext
+                .FileDocuments
+                .FindAsync(model.Id);
+
+            if (existingModel != null)
+            {
+                existingModel.Company = model.Company;
+                existingModel.Year = model.Year;
+                existingModel.Department = model.Department;
+                existingModel.Category = model.Category;
+                existingModel.SubCategory = model.SubCategory;
+
+                var filename = existingModel.OriginalFilename;
+                var uniquePart = $"{model.Department}_{existingModel.DateUploaded:yyyyMMddHHmmssfff}";
+                filename = $"{uniquePart}_{filename}";
+
+                existingModel.Name = filename;
+
+                string newPath;
+
+                if (model.SubCategory == null)
+                {
+                    // Determine the subdirectory based on the selected department
+                    newPath = Path.Combine("Files", model.Company, model.Year, model.Department, model.Category);
+                    existingModel.SubCategory = "N/A";
+                }
+                else
+                {
+                    newPath = Path.Combine("Files", model.Company, model.Year, model.Department, model.Category, model.SubCategory);
+                }
+
+                // Combine the subdirectory with the web root path
+                var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, newPath);
+
+                // Ensure the department-specific subdirectory exists
+                if (!Directory.Exists(uploadFolderPath))
+                {
+                    Directory.CreateDirectory(uploadFolderPath);
+                }
+
+                var filePath = Path.Combine(uploadFolderPath, filename);
+
+                if (System.IO.File.Exists(existingModel.Location))
+                {
+                    System.IO.File.Move(existingModel.Location, filePath);
+                }
+
+                // Implementing the logs
+                LogsModel logs = new(username, $"Transfer the file: {model.OriginalFilename}.");
+                _dbcontext.Logs.Add(logs);
+
+                existingModel.Location = filePath;
+
+                await _dbcontext.SaveChangesAsync();
+
+                TempData["success"] = "File successfully transfered.";
+                return RedirectToAction(nameof(Index));
             }
             else
             {
