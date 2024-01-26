@@ -218,21 +218,35 @@
         var currentYear = new Date().getFullYear();
         var yearsInPast = 20; // Number of years in the past
         var yearsInFuture = 10; // Number of years in the future
+        var yearModel = '@Model.Year';
 
-        // Populate the dropdown with years
-        for (var i = currentYear - yearsInPast; i <= currentYear + yearsInFuture; i++) {
-            var option = document.createElement('option');
-            option.value = i;
-            option.text = i;
+        console.log(yearModel);
 
-            console.log(i);
+        if (yearModel === '') {
+            for (var i = currentYear - yearsInPast; i <= currentYear + yearsInFuture; i++) {
+                var option = document.createElement('option');
+                option.value = i;
+                option.text = i;
 
-            if (i === currentYear) {
-                option.setAttribute('selected', 'selected'); // Set the current year as the default
+                if (i === currentYear) {
+                    option.setAttribute('selected', 'selected'); // Set the current year as the default
+                }
+
+                dropdown.appendChild(option);
             }
-
-            dropdown.appendChild(option);
         }
+        else {
+            for (var i = currentYear - yearsInPast; i <= currentYear + yearsInFuture; i++) {
+                var option = document.createElement('option');
+                option.value = i;
+                option.text = i;
+
+                dropdown.value = (yearModel);
+
+                dropdown.appendChild(option);
+            }
+        }
+
     </script>
 
     <script>

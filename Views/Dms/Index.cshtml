@@ -25,15 +25,16 @@
                 <th>
                     @Html.DisplayNameFor(model => model.Description)
                 </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DateUploaded)
-                </th>
+                <th>Location Folder</th>
                 @if (userrole == "admin")
                 {
                     <th>
                         Uploaded By
                     </th>
                 }
+                <th>
+                    @Html.DisplayNameFor(model => model.DateUploaded)
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -50,14 +51,26 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateUploaded)
-                </td>
+                @if(item.SubCategory == "N/A")
+                    {
+                      <td>
+                          <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = item.Company, yearFolderName = item.Year, departmentFolderName = item.Department, documentTypeFolderName = item.Category})">~@item.Company / @item.Year / @item.Department / @item.Category</a>
+                      </td>
+                    }
+                    else
+                    {
+                      <td>
+                         <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = item.Company, yearFolderName = item.Year, departmentFolderName = item.Department, documentTypeFolderName = item.Category, subCategoryFolder = item.SubCategory})">~@item.Company / @item.Year / @item.Department / @item.Category / @item.SubCategory</a>
+                      </td>
+                    }
                 @if (userrole == "admin") {
                      <td>
                          @Html.DisplayFor(modelItem => item.Username)
                      </td>
                 }
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateUploaded)
+                </td>
             </tr>
     }
         </tbody>

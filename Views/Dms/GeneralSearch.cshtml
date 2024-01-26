@@ -14,7 +14,7 @@
                 <th scope="col">Description</th>
                 <th scope="col">Location Folder</th>
                 <th scope="col">Uploaded By</th>
-                <th scope="col">Date</th>
+                <th scope="col">Date Uploaded</th>
             </tr>
         </thead>
         <tbody>
@@ -26,13 +26,13 @@
                     @if(file.SubCategory == "N/A")
                     {
                       <td>
-                          <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category})">@file.Company > @file.Year > @file.Department</a>
+                          <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category})">~@file.Company / @file.Year / @file.Department / @file.Category</a>
                       </td>
                     }
                     else
                     {
                       <td>
-                         <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category, subCategoryFolder = file.SubCategory})">@file.Company > @file.Year > @file.Department > @file.SubCategory</a>
+                         <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category, subCategoryFolder = file.SubCategory})">~@file.Company / @file.Year / @file.Department / @file.Category / @file.SubCategory</a>
                       </td>
                     }
                     <td>@file.Username</td>

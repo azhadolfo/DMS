@@ -137,7 +137,7 @@ namespace Document_Management.Controllers
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
-                            file.CopyTo(stream); // Copy the file to the server
+                            await file.CopyToAsync(stream); // Copy the file to the server
                         }
 
                         fileDocument.Name = filename;
@@ -148,7 +148,7 @@ namespace Document_Management.Controllers
                         LogsModel logs = new(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
                         _dbcontext.Logs.Add(logs);
 
-                        _dbcontext.SaveChanges();
+                        await _dbcontext.SaveChangesAsync();
 
                         TempData["success"] = "File uploaded successfully";
 
@@ -600,7 +600,7 @@ namespace Document_Management.Controllers
                 }
 
                 // Implementing the logs
-                LogsModel logs = new(username, $"Transfer the file: {model.OriginalFilename}.");
+                LogsModel logs = new(username, $"Transfer the file: {existingModel.OriginalFilename}.");
                 _dbcontext.Logs.Add(logs);
 
                 existingModel.Location = filePath;
