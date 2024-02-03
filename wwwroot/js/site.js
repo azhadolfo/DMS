@@ -41,6 +41,13 @@ $(document).ready(function () {
     $('#myTable').DataTable();
 });
 
+//sorting remove sorting
+$(document).ready(function () {
+    $('#myTableNoSort').DataTable({
+        "ordering": false
+    });
+});
+
 //myOwnTable in gatepass
 $(document).ready(function () {
     var currentPage = 0; // Store the current page number
