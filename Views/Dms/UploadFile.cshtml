@@ -21,7 +21,7 @@
             <div class="col">
                 <input id ="fileInput" name="file" type="file" class="form-control w-" accept=".pdf" style="width:110px" />
                 <span asp-validation-for="Name" class="text-danger"></span>
-                <small class="text-muted">Maximum file size allowed: 5MB</small>
+                <small class="text-muted">Maximum file size allowed: 20MB</small>
             </div>
         </div>
 
@@ -37,7 +37,7 @@
         <div class="mb-3">
             <label asp-for="Company" class="form-label"></label>
             <div class="col">
-                <select asp-for="Company" class="form-select" id="companyDropdown" style="width:100%">
+                <select asp-for="Company" class="form-select full-width" id="companyDropdown">
                     <option value="" selected disabled>-- Select the company --</option>
                     @foreach (var company in Enum.GetValues(typeof(Companies)))
                     {
@@ -57,7 +57,7 @@
         <div class="mb-3">
             <label asp-for="Year" class="form-label"></label>
             <div class="col">
-                <select asp-for="Year" id="yearDropdown" class="form-select" style="width:100%"></select>
+                <select asp-for="Year" id="yearDropdown" class="form-select full-width"></select>
                 <span asp-validation-for="Year" class="text-danger"></span>
             </div>
         </div>
@@ -65,7 +65,7 @@
         <div class="mb-3">
             <label asp-for="Department" class="form-label"></label>
             <div class="col">
-                <select asp-for="Department" class="form-select" id="departmentDropdown" style="width:100%">
+                <select asp-for="Department" class="form-select full-width" id="departmentDropdown">
                     <option value="" selected disabled>-- Select the department --</option>
                     @foreach (var department in Enum.GetValues(typeof(Departments)))
                     {
@@ -84,7 +84,7 @@
         <div class="mb-3">
             <label asp-for="Category" class="form-label"></label>
             <div class="col">
-                <select asp-for="Category" class="form-select" id="categoryDropdown" style="width:100%">
+                <select asp-for="Category" class="form-select full-width" id="categoryDropdown">
                     <option value="" selected disabled>-- Select the category --</option>
                     @foreach (var category in Enum.GetValues(typeof(Categories)))
                     {
@@ -104,7 +104,7 @@
         <div class="mb-3" id="deliverySubCategories" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
-                <select asp-for="SubCategory" class="form-select" id="deliveryDropdown" style="width:100%">
+                <select asp-for="SubCategory" class="form-select full-width" id="deliveryDropdown">
                     <option value="" selected disabled>-- Select the sub category --</option>
                     @foreach (var delivery in Enum.GetValues(typeof(DeliverySubCategories)))
                     {
@@ -124,7 +124,7 @@
         <div class="mb-3" id="governmentSubCategories" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
-                <select asp-for="SubCategory" class="form-select" id="governmentDropdown" style="width:100%">
+                <select asp-for="SubCategory" class="form-select full-width" id="governmentDropdown">
                     <option value="" selected disabled>-- Select the sub category --</option>
                     @foreach (var government in Enum.GetValues(typeof(GovernmentSubCategories)))
                     {
@@ -195,7 +195,7 @@
         });
 
         form.addEventListener("submit", function (event) {
-            const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
+            const maxFileSize = 20 * 1024 * 1024; // 20MB in bytes
 
             if (fileInput.files.length > 0) {
                 const fileSize = fileInput.files[0].size;

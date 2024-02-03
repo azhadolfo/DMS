@@ -90,6 +90,12 @@ namespace Document_Management.Controllers
                             return View(fileDocument);
                         }
 
+                        if (file.Length > 20000000)
+                        {
+                            TempData["error"] = "File is to large 20MB is the maximum size allowed.";
+                            return View(fileDocument);
+                        }
+
                         var isFileExist = await _userRepo.CheckIfFileExists(file.FileName);
 
                         if (isFileExist != null)
