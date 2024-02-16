@@ -43,7 +43,7 @@ namespace Document_Management.Repository
             return await dbContext.FileDocuments.FindAsync(id);
         }
 
-        public async Task<List<FileDocument>> SearchFileAsync(string[] keywords)
+        public List<FileDocument> SearchFile(string[] keywords)
         {
             var results = dbContext.FileDocuments
                 .AsEnumerable() // Switch to client-side evaluation

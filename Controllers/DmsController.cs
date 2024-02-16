@@ -148,11 +148,12 @@ namespace Document_Management.Controllers
 
                         fileDocument.Name = filename;
                         fileDocument.Location = filePath;
-                        _dbcontext.FileDocuments.Add(fileDocument);
+                        fileDocument.FileSize = file.Length;
+                        await _dbcontext.FileDocuments.AddAsync(fileDocument);
 
                         //Implementing the logs
                         LogsModel logs = new(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
-                        _dbcontext.Logs.Add(logs);
+                        await _dbcontext.Logs.AddAsync(logs);
 
                         await _dbcontext.SaveChangesAsync();
 
@@ -459,8 +460,8 @@ namespace Document_Management.Controllers
 
             var keywords = search.Split(' ');
 
-            var result = await _userRepo
-                .SearchFileAsync(keywords);
+            var result = _userRepo
+                .SearchFile(keywords);
 
             return View(result);
         }

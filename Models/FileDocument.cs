@@ -45,5 +45,7 @@ namespace Document_Management.Models
         [Display(Name = "Number Of Pages")]
         [Range(1, int.MaxValue, ErrorMessage = "Please enter a value bigger than 0")]
         public int NumberOfPages { get; set; }
+
+        public long FileSize { get; set; }
     }
 }
