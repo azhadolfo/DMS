@@ -72,109 +72,88 @@ namespace Document_Management.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile file)
         {
-            if (!string.IsNullOrEmpty(username))
-            {
-                if (!HasAccess)
-                {
-                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-                }
-
-                try
-                {
-                    if (ModelState.IsValid && file != null && file.Length > 0)
-                    {
-                        if (file.ContentType != "application/pdf")
-                        {
-                            TempData["error"] = "Please upload pdf file only!";
-                            return View(fileDocument);
-                        }
-
-                        if (file.Length > 20000000)
-                        {
-                            TempData["error"] = "File is to large 20MB is the maximum size allowed.";
-                            return View(fileDocument);
-                        }
-
-                        var isFileExist = await _userRepo.CheckIfFileExists(file.FileName);
-
-                        if (isFileExist != null)
-                        {
-                            TempData["error"] = "This file already exists in our database!";
-                            return View(fileDocument);
-                        }
-
-                        if (string.IsNullOrEmpty(username))
-                        {
-                            return RedirectToAction("Login", "Account");
-                        }
-
-                        fileDocument.DateUploaded = DateTime.Now;
-                        fileDocument.Username = username;
-                        fileDocument.OriginalFilename = file.FileName;
-
-                        var filename = Path.GetFileName(file.FileName);
-                        var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
-                        filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
-
-                        string departmentSubdirectory;
-
-                        if (fileDocument.SubCategory == null)
-                        {
-                            // Determine the subdirectory based on the selected department
-                            departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category);
-                            fileDocument.SubCategory = "N/A";
-                        }
-                        else
-                        {
-                            departmentSubdirectory = Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
-                        }
-
-                        // Combine the subdirectory with the web root path
-                        var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
-
-                        // Ensure the department-specific subdirectory exists
-                        if (!Directory.Exists(uploadFolderPath))
-                        {
-                            Directory.CreateDirectory(uploadFolderPath);
-                        }
-
-                        var filePath = Path.Combine(uploadFolderPath, filename);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream); // Copy the file to the server
-                        }
-
-                        fileDocument.Name = filename;
-                        fileDocument.Location = filePath;
-                        fileDocument.FileSize = file.Length;
-                        await _dbcontext.FileDocuments.AddAsync(fileDocument);
-
-                        //Implementing the logs
-                        LogsModel logs = new(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
-                        await _dbcontext.Logs.AddAsync(logs);
-
-                        await _dbcontext.SaveChangesAsync();
-
-                        TempData["success"] = "File uploaded successfully";
-
-                        return View(fileDocument);
-                    }
-                    else
-                    {
-                        TempData["error"] = "Please fill out all the required data.";
-                        return View(fileDocument);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    TempData["error"] = "Contact MIS: " + ex.Message;
-                }
-            }
-            else
+            if (string.IsNullOrEmpty(username))
             {
                 return RedirectToAction("Login", "Account");
+            }
+
+            if (!HasAccess)
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+
+            try
+            {
+                if (!ModelState.IsValid || file == null || file.Length == 0)
+                {
+                    TempData["error"] = "Please fill out all the required data.";
+                    return View(fileDocument);
+                }
+
+                if (file.ContentType != "application/pdf")
+                {
+                    TempData["error"] = "Please upload pdf file only!";
+                    return View(fileDocument);
+                }
+
+                if (file.Length > 20000000)
+                {
+                    TempData["error"] = "File is too large 20MB is the maximum size allowed.";
+                    return View(fileDocument);
+                }
+
+                var isFileExist = await _userRepo.CheckIfFileExists(file.FileName);
+                if (isFileExist != null)
+                {
+                    TempData["error"] = "This file already exists in our database!";
+                    return View(fileDocument);
+                }
+
+                fileDocument.DateUploaded = DateTime.Now;
+                fileDocument.Username = username;
+                fileDocument.OriginalFilename = file.FileName;
+
+                var filename = Path.GetFileName(file.FileName);
+                var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
+                filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
+
+                string departmentSubdirectory = fileDocument.SubCategory == null
+                    ? Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category)
+                    : Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
+
+                var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
+
+                if (!Directory.Exists(uploadFolderPath))
+                {
+                    Directory.CreateDirectory(uploadFolderPath);
+                }
+
+                var filePath = Path.Combine(uploadFolderPath, filename);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream); // Copy the file to the server
+                }
+
+                fileDocument.Name = filename;
+                fileDocument.Location = filePath;
+                fileDocument.FileSize = file.Length;
+                await _dbcontext.FileDocuments.AddAsync(fileDocument);
+
+                //Implementing the logs
+                LogsModel logs = new LogsModel(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
+                await _dbcontext.Logs.AddAsync(logs);
+
+                await _dbcontext.SaveChangesAsync();
+
+                TempData["success"] = "File uploaded successfully";
+
+                return View(fileDocument);
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = "Contact MIS: " + ex.Message;
             }
 
             return View(fileDocument);

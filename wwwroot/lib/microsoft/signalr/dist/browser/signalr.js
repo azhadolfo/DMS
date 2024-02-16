@@ -22,13 +22,13 @@
 /******/ 				if (__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
 /******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
                         /******/
-}
+                    }
                     /******/
-}
+                }
                 /******/
-};
+            };
             /******/
-})();
+        })();
 /******/
 /******/ 	/* webpack/runtime/global */
 /******/ 	(() => {
@@ -37,20 +37,20 @@
 /******/ 			try {
 /******/ 				return this || new Function('return this')();
                     /******/
-} catch (e) {
+                } catch (e) {
 /******/ 				if (typeof window === 'object') return window;
                     /******/
-}
+                }
                 /******/
-})();
+            })();
             /******/
-})();
+        })();
 /******/
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
             /******/
-})();
+        })();
 /******/
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
@@ -59,12 +59,12 @@
 /******/ 			if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
                     /******/
-}
+                }
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
                 /******/
-};
+            };
             /******/
-})();
+        })();
         /******/
         /************************************************************************/
         var __webpack_exports__ = {};
@@ -3139,7 +3139,7 @@
 
 /******/ 	return __webpack_exports__;
         /******/
-})()
+    })()
         ;
 });
 //# sourceMappingURL=signalr.js.map

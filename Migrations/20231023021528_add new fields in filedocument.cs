@@ -34,7 +34,6 @@ namespace Document_Management.Migrations
             migrationBuilder.DropColumn(
                 name: "Year",
                 table: "FileDocuments");
-
         }
     }
 }

@@ -10,7 +10,6 @@ namespace Document_Management.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-
             migrationBuilder.AddColumn<int>(
                 name: "NumberOfPages",
                 table: "FileDocuments",
