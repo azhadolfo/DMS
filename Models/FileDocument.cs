@@ -40,7 +40,7 @@ namespace Document_Management.Models
         public string? Category { get; set; }
 
         [Display(Name = "Sub Category")]
-        public string? SubCategory { get; set; }
+        public string SubCategory { get; set; } = "N/A";
 
         [Display(Name = "Number Of Pages")]
         [Range(1, int.MaxValue, ErrorMessage = "Please enter a value bigger than 0")]

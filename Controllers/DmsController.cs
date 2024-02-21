@@ -18,11 +18,13 @@ namespace Document_Management.Controllers
 
         private readonly bool HasAccess;
 
+        private readonly ILogger<HomeController> _logger;
+
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
         //Inject the services in to another variable
-        public DmsController(IWebHostEnvironment hostingEnvironment, ApplicationDbContext context, UserRepo userRepo, IHttpContextAccessor httpContextAccessor)
+        public DmsController(IWebHostEnvironment hostingEnvironment, ApplicationDbContext context, UserRepo userRepo, IHttpContextAccessor httpContextAccessor, ILogger<HomeController> logger)
         {
             _hostingEnvironment = hostingEnvironment;
             _dbcontext = context;
@@ -46,6 +48,7 @@ namespace Document_Management.Controllers
                 userRole = null; // or set a default value as needed
                 username = null;
             }
+            _logger = logger;
         }
 
         //Get for the Action Dms/Upload
@@ -103,22 +106,12 @@ namespace Document_Management.Controllers
                     return View(fileDocument);
                 }
 
-                var isFileExist = await _userRepo.CheckIfFileExists(file.FileName);
-                if (isFileExist != null)
-                {
-                    TempData["error"] = "This file already exists in our database!";
-                    return View(fileDocument);
-                }
-
-                fileDocument.DateUploaded = DateTime.Now;
-                fileDocument.Username = username;
-                fileDocument.OriginalFilename = file.FileName;
-
                 var filename = Path.GetFileName(file.FileName);
-                var uniquePart = $"{fileDocument.Department}_{fileDocument.DateUploaded:yyyyMMddHHmmssfff}";
+                var uniquePart = $"{fileDocument.Department}_{DateTime.Now:yyyyMMddHHmmssfff}";
+                filename = filename.Replace("#", "");
                 filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
 
-                string departmentSubdirectory = fileDocument.SubCategory == null
+                string departmentSubdirectory = fileDocument.SubCategory == "N/A"
                     ? Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category)
                     : Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
 
@@ -131,6 +124,12 @@ namespace Document_Management.Controllers
 
                 var filePath = Path.Combine(uploadFolderPath, filename);
 
+                if (System.IO.File.Exists(filePath))
+                {
+                    TempData["error"] = "This file already exists in our database!";
+                    return View(fileDocument);
+                }
+
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream); // Copy the file to the server
@@ -139,9 +138,11 @@ namespace Document_Management.Controllers
                 fileDocument.Name = filename;
                 fileDocument.Location = filePath;
                 fileDocument.FileSize = file.Length;
+                fileDocument.Username = username;
+                fileDocument.OriginalFilename = file.FileName;
                 await _dbcontext.FileDocuments.AddAsync(fileDocument);
 
-                //Implementing the logs
+                // Implementing the logs
                 LogsModel logs = new LogsModel(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
                 await _dbcontext.Logs.AddAsync(logs);
 
@@ -153,11 +154,14 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
-                TempData["error"] = "Contact MIS: " + ex.Message;
+                // Log the exception
+                _logger.LogError(ex, "Error occurred during file upload.");
+                TempData["error"] = "Contact MIS: An error occurred during file upload.";
             }
 
             return View(fileDocument);
         }
+
 
         public IActionResult DownloadFile()
         {
@@ -430,7 +434,7 @@ namespace Document_Management.Controllers
             return RedirectToAction("Edit");
         }
 
-        public async Task<IActionResult> GeneralSearch(string search)
+        public IActionResult GeneralSearch(string search)
         {
             if (string.IsNullOrEmpty(username))
             {
