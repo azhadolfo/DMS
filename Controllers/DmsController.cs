@@ -88,70 +88,79 @@ namespace Document_Management.Controllers
 
             try
             {
-                if (!ModelState.IsValid || file == null || file.Length == 0)
+                if (ModelState.IsValid && file != null && file.Length != 0)
+                {
+                    if (file.ContentType == "application/pdf")
+                    {
+                        if (file.Length <= 20000000)
+                        {
+                            if (!await _userRepo.CheckIfFileExists(file.FileName))
+                            {
+                                var filename = Path.GetFileName(file.FileName);
+                                var uniquePart = $"{fileDocument.Department}_{DateTime.Now:yyyyMMddHHmmssfff}";
+                                filename = filename.Replace("#", "");
+                                filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
+
+                                string departmentSubdirectory = fileDocument.SubCategory == "N/A"
+                                    ? Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category)
+                                    : Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
+
+                                var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
+
+                                if (!Directory.Exists(uploadFolderPath))
+                                {
+                                    Directory.CreateDirectory(uploadFolderPath);
+                                }
+
+                                var filePath = Path.Combine(uploadFolderPath, filename);
+
+                                using (var stream = new FileStream(filePath, FileMode.Create))
+                                {
+                                    await file.CopyToAsync(stream, cancellationToken); // Copy the file to the server
+                                }
+
+                                fileDocument.DateUploaded = DateTime.Now;
+                                fileDocument.Name = filename;
+                                fileDocument.Location = filePath;
+                                fileDocument.FileSize = file.Length;
+                                fileDocument.Username = username;
+                                fileDocument.OriginalFilename = file.FileName;
+                                await _dbcontext.FileDocuments.AddAsync(fileDocument, cancellationToken);
+
+                                // Implementing the logs
+                                LogsModel logs = new LogsModel(username, $"Upload {file.FileName} in {departmentSubdirectory} {fileDocument.NumberOfPages} page(s).");
+                                await _dbcontext.Logs.AddAsync(logs, cancellationToken);
+
+                                await _dbcontext.SaveChangesAsync(cancellationToken);
+
+                                TempData["success"] = "File uploaded successfully";
+
+                                return View(fileDocument);
+                            }
+                            else
+                            {
+                                TempData["error"] = "This file already exists in our database!";
+                                return View(fileDocument);
+                            }
+                        }
+                        else
+                        {
+                            TempData["error"] = "File is too large 20MB is the maximum size allowed.";
+                            return View(fileDocument);
+                        }
+                    }
+                    else
+                    {
+                        TempData["error"] = "Please upload pdf file only!";
+                        return View(fileDocument);
+                    }
+                }
+                else
                 {
                     TempData["error"] = "Please fill out all the required data.";
                     return View(fileDocument);
                 }
 
-                if (file.ContentType != "application/pdf")
-                {
-                    TempData["error"] = "Please upload pdf file only!";
-                    return View(fileDocument);
-                }
-
-                if (file.Length > 20000000)
-                {
-                    TempData["error"] = "File is too large 20MB is the maximum size allowed.";
-                    return View(fileDocument);
-                }
-
-                var filename = Path.GetFileName(file.FileName);
-                var uniquePart = $"{fileDocument.Department}_{DateTime.Now:yyyyMMddHHmmssfff}";
-                filename = filename.Replace("#", "");
-                filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
-
-                string departmentSubdirectory = fileDocument.SubCategory == "N/A"
-                    ? Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category)
-                    : Path.Combine("Files", fileDocument.Company, fileDocument.Year, fileDocument.Department, fileDocument.Category, fileDocument.SubCategory);
-
-                var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
-
-                if (!Directory.Exists(uploadFolderPath))
-                {
-                    Directory.CreateDirectory(uploadFolderPath);
-                }
-
-                var filePath = Path.Combine(uploadFolderPath, filename);
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    TempData["error"] = "This file already exists in our database!";
-                    return View(fileDocument);
-                }
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream, cancellationToken); // Copy the file to the server
-                }
-
-                fileDocument.DateUploaded = DateTime.Now;
-                fileDocument.Name = filename;
-                fileDocument.Location = filePath;
-                fileDocument.FileSize = file.Length;
-                fileDocument.Username = username;
-                fileDocument.OriginalFilename = file.FileName;
-                await _dbcontext.FileDocuments.AddAsync(fileDocument, cancellationToken);
-
-                // Implementing the logs
-                LogsModel logs = new LogsModel(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
-                await _dbcontext.Logs.AddAsync(logs, cancellationToken);
-
-                await _dbcontext.SaveChangesAsync(cancellationToken);
-
-                TempData["success"] = "File uploaded successfully";
-
-                return View(fileDocument);
             }
             catch (Exception ex)
             {

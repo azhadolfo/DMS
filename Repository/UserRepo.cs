@@ -18,11 +18,11 @@ namespace Document_Management.Repository
             return await dbContext.Account.FirstOrDefaultAsync(user => user.Username == username && user.Password == password);
         }
 
-        public async Task<FileDocument?> CheckIfFileExists(string originalfile)
+        public async Task<bool> CheckIfFileExists(string originalfile)
         {
             return await dbContext
                 .FileDocuments
-                .FirstOrDefaultAsync(file => file.OriginalFilename == originalfile);
+                .AnyAsync(f => f.OriginalFilename == originalfile);
         }
 
         public async Task<List<FileDocument>> DisplayAllUploadedFiles()
