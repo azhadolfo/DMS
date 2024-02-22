@@ -73,7 +73,7 @@ namespace Document_Management.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile file)
+        public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile file, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -132,21 +132,22 @@ namespace Document_Management.Controllers
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    await file.CopyToAsync(stream); // Copy the file to the server
+                    await file.CopyToAsync(stream, cancellationToken); // Copy the file to the server
                 }
 
+                fileDocument.DateUploaded = DateTime.Now;
                 fileDocument.Name = filename;
                 fileDocument.Location = filePath;
                 fileDocument.FileSize = file.Length;
                 fileDocument.Username = username;
                 fileDocument.OriginalFilename = file.FileName;
-                await _dbcontext.FileDocuments.AddAsync(fileDocument);
+                await _dbcontext.FileDocuments.AddAsync(fileDocument, cancellationToken);
 
                 // Implementing the logs
                 LogsModel logs = new LogsModel(username, $"Uploaded in {fileDocument.Department}/{fileDocument.Category} {fileDocument.NumberOfPages} page(s).");
-                await _dbcontext.Logs.AddAsync(logs);
+                await _dbcontext.Logs.AddAsync(logs, cancellationToken);
 
-                await _dbcontext.SaveChangesAsync();
+                await _dbcontext.SaveChangesAsync(cancellationToken);
 
                 TempData["success"] = "File uploaded successfully";
 
