@@ -1,5 +1,4 @@
 using Document_Management.Data;
-using Document_Management.Hubs;
 using Document_Management.Repository;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,7 +24,6 @@ builder.Services.AddSession(options =>
 //DI
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<UserRepo>();
-builder.Services.AddScoped<NotificationHub>();
 
 var app = builder.Build();
 
@@ -48,8 +46,6 @@ app.UseRouting();
 app.UseSession();
 
 app.UseAuthorization();
-
-app.MapHub<NotificationHub>("/notificationHub");
 
 app.MapControllerRoute(
     name: "default",

@@ -12,8 +12,5 @@ namespace Document_Management.Data
         public DbSet<Register> Account { get; set; }
         public DbSet<FileDocument> FileDocuments { get; set; }
         public DbSet<LogsModel> Logs { get; set; }
-
-        public DbSet<RequestGP> Gatepass { get; set; }
-        public DbSet<HubConnection> HubConnections { get; set; }
     }
 }
