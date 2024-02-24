@@ -1,4 +1,5 @@
 ﻿@using Document_Management.Models.Enums
+@using System.ComponentModel.DataAnnotations;
 @model Document_Management.Models.Register
 
 @{
@@ -34,11 +35,16 @@
              <div class="mb-3">
                 <label asp-for="Department" class="form-label"></label>
                     <select asp-for="Department" class="form-select">
-                        <option value="" selected disabled>-- Select user department --</option>
+                        <option value="" selected disabled>-- Select the department --</option>
                         @foreach (var department in Enum.GetValues(typeof(Departments)))
-                    {
-                        <option value="@department">@Enum.GetName(typeof(Departments), department)</option>
-                    }
+                        {
+                            var enumMember = typeof(Departments).GetMember(department.ToString())[0];
+                            var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                            string displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
+
+                            <option value="@department">@displayName</option>
+                        }
                     </select>
                 <span asp-validation-for="Department" class="text-danger"></span>
              </div>   
@@ -59,10 +65,15 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Access Folders:</label>
-                    @foreach (var department in Enum.GetNames(typeof(Departments)))
+                    @foreach (var department in Enum.GetValues(typeof(Departments)))
                 {
+                        var enumMember = typeof(Departments).GetMember(department.ToString())[0];
+                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                        string displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
+
                     <div>
-                        <input type="checkbox" name="AccessFolders" value="@department" /> @department
+                        <input type="checkbox" name="AccessFolders" value="@department" /> @displayName
                     </div>
                 }
             </div>
@@ -87,8 +98,8 @@
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
             <div class="mb-3">  
-                <input type="submit" value="Save" class="btn btn-outline-success rounded" />
-                <a asp-action="Index" class="btn btn-outline-primary rounded">Back to List</a>
+                <input type="submit" value="Save" class="btn btn-secondary" />
+                <a asp-action="Index" class="btn btn-primary">Back to List</a>
             </div>
         </form>
     </div>

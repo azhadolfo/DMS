@@ -12,7 +12,7 @@
 <h1>@ViewData["Title"]</h1>
 
 <p>
-    <a asp-action="UploadFile" class="btn btn-primary rounded">Upload New</a>
+    <a asp-action="UploadFile" class="btn btn-secondary">Upload New</a>
 </p>
 <div class="table-responsive">
     <table class="table table-hover" id="myTable">
@@ -25,39 +25,76 @@
                 <th>
                     @Html.DisplayNameFor(model => model.Description)
                 </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DateUploaded)
-                </th>
+                <th>Location Folder</th>
                 @if (userrole == "admin")
                 {
                     <th>
                         Uploaded By
                     </th>
-                }           
+                }
+                <th>
+                    @Html.DisplayNameFor(model => model.DateUploaded)
+                </th>
             </tr>
         </thead>
         <tbody>
     @foreach (var item in Model) {
             <tr class="align-text-bottom">
-                <td>
+                <td class="w-25">
                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Edit</a>
+                    <a class="btn btn-secondary" onclick="confirmDelete(@item.Id)">Delete</a>
+                    <a asp-action="Transfer" asp-route-id="@item.Id" class="btn btn-secondary">Transfer</a>
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Name)
+                    @Html.DisplayFor(modelItem => item.OriginalFilename)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateUploaded)
-                </td>
+                @if(item.SubCategory == "N/A")
+                    {
+                      <td>
+                          <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = item.Company, yearFolderName = item.Year, departmentFolderName = item.Department, documentTypeFolderName = item.Category})">~@item.Company / @item.Year / @item.Department / @item.Category</a>
+                      </td>
+                    }
+                    else
+                    {
+                      <td>
+                         <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = item.Company, yearFolderName = item.Year, departmentFolderName = item.Department, documentTypeFolderName = item.Category, subCategoryFolder = item.SubCategory})">~@item.Company / @item.Year / @item.Department / @item.Category / @item.SubCategory</a>
+                      </td>
+                    }
                 @if (userrole == "admin") {
                      <td>
                          @Html.DisplayFor(modelItem => item.Username)
                      </td>
-                }            
+                }
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateUploaded)
+                </td>
             </tr>
     }
         </tbody>
     </table>
 </div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id) {
+            console.log(id);
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var url = `/DMS/Delete?id=${id}`;
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
+}

@@ -41,6 +41,13 @@ $(document).ready(function () {
     $('#myTable').DataTable();
 });
 
+//sorting remove sorting
+$(document).ready(function () {
+    $('#myTableNoSort').DataTable({
+        "ordering": false
+    });
+});
+
 //myOwnTable in gatepass
 $(document).ready(function () {
     var currentPage = 0; // Store the current page number
@@ -78,10 +85,29 @@ $(document).ready(function () {
 $(document).ready(function () {
     $("#categoryDropdown").select2({
         placeholder: "Select a category...",
-        allowClear: true
+        allowClear: true,
+        width: 'resolve'
     });
     $("#departmentDropdown").select2({
         placeholder: "Select a department...",
-        allowClear: true
+        allowClear: true,
+        width: 'resolve'
+    });
+    $("#companyDropdown").select2({
+        placeholder: "Select a company...",
+        allowClear: true,
+        width: 'resolve'
+    });
+    $("#yearDropdown").select2({
+        width: 'resolve'
+    });
+    $("#subCategoryDropdown").select2({
+        placeholder: "Select a sub-category...",
+    });
+    $("#deliveryDropdown").select2({
+        placeholder: "Select a sub-category...",
+    });
+    $("#governmentDropdown").select2({
+        placeholder: "Select a sub-category...",
     });
 });

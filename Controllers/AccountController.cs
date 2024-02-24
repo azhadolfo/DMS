@@ -155,6 +155,7 @@ namespace Document_Management.Controllers
                     HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
                     HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user folder access in session
                     HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess); // Store user module access in session
+                    HttpContext.Session.SetString("userfirstname", user.FirstName); // Store user module access in session
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -246,8 +247,16 @@ namespace Document_Management.Controllers
                     // Check if a new password is provided
                     if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
                     {
-                        // Hash and update the new password
-                        user.Password = HashPassword(newPassword);
+                        if (newPassword == newConfirmPassword)
+                        {
+                            // Hash and update the new password
+                            user.Password = HashPassword(newPassword);
+                        }
+                        else
+                        {
+                            TempData["error"] = "Password is not the same";
+                            return View(model);
+                        }
                     }
 
                     // Join the selected departments into a comma-separated string

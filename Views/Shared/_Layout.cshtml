@@ -26,7 +26,7 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+        <nav class="navbar navbar-expand-lg" data-bs-theme="dark" style="background-color:#00008B;">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">F O S</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,8 +45,8 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Index">Users</a>
                             </li>
-                        }    
-                        @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "Gatepass"))
+                        }
+                        @* @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "Gatepass"))
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Gatepass</a>
@@ -56,12 +56,12 @@
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" asp-controller="Gatepass" asp-action="Validator">Validator</a>
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" asp-controller="Gatepass" asp-action="ReceivedGP">List of Request</a>
+                                    <a class="dropdown-item" asp-controller="Gatepass" asp-action="ReceivedGP">List of Request</a> *@
                                     @*    <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#">Separated link</a> *@
-                                </div>
+                          @*       </div>
                             </li>
-                        }                       
+                        }   *@
                         @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "DMS"))
                         {
                             <li class="nav-item dropdown">
@@ -73,7 +73,7 @@
                                     <a class="dropdown-item" asp-controller="Dms" asp-action="Index">Uploaded Files</a>
                                 </div>
                             </li>
-                        }                      
+                        }
                         @if (userrole == "admin")
                         {
                             <li class="nav-item">
@@ -81,10 +81,17 @@
                             </li>
                         }
                     </ul>
-                    <partial name="_LoginPartial" /> 
-                </div>             
+                    @if (!string.IsNullOrEmpty(userrole))
+                    {
+                        <form class="d-flex" asp-controller="Dms" asp-action="GeneralSearch">
+                            <input name="search" class="form-control me-sm-2" type="search" placeholder="Search">
+                            <button class="btn btn-secondary my-2 my-sm-0 rounded" type="submit">Search</button>
+                        </form>
+                    }
+                    <partial name="_LoginPartial" />
+                </div>
             </div>
-            
+
         </nav>
     </header>
     <div class="container">
@@ -96,7 +103,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2023 - Filpride Online Systems - <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+            &copy; 2023 - FOS v1.0.0 - <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

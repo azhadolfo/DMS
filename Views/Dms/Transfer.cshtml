@@ -1,0 +1,195 @@
+﻿@using Document_Management.Models.Enums
+@using System.ComponentModel.DataAnnotations;
+@model Document_Management.Models.FileDocument
+
+@{
+    ViewData["Title"] = "Transfer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Transfer Files</h1>
+<hr />
+<div class="row">
+    <div class="col">
+    <form asp-action="Transfer">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="Id" />
+        <div class="form-group mb-3">
+            <label asp-for="OriginalFilename" class="form-label"></label>
+            <input asp-for="OriginalFilename" class="form-control" disabled readonly />
+            <span asp-validation-for="OriginalFilename" class="text-danger"></span>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="Company" class="form-label"></label>
+            <div class="col">
+                <select asp-for="Company" class="form-select" id="companyDropdown" style="width:100%">
+                    <option value="" selected disabled>-- Select the company --</option>
+                    @foreach (var company in Enum.GetValues(typeof(Companies)))
+                    {
+                        var enumMember = typeof(Companies).GetMember(company.ToString())[0];
+                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                        string displayName = displayAttribute != null ? displayAttribute.Name : company.ToString();
+
+                        <option value="@company">@displayName</option>
+                    }
+                </select>
+                <span asp-validation-for="Company" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="Year" class="form-label"></label>
+            <div class="col">
+                <select asp-for="Year" id="yearDropdown" class="form-select" style="width:100%"></select>
+                <span asp-validation-for="Year" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="Department" class="form-label"></label>
+            <div class="col">
+                <select asp-for="Department" class="form-select" id="departmentDropdown" style="width:100%">
+                    <option value="" selected disabled>-- Select the department --</option>
+                    @foreach (var department in Enum.GetValues(typeof(Departments)))
+                    {
+                        var enumMember = typeof(Departments).GetMember(department.ToString())[0];
+                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                        string displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
+
+                        <option value="@department">@displayName</option>
+                    }
+                </select>
+                <span asp-validation-for="Department" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="Category" class="form-label"></label>
+            <div class="col">
+                <select asp-for="Category" class="form-select" id="categoryDropdown" style="width:100%">
+                    <option value="" selected disabled>-- Select the category --</option>
+                    @foreach (var category in Enum.GetValues(typeof(Categories)))
+                    {
+                        var enumMember = typeof(Categories).GetMember(category.ToString())[0];
+                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                        string displayName = displayAttribute != null ? displayAttribute.Name : category.ToString();
+
+                        <option value="@category">@displayName</option>
+                    }
+                </select>
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+        </div>
+        <!--Delivery Documents Sub Category Dropdown-->
+        <div class="form-group mb-3" id="deliverySubCategories" style="display: none;">
+            <label asp-for="SubCategory" class="form-label"></label>
+            <div class="col">
+                <select asp-for="SubCategory" class="form-select" id="deliveryDropdown" style="width:100%">
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var delivery in Enum.GetValues(typeof(DeliverySubCategories)))
+                    {
+                        var enumMember = typeof(DeliverySubCategories).GetMember(delivery.ToString())[0];
+                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                        string displayName = displayAttribute != null ? displayAttribute.Name : delivery.ToString();
+
+                        <option value="@delivery">@displayName</option>
+                    }
+                </select>
+                <span asp-validation-for="SubCategory" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!--Government Agency Documents Sub Category Dropdown-->
+        <div class="form-group mb-3" id="governmentSubCategories" style="display: none;">
+            <label asp-for="SubCategory" class="form-label"></label>
+            <div class="col">
+                    <select asp-for="SubCategory" class="form-select" id="governmentDropdown" style="width:100%">
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var government in Enum.GetValues(typeof(GovernmentSubCategories)))
+                    {
+                        var enumMember = typeof(GovernmentSubCategories).GetMember(government.ToString())[0];
+                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                        string displayName = displayAttribute != null ? displayAttribute.Name : government.ToString();
+
+                        <option value="@government">@displayName</option>
+                    }
+                </select>
+                <span asp-validation-for="SubCategory" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group mb-3">
+                <input type="submit" value="Transfer" class="btn btn-secondary" />
+                <a asp-action="Index" class="btn btn-primary">Back</a>
+        </div>
+    </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        var dropdown = document.getElementById('yearDropdown');
+        var currentYear = new Date().getFullYear();
+        var yearsInPast = 20; // Number of years in the past
+        var yearsInFuture = 10; // Number of years in the future
+
+        // Populate the dropdown with years
+        for (var i = currentYear - yearsInPast; i <= currentYear + yearsInFuture; i++) {
+            var option = document.createElement('option');
+            option.value = i;
+            option.text = i;
+
+            if (i === currentYear) {
+                option.setAttribute('selected', 'selected'); // Set the current year as the default
+            }
+            dropdown.value = @Model.Year;
+            dropdown.appendChild(option);
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            var dropdown = $('#categoryDropdown');
+            var selectedValue = dropdown.val();
+
+            if (selectedValue === 'Delivery_Documents') {
+                $('#deliverySubCategories').show();
+            } else {
+                $('#deliverySubCategories').hide();
+            }
+
+            if (selectedValue === 'Government_Agency_Documents') {
+                $('#governmentSubCategories').show();
+            } else {
+                $('#governmentSubCategories').hide();
+            }
+
+            // Implement the change event
+            dropdown.change(function () {
+                var newValue = $(this).val();
+                console.log("New value:", newValue);
+
+                // Perform actions based on the new value
+                if (newValue === 'Delivery_Documents') {
+                    $('#deliverySubCategories').show();
+                } else {
+                    $('#deliverySubCategories').hide();
+                }
+
+                if (newValue === 'Government_Agency_Documents') {
+                    $('#governmentSubCategories').show();
+                } else {
+                    $('#governmentSubCategories').hide();
+                }
+            });
+        });
+
+    </script>
+
+}
