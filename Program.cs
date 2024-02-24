@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 //New added middleware
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -13,6 +14,7 @@ options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")
 
 // Configure session services
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
 
 //DI
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
