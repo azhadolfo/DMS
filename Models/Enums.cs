@@ -17,6 +17,10 @@ namespace Document_Management.Models.Enums
 
         Logistics,
         Marketing,
+
+        [Display(Name = "Management Accounting")]
+        Management_Accounting,
+
         MIS,
         Operation,
         RCD,
@@ -68,6 +72,9 @@ namespace Document_Management.Models.Enums
 
         [Display(Name = "Check Vouchers")]
         Check_Vouchers,
+
+        [Display(Name = "Daily Cashier Report")]
+        Daily_Cashier_Report,
 
         [Display(Name = "Delivery Documents")]
         Delivery_Documents,
