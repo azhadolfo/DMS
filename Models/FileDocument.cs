@@ -27,7 +27,6 @@ namespace Document_Management.Models
         public string? Department { get; set; }
 
         [Required(ErrorMessage = "Description is required.")]
-        [StringLength(255, ErrorMessage = "Description must be less than 255 characters.")]
         [Display(Name = "Description")]
         public string? Description { get; set; }
 
