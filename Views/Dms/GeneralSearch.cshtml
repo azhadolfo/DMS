@@ -5,11 +5,12 @@
 
 <h1>File Search Results</h1>
 <hr />
-
-<div class="table-responsive">
-    <table class="table table-hover">
+@if (Model.Any())
+{
+    <div class="table-responsive">
+    <table class="table table-hover" id="newBetterTable">
         <thead>
-            <tr class="text-nowrap table-active">
+            <tr class="text-nowrap">
                 <th scope="col">File Name</th>
                 <th scope="col">Description</th>
                 <th scope="col">Location Folder</th>
@@ -26,13 +27,13 @@
                     @if(file.SubCategory == "N/A")
                     {
                       <td>
-                          <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category})">~@file.Company / @file.Year / @file.Department / @file.Category</a>
+                          <a title="@file.Company/@file.Year/@file.Department/@file.Category" href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category})">Click to download file</a>
                       </td>
                     }
                     else
                     {
                       <td>
-                         <a title="Click to download file." href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category, subCategoryFolder = file.SubCategory})">~@file.Company / @file.Year / @file.Department / @file.Category / @file.SubCategory</a>
+                         <a title="@file.Company/@file.Year/@file.Department/@file.Category/@file.SubCategory" href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = file.Company, yearFolderName = file.Year, departmentFolderName = file.Department, documentTypeFolderName = file.Category, subCategoryFolder = file.SubCategory})">Click to download file</a>
                       </td>
                     }
                     <td>@file.Username</td>
@@ -42,3 +43,8 @@
         </tbody>
     </table>
 </div>
+}
+else
+{
+    <p><i>No file found for this keywords.</i></p>
+}

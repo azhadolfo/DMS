@@ -17,6 +17,7 @@ $(document).ready(function () {
     $('#myTable').DataTable();
 });
 
+
 //sorting remove sorting
 $(document).ready(function () {
     $('#myTableNoSort').DataTable({
@@ -28,34 +29,28 @@ $(document).ready(function () {
 $(document).ready(function () {
     var currentPage = 0; // Store the current page number
 
-    var table = $('#myOwnTable').DataTable({
+    var newBetterTable = $('#newBetterTable').DataTable({
         "order": [[0, "desc"]],
         "rowId": "pk",
         "stateSave": true,
         "drawCallback": function (settings) {
-            // Get the row identifiers of the rows that are currently visible
-            var visibleRows = table.rows({ page: 'current' }).data().toArray();
-            table.state.save();
-            // If visibleRows is empty, it means the table is empty (no rows)
-            if (visibleRows.length === 0) {
-                currentPage = 0; // Reset current page when there are no rows
+            var indexes = newBetterTable.rows({ page: 'current' }).indexes();
+            if (indexes.length === 0) {
+                currentPage = 0;
             } else {
-                // Find the index of the first visible row's "pk" value in the dataset
-                var indexOfFirstVisibleRow = table.rows({ page: 'current' }).indexes()[0];
-                var firstVisibleRowData = table.row(indexOfFirstVisibleRow).data();
-                currentPage = visibleRows.indexOf(firstVisibleRowData);
-                table.state.load();
+                currentPage = indexes[0];
             }
         }
     });
 
-    // Load your initial data here (e.g., using table.clear().rows.add() and table.draw())
+    // Load your initial data here (e.g., using newBetterTable.clear().rows.add() and newBetterTable.draw())
 
-    // You can also set an event handler to handle page changes
-    table.on('page.dt', function () {
-        currentPage = table.page.info().page;
+    newBetterTable.on('page.dt', function () {
+        currentPage = newBetterTable.page.info().page;
     });
 });
+
+
 
 //dropwdown
 $(document).ready(function () {
