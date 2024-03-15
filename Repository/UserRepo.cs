@@ -13,44 +13,42 @@ namespace Document_Management.Repository
             this.dbContext = dbContext;
         }
 
-        public async Task<Register?> GetUserDetails(string username, string password)
+        public async Task<Register?> GetUserDetails(string username, string password, CancellationToken cancellationToken = default)
         {
-            return await dbContext.Account.FirstOrDefaultAsync(user => user.Username == username && user.Password == password);
+            return await dbContext.Account.FirstOrDefaultAsync(user => user.Username == username && user.Password == password, cancellationToken);
         }
 
-        public async Task<bool> CheckIfFileExists(string originalfile)
+        public async Task<bool> CheckIfFileExists(string originalfile, CancellationToken cancellationToken = default)
         {
             return await dbContext
                 .FileDocuments
-                .AnyAsync(f => f.OriginalFilename == originalfile);
+                .AnyAsync(f => f.OriginalFilename == originalfile, cancellationToken);
         }
 
-        public async Task<List<FileDocument>> DisplayAllUploadedFiles()
+        public async Task<List<FileDocument>> DisplayAllUploadedFiles(CancellationToken cancellationToken = default)
         {
             return await dbContext.FileDocuments
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<FileDocument>> DisplayUploadedFiles(string username)
+        public async Task<List<FileDocument>> DisplayUploadedFiles(string username, CancellationToken cancellationToken = default)
         {
             return await dbContext.FileDocuments
                 .Where(file => file.Username == username)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<FileDocument?> GetUploadedFiles(int id)
+        public async Task<FileDocument?> GetUploadedFiles(int id, CancellationToken cancellationToken = default)
         {
-            return await dbContext.FileDocuments.FindAsync(id);
+            return await dbContext.FileDocuments.FindAsync(id, cancellationToken);
         }
 
         public List<FileDocument> SearchFile(string[] keywords)
         {
-            var results = dbContext.FileDocuments
+            return dbContext.FileDocuments
                 .AsEnumerable() // Switch to client-side evaluation
-                .Where(f => keywords.All(k => f.Description.ToUpper().Contains(k.ToUpper())))
+                .Where(f => keywords.All(k => f.Description.Contains(k, StringComparison.CurrentCultureIgnoreCase)))
                 .ToList();
-
-            return results;
         }
     }
 }

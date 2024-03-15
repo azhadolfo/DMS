@@ -12,78 +12,56 @@ namespace Document_Management.Controllers
 
         private readonly UserRepo _userRepo;
 
-        private readonly string? username;
-
-        private readonly string? userRole;
-
-        private readonly bool HasAccess;
-
         private readonly ILogger<HomeController> _logger;
 
         //Database Context
         private readonly ApplicationDbContext _dbcontext;
 
         //Inject the services in to another variable
-        public DmsController(IWebHostEnvironment hostingEnvironment, ApplicationDbContext context, UserRepo userRepo, IHttpContextAccessor httpContextAccessor, ILogger<HomeController> logger)
+        public DmsController(IWebHostEnvironment hostingEnvironment, ApplicationDbContext context, UserRepo userRepo, ILogger<HomeController> logger)
         {
             _hostingEnvironment = hostingEnvironment;
             _dbcontext = context;
             _userRepo = userRepo;
-
-            // Ensure that HttpContext and the session value are not null
-            if (httpContextAccessor.HttpContext != null)
-            {
-                userRole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
-                username = httpContextAccessor.HttpContext.Session.GetString("username");
-                var userModuleAccess = httpContextAccessor.HttpContext.Session.GetString("usermoduleaccess");
-                var userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
-
-                if (userRole == "admin" || userAccess.Any(module => module.Trim() == "DMS"))
-                {
-                    HasAccess = true;
-                }
-            }
-            else
-            {
-                userRole = null; // or set a default value as needed
-                username = null;
-            }
             _logger = logger;
+        }
+
+        private IActionResult CheckAccess()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("username")))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+            var userModuleAccess = HttpContext.Session.GetString("usermoduleaccess");
+            var userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
+
+            if (userRole != "admin" && !userAccess.Any(module => module.Trim() == "DMS"))
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
+            }
+
+            return null;
         }
 
         //Get for the Action Dms/Upload
         [HttpGet]
         public IActionResult UploadFile()
         {
-            if (!string.IsNullOrEmpty(username))
-            {
-                if (!HasAccess)
-                {
-                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-                }
-
-                return View(new FileDocument());
-            }
-            else
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            var accessCheckResult = CheckAccess();
+            return accessCheckResult == null ? View(new FileDocument()) : accessCheckResult;
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile file, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
 
             try
@@ -94,8 +72,9 @@ namespace Document_Management.Controllers
                     {
                         if (file.Length <= 20000000)
                         {
-                            if (!await _userRepo.CheckIfFileExists(file.FileName))
+                            if (!await _userRepo.CheckIfFileExists(file.FileName, cancellationToken))
                             {
+                                var username = HttpContext.Session.GetString("username");
                                 var filename = Path.GetFileName(file.FileName);
                                 var uniquePart = $"{fileDocument.Department}_{DateTime.Now:yyyyMMddHHmmssfff}";
                                 filename = filename.Replace("#", "");
@@ -175,15 +154,10 @@ namespace Document_Management.Controllers
 
         public IActionResult DownloadFile()
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
@@ -195,15 +169,10 @@ namespace Document_Management.Controllers
         {
             ViewBag.FolderName = folderName;
 
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
@@ -217,15 +186,10 @@ namespace Document_Management.Controllers
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
 
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
@@ -240,15 +204,10 @@ namespace Document_Management.Controllers
             ViewBag.YearFolder = yearFolderName;
             ViewBag.DepartmentFolder = departmentFolderName;
 
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
 
             // Retrieve the user's department from the session or any other method you're using
@@ -277,15 +236,10 @@ namespace Document_Management.Controllers
             ViewBag.DepartmentFolder = departmentFolderName;
             ViewBag.DocumentTypeFolder = documentTypeFolderName;
 
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
@@ -296,15 +250,10 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> DisplayFiles(string departmentFolderName, string companyFolderName, string yearFolderName, string documentTypeFolderName, string? subCategoryFolder)
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
 
             ViewBag.CompanyFolder = companyFolderName;
@@ -365,62 +314,57 @@ namespace Document_Management.Controllers
 
         //GET the uploaded files
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
+                return accessCheckResult;
             }
 
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-            }
+            var username = HttpContext.Session.GetString("username");
+            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
 
             if (userRole == "admin")
             {
-                var files = await _userRepo.DisplayAllUploadedFiles();
+                var files = await _userRepo.DisplayAllUploadedFiles(cancellationToken);
                 return View(files);
             }
             else
             {
-                var files = await _userRepo.DisplayUploadedFiles(username);
+                var files = await _userRepo.DisplayUploadedFiles(username, cancellationToken);
                 return View(files);
             }
         }
 
         //GET for Editing
         [HttpGet]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            if (!HasAccess)
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
-            var files = await _userRepo.GetUploadedFiles(id);
+
+            var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
             return View(files);
         }
 
         //POST for Editing
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(FileDocument model)
+        public async Task<IActionResult> Edit(FileDocument model, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
+                return accessCheckResult;
             }
 
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-            }
-
+            var username = HttpContext.Session.GetString("username");
             var file = await _dbcontext.FileDocuments
-                .FindAsync(model.Id);
+                .FindAsync(model.Id, cancellationToken);
 
             if (file == null)
             {
@@ -434,9 +378,9 @@ namespace Document_Management.Controllers
 
                 // Implementing the logs
                 LogsModel logs = new(username, $"Update the details of file# {file.Id}.");
-                _dbcontext.Logs.Add(logs);
+                await _dbcontext.Logs.AddAsync(logs, cancellationToken);
 
-                await _dbcontext.SaveChangesAsync();
+                await _dbcontext.SaveChangesAsync(cancellationToken);
                 TempData["success"] = "File details updated successfully";
                 return RedirectToAction("Index");
             }
@@ -446,9 +390,10 @@ namespace Document_Management.Controllers
 
         public IActionResult GeneralSearch(string search)
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
+                return accessCheckResult;
             }
 
             var keywords = search.Split(' ');
@@ -459,17 +404,12 @@ namespace Document_Management.Controllers
             return View(result);
         }
 
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                return accessCheckResult;
             }
 
             if (id == 0)
@@ -477,9 +417,11 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
+            var username = HttpContext.Session.GetString("username");
+
             var model = await _dbcontext
                 .FileDocuments
-                .FindAsync(id);
+                .FindAsync(id, cancellationToken);
 
             if (model != null)
             {
@@ -494,16 +436,18 @@ namespace Document_Management.Controllers
 
                     // Implementing the logs
                     LogsModel logs = new(username, $"Delete the file: {model.Name}.");
-                    _dbcontext.Logs.Add(logs);
+                    await _dbcontext.Logs.AddAsync(logs, cancellationToken);
 
-                    await _dbcontext.SaveChangesAsync();
+                    await _dbcontext.SaveChangesAsync(cancellationToken);
                     TempData["success"] = "File has been deleted.";
-                    return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
-                    return RedirectToAction("Error");
+                    _logger.LogError(ex, "Error occurred during file deletion.");
+                    TempData["error"] = "Failed to delete file.";
                 }
+
+                return RedirectToAction(nameof(Index));
             }
             else
             {
@@ -512,20 +456,15 @@ namespace Document_Management.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Transfer(int id)
+        public async Task<IActionResult> Transfer(int id, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
+                return accessCheckResult;
             }
 
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-            }
-
-            var files = await _userRepo.GetUploadedFiles(id);
+            var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
 
             if (files != null)
             {
@@ -539,22 +478,19 @@ namespace Document_Management.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Transfer(FileDocument model)
+        public async Task<IActionResult> Transfer(FileDocument model, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(username))
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
             {
-                return RedirectToAction("Login", "Account");
+                return accessCheckResult;
             }
 
-            if (!HasAccess)
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-            }
+            var username = HttpContext.Session.GetString("username");
 
             var existingModel = await _dbcontext
                 .FileDocuments
-                .FindAsync(model.Id);
+                .FindAsync(model.Id, cancellationToken);
 
             if (existingModel != null)
             {
@@ -601,11 +537,11 @@ namespace Document_Management.Controllers
 
                 // Implementing the logs
                 LogsModel logs = new(username, $"Transfer the file: {existingModel.OriginalFilename}.");
-                _dbcontext.Logs.Add(logs);
+                await _dbcontext.Logs.AddAsync(logs, cancellationToken);
 
                 existingModel.Location = filePath;
 
-                await _dbcontext.SaveChangesAsync();
+                await _dbcontext.SaveChangesAsync(cancellationToken);
 
                 TempData["success"] = "File successfully transfered.";
                 return RedirectToAction(nameof(Index));

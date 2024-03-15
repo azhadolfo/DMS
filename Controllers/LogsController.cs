@@ -15,7 +15,7 @@ namespace Document_Management.Controllers
             _dbcontext = context;
         }
 
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> IndexAsync(CancellationToken cancellationToken)
         {
             var userrole = HttpContext.Session.GetString("userrole");
 
@@ -27,7 +27,7 @@ namespace Document_Management.Controllers
 
             var logs = await _dbcontext.Logs
                 .OrderByDescending(u => u.Date)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return View(logs);
         }
