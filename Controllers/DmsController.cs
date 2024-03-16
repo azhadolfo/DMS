@@ -506,11 +506,10 @@ namespace Document_Management.Controllers
 
                 string newPath;
 
-                if (model.SubCategory == null)
+                if (model.SubCategory == "N/A")
                 {
                     // Determine the subdirectory based on the selected department
                     newPath = Path.Combine("Files", model.Company, model.Year, model.Department, model.Category);
-                    existingModel.SubCategory = "N/A";
                 }
                 else
                 {
