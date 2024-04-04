@@ -5,3 +5,4 @@
 # v1.0.3 - Add new category and department - 3/14/2024
 # v2.0.0 - Upgrade to .Net 8 and optimizing codes - 3/15/2024
 # v2.0.1 - Fix the transfer creating unnecessary folder that's why the file can't locate - 3/16/2024
+# v2.0.2 - Add restriction in deleting file, only File Custodian can delete file and fix the error in search bar if the user empty the search - 4/4/2024
