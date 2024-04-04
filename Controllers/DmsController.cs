@@ -394,6 +394,11 @@ namespace Document_Management.Controllers
                 return accessCheckResult;
             }
 
+            if (String.IsNullOrEmpty(search))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             var keywords = search.Split(' ');
 
             var result = _userRepo
@@ -416,6 +421,11 @@ namespace Document_Management.Controllers
             }
 
             var username = HttpContext.Session.GetString("username");
+
+            if (username != "aldrin")
+            {
+                return NoContent();
+            }
 
             var model = await _dbcontext
                 .FileDocuments
