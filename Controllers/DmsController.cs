@@ -422,11 +422,6 @@ namespace Document_Management.Controllers
 
             var username = HttpContext.Session.GetString("username");
 
-            if (username != "aldrin")
-            {
-                return NoContent();
-            }
-
             var model = await _dbcontext
                 .FileDocuments
                 .FindAsync(id, cancellationToken);
