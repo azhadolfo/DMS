@@ -1,6 +1,6 @@
-# File Organization System (FOS)
+# Document Management Sytem (DMS)
 
-Welcome to the File Organization System (FOS) repository! FOS is a system designed to help you organize and manage your files efficiently.
+Welcome to the Document Management System (DMS) repository! DMS is a system designed to help you organize and manage your files efficiently.
 
 ## Version History
 
@@ -15,7 +15,7 @@ Welcome to the File Organization System (FOS) repository! FOS is a system design
 
 ## Getting Started
 
-To get started with FOS, please refer to the [documentation](link_to_documentation) for installation and usage instructions.
+To get started with DMS, please refer to the [documentation](link_to_documentation) for installation and usage instructions.
 
 ## Feedback
 
