@@ -47,7 +47,7 @@
                         }
                     </select>
                 <span asp-validation-for="Department" class="text-danger"></span>
-             </div>   
+             </div>
             <div class="mb-3">
                 <label asp-for="Username" class="form-label"></label>
                 <input asp-for="Username" class="form-control" />
@@ -79,7 +79,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Module Access:</label>
-                @foreach (var modules in new List<string> { "DMS", "Gatepass"})
+                @foreach (var modules in new List<string> { "DMS"})
                 {
                     <div>
                         <input type="checkbox" name="ModuleAccess" value="@modules" /> @modules
@@ -97,7 +97,7 @@
                     </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
-            <div class="mb-3">  
+            <div class="mb-3">
                 <input type="submit" value="Save" class="btn btn-secondary" />
                 <a asp-action="Index" class="btn btn-primary">Back to List</a>
             </div>

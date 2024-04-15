@@ -14,43 +14,19 @@ toastr.options = {
 
 //sorting
 $(document).ready(function () {
-    $('#myTable').DataTable();
+    $('#myTable').DataTable({
+        "stateSave": true,
+        "deferRender": true
+    });
 });
-
 
 //sorting remove sorting
 $(document).ready(function () {
     $('#myTableNoSort').DataTable({
-        "ordering": false
+        "ordering": false,
+        "stateSave": true
     });
 });
-
-//myOwnTable in gatepass
-$(document).ready(function () {
-    var currentPage = 0; // Store the current page number
-
-    var newBetterTable = $('#newBetterTable').DataTable({
-        "order": [[0, "desc"]],
-        "rowId": "pk",
-        "stateSave": true,
-        "drawCallback": function (settings) {
-            var indexes = newBetterTable.rows({ page: 'current' }).indexes();
-            if (indexes.length === 0) {
-                currentPage = 0;
-            } else {
-                currentPage = indexes[0];
-            }
-        }
-    });
-
-    // Load your initial data here (e.g., using newBetterTable.clear().rows.add() and newBetterTable.draw())
-
-    newBetterTable.on('page.dt', function () {
-        currentPage = newBetterTable.page.info().page;
-    });
-});
-
-
 
 //dropwdown
 $(document).ready(function () {

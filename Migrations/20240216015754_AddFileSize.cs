@@ -10,12 +10,7 @@ namespace Document_Management.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<long>(
-                name: "FileSize",
-                table: "FileDocuments",
-                type: "bigint",
-                nullable: false,
-                defaultValue: 0L);
+
         }
 
         /// <inheritdoc />
