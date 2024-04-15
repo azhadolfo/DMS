@@ -17,6 +17,11 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> IndexAsync(CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("username")))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var userrole = HttpContext.Session.GetString("userrole");
 
             if (userrole != "Admin")
