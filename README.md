@@ -19,4 +19,4 @@ To get started with DMS, please refer to the [documentation](link_to_documentati
 
 ## Feedback
 
-If you have any feedback, suggestions, or issues, please feel free to open an [issue](https://github.com/azhadolfo/FOS/issues) or submit a [pull request](https://github.com/azhadolfo/FOS/pulls). We welcome your contributions to make FOS even better!
+If you have any feedback, suggestions, or issues, please feel free to open an [issue](https://github.com/azhadolfo/DMS/issues) or submit a [pull request](https://github.com/azhadolfo/DMS/pulls). We welcome your contributions to make DMS even better!
