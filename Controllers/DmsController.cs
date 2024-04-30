@@ -436,8 +436,6 @@ namespace Document_Management.Controllers
                         System.IO.File.Delete(model.Location);
                     }
 
-                    Thread.Sleep(5000);
-
                     _dbcontext.Remove(model);
 
                     // Implementing the logs
