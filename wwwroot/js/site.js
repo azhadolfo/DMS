@@ -16,9 +16,34 @@ toastr.options = {
 $(document).ready(function () {
     $('#myTable').DataTable({
         "stateSave": true,
-        "deferRender": true
+        "deferRender": true,
+        "paging": true, // Enable pagination
+        "lengthChange": true, // Disable length change
+        "searching": true, // Enable search box
+        "info": true, // Enable table information display
+        "autoWidth": false, // Disable auto width calculation
+        "order": [], // Disable initial sorting
+        "columnDefs": [
+            { "targets": 'no-sort', "orderable": false } // Disable sorting for specific columns
+        ],
+        "language": {
+            "emptyTable": "No data available in table",
+            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+            "infoEmpty": "Showing 0 to 0 of 0 entries",
+            "infoFiltered": "(filtered from _MAX_ total entries)",
+            "zeroRecords": "No matching records found",
+            "lengthMenu": "Show _MENU_ entries",
+            "search": "Search:",
+            "paginate": {
+                "first": "First",
+                "last": "Last",
+                "next": "Next",
+                "previous": "Previous"
+            }
+        }
     });
 });
+
 
 //sorting remove sorting
 $(document).ready(function () {

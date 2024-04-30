@@ -6,93 +6,122 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     var userrole = Context.Session.GetString("userrole")?.ToLower();
 }
+<div class="loading">
+    <div class="d-flex align-items-center">
+        <strong role="status">Loading...</strong>
+        <div class="spinner-border ms-auto" aria-hidden="true"></div>
+    </div>
+</div>
 
-<partial name="_Notification" />
-
-<h1>@ViewData["Title"]</h1>
-
-<p>
-    <a asp-action="UploadFile" class="btn btn-secondary">Upload New</a>
-</p>
-<div class="table-responsive">
-    <table class="table table-hover" id="myTable" style="table-layout: fixed; width: 100%;">
-        <colgroup>
-            <col style="width: 23%;" />
-            <col style="width: 25%;" />
-            <col style="width: 15%;" />
-            <col style="width: 15%;" />
-            @if (userrole == "admin")
-            {
-                <col style="width: 15%;" />
-            }
-            <col style="width: 15%;" />
-        </colgroup>
-        <thead>
-            <tr class="text-nowrap">
-                <th></th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Description)
-                </th>
-                <th>Location Folder</th>
-                @if (userrole == "admin")
-                {
-                    <th>
-                        Uploaded By
-                    </th>
-                }
-                <th>
-                    @Html.DisplayNameFor(model => model.DateUploaded)
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.OrderByDescending(f => f.DateUploaded))
-            {
-                <tr class="align-text-bottom">
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Edit</a>
-                        <a class="btn btn-secondary" onclick="confirmDelete(@item.Id)">Delete</a>
-                        <a asp-action="Transfer" asp-route-id="@item.Id" class="btn btn-secondary">Transfer</a>
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.OriginalFilename)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                    @if (item.SubCategory == "N/A")
-                    {
-                        <td>
-                            <a title="@item.Company/@item.Year/@item.Department/@item.Category" href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = item.Company, yearFolderName = item.Year, departmentFolderName = item.Department, documentTypeFolderName = item.Category})">Location Path</a>
-                        </td>
-                    }
-                    else
-                    {
-                        <td>
-                            <a title="@item.Company/@item.Year/@item.Department/@item.Category/@item.SubCategory" href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = item.Company, yearFolderName = item.Year, departmentFolderName = item.Department, documentTypeFolderName = item.Category, subCategoryFolder = item.SubCategory})">Location Path</a>
-                        </td>
-                    }
-                    @if (userrole == "admin")
-                    {
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Username)
-                        </td>
-                    }
-                    <td>
-                        @Html.DisplayFor(modelItem => item.DateUploaded)
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="overlay" id="overlay">
+    <div class="spinner-container">
+        <div class="spinner"></div>
+    </div>
 </div>
 
 
+<div class="content" style="display:none">
+    <partial name="_Notification" />
+
+    <h2><b>UPLOADED FILES</b></h2>
+    <p>
+        <a asp-action="UploadFile" class="btn btn-secondary">Upload New</a>
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-hover" id="myTable" style="table-layout: fixed; width: 100%;">
+            <colgroup>
+                <col style="width: 23%;" />
+                <col style="width: 25%;" />
+                <col style="width: 15%;" />
+                <col style="width: 15%;" />
+                @if (userrole == "admin")
+                {
+                    <col style="width: 15%;" />
+                }
+                <col style="width: 15%;" />
+            </colgroup>
+            <thead>
+                <tr class="text-nowrap">
+                    <th></th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Name)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Description)
+                    </th>
+                    <th>Location Folder</th>
+                    @if (userrole == "admin")
+                    {
+                        <th>
+                            Uploaded By
+                        </th>
+                    }
+                    <th>
+                        @Html.DisplayNameFor(model => model.DateUploaded)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderByDescending(f => f.DateUploaded))
+                {
+                    <tr class="align-text-bottom">
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Edit</a>
+                            <a class="btn btn-secondary" onclick="confirmDelete(@item.Id)">Delete</a>
+                            <a asp-action="Transfer" asp-route-id="@item.Id" class="btn btn-secondary">Transfer</a>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.OriginalFilename)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Description)
+                        </td>
+                        @if (item.SubCategory == "N/A")
+                        {
+                            <td>
+                                <a title="@item.Company/@item.Year/@item.Department/@item.Category" href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = item.Company, yearFolderName = item.Year, departmentFolderName = item.Department, documentTypeFolderName = item.Category})">Location Path</a>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                <a title="@item.Company/@item.Year/@item.Department/@item.Category/@item.SubCategory" href="@Url.Action("DisplayFiles", "Dms", new { companyFolderName = item.Company, yearFolderName = item.Year, departmentFolderName = item.Department, documentTypeFolderName = item.Category, subCategoryFolder = item.SubCategory})">Location Path</a>
+                            </td>
+                        }
+                        @if (userrole == "admin")
+                        {
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Username)
+                            </td>
+                        }
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DateUploaded)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        window.addEventListener("load", function () {
+            var loading = document.querySelector(".loading");
+            var content = document.querySelector(".content");
+            loading.style.display = "none";
+            content.style.display = "block";
+        });
+
+        function showOverlay() {
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function hideOverlay() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+
         function confirmDelete(id) {
             Swal.fire({
                 title: "Are you sure?",
@@ -104,6 +133,7 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
+                    showOverlay();
                     var url = `/DMS/Delete?id=${id}`;
                     window.location.href = url;
                 }

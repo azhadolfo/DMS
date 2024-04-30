@@ -323,6 +323,7 @@ namespace Document_Management.Controllers
             var username = HttpContext.Session.GetString("username");
             var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
 
+
             if (userRole == "admin")
             {
                 var files = await _userRepo.DisplayAllUploadedFiles(cancellationToken);
@@ -434,6 +435,8 @@ namespace Document_Management.Controllers
                     {
                         System.IO.File.Delete(model.Location);
                     }
+
+                    Thread.Sleep(5000);
 
                     _dbcontext.Remove(model);
 
