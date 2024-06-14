@@ -4,6 +4,7 @@ Welcome to the Document Management System (DMS) repository! DMS is a system desi
 
 ## Version History
 
+- **v2.0.5** - Add new category Weekly Reports - 6/14/2024
 - **v2.0.4** - Add loading spinner and minor revisions in views - 4/30/2024
 - **v2.0.3** - Redesigned tables and cleaned up the script for data-table - 4/15/2024
 - **v2.0.2** - Added restriction in deleting files; only File Custodian can delete files. Also fixed an error in the search bar if the user empties the search - 4/4/2024

@@ -94,14 +94,10 @@ namespace Document_Management.Models.Enums
         [Display(Name = "Transaction Advices")]
         Transaction_Advices,
 
-        Others
-    }
+        [Display(Name = "Weekly Reports")]
+        Weekly_Reports,
 
-    public enum Area
-    {
-        Cubao,
-        Eastwood,
-        Market_Market
+        Others
     }
 
     public enum DeliverySubCategories
