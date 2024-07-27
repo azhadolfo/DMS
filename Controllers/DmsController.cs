@@ -3,6 +3,7 @@ using Document_Management.Models;
 using Document_Management.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 
 namespace Document_Management.Controllers
 {
@@ -312,7 +313,7 @@ namespace Document_Management.Controllers
 
         //GET the uploaded files
         [HttpGet]
-        public async Task<IActionResult> Index(CancellationToken cancellationToken)
+        public IActionResult Index()
         {
             var accessCheckResult = CheckAccess();
             if (accessCheckResult != null)
@@ -320,19 +321,81 @@ namespace Document_Management.Controllers
                 return accessCheckResult;
             }
 
-            var username = HttpContext.Session.GetString("username");
-            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+            return View();
+        }
 
-
-            if (userRole == "admin")
+        [HttpPost]
+        public async Task<IActionResult> GetUploadedFiles([FromForm] DataTablesParameters parameters, CancellationToken cancellationToken)
+        {
+            try
             {
-                var files = await _userRepo.DisplayAllUploadedFiles(cancellationToken);
-                return View(files);
+                var username = HttpContext.Session.GetString("username");
+                var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+
+                IEnumerable<FileDocument> files;
+
+                if (userRole == "admin")
+                {
+                    files = await _userRepo.DisplayAllUploadedFiles(cancellationToken);
+                }
+                else
+                {
+                    files = await _userRepo.DisplayUploadedFiles(username, cancellationToken);
+                }
+
+                // Search filter
+                if (!string.IsNullOrEmpty(parameters.Search?.Value))
+                {
+                    var searchValue = parameters.Search.Value.ToLower();
+                    files = files.Where(f =>
+                        f.Name.ToLower().Contains(searchValue) ||
+                        f.Description.ToLower().Contains(searchValue) ||
+                        f.DateUploaded.ToString().Contains(searchValue)
+                    ).ToList();
+                }
+
+                // Map to ViewModel
+                var viewModel = files.Select(f => new UploadedFilesViewModel
+                {
+                    Id = f.Id,
+                    Name = f.Name,
+                    Description = f.Description,
+                    LocationFolder = f.SubCategory == "N/A" ?
+                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}" :
+                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={f.SubCategory}",
+                    UploadedBy = f.Username,
+                    DateUploaded = f.DateUploaded
+                }).ToList();
+
+                // Sorting
+                if (parameters.Order != null && parameters.Order.Count > 0)
+                {
+                    var orderColumn = parameters.Order[0];
+                    var columnName = parameters.Columns[orderColumn.Column].Data;
+                    var sortDirection = orderColumn.Dir.ToLower() == "asc" ? "ascending" : "descending";
+
+                    viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
+                }
+
+                var totalRecords = viewModel.Count();
+
+                // Apply pagination
+                var pagedData = viewModel
+                    .Skip(parameters.Start)
+                    .Take(parameters.Length)
+                    .ToList();
+
+                return Json(new
+                {
+                    draw = parameters.Draw,
+                    recordsTotal = totalRecords,
+                    recordsFiltered = totalRecords,
+                    data = pagedData
+                });
             }
-            else
+            catch (Exception ex)
             {
-                var files = await _userRepo.DisplayUploadedFiles(username, cancellationToken);
-                return View(files);
+                return Json(new { error = ex.Message });
             }
         }
 
@@ -427,36 +490,33 @@ namespace Document_Management.Controllers
                 .FileDocuments
                 .FindAsync(id, cancellationToken);
 
-            if (model != null)
-            {
-                try
-                {
-                    if (System.IO.File.Exists(model.Location))
-                    {
-                        System.IO.File.Delete(model.Location);
-                    }
-
-                    _dbcontext.Remove(model);
-
-                    // Implementing the logs
-                    LogsModel logs = new(username, $"Delete the file: {model.Name}.");
-                    await _dbcontext.Logs.AddAsync(logs, cancellationToken);
-
-                    await _dbcontext.SaveChangesAsync(cancellationToken);
-                    TempData["success"] = "File has been deleted.";
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred during file deletion.");
-                    TempData["error"] = "Failed to delete file.";
-                }
-
-                return RedirectToAction(nameof(Index));
-            }
-            else
+            if (model == null)
             {
                 return NotFound();
             }
+
+            try
+            {
+                if (System.IO.File.Exists(model.Location))
+                {
+                    System.IO.File.Delete(model.Location);
+                }
+
+                _dbcontext.Remove(model);
+
+                LogsModel logs = new(username, $"Delete the file: {model.Name}.");
+                await _dbcontext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbcontext.SaveChangesAsync(cancellationToken);
+                TempData["success"] = "File has been deleted.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during file deletion.");
+                TempData["error"] = "Failed to delete file.";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
