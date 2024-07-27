@@ -41,7 +41,7 @@
         <div class="mb-3">
             <label asp-for="Company" class="form-label"></label>
             <div class="col">
-                <select asp-for="Company" class="form-select full-width" id="companyDropdown" style="width:100%">
+                <select asp-for="Company" class="form-select full-width" id="companyDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the company --</option>
                     @foreach (var company in Enum.GetValues(typeof(Companies)))
                     {
@@ -69,7 +69,7 @@
         <div class="mb-3">
             <label asp-for="Department" class="form-label"></label>
             <div class="col">
-                <select asp-for="Department" class="form-select full-width" id="departmentDropdown" style="width:100%">
+                <select asp-for="Department" class="form-select full-width" id="departmentDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the department --</option>
                     @foreach (var department in Enum.GetValues(typeof(Departments)))
                     {
@@ -88,7 +88,7 @@
         <div class="mb-3">
             <label asp-for="Category" class="form-label"></label>
             <div class="col">
-                <select asp-for="Category" class="form-select full-width" id="categoryDropdown" style="width:100%">
+                <select asp-for="Category" class="form-select full-width" id="categoryDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the category --</option>
                     @foreach (var category in Enum.GetValues(typeof(Categories)))
                     {
@@ -128,7 +128,7 @@
         <div class="mb-3" id="governmentSubCategories" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
-                <select asp-for="SubCategory" class="form-select full-width" id="governmentDropdown" style="width:100%">
+                <select asp-for="SubCategory" class="form-select full-width" id="governmentDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the sub category --</option>
                     @foreach (var government in Enum.GetValues(typeof(GovernmentSubCategories)))
                     {

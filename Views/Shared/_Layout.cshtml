@@ -22,7 +22,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-
 </head>
 <body>
     <header>
@@ -47,21 +46,21 @@
                             </li>
                         }
                         @* @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "Gatepass"))
-                        {
-                        <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Gatepass</a>
-                        <div class="dropdown-menu">
+                            {
+                            <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Gatepass</a>
+                            <div class="dropdown-menu">
 
-                        <a class="dropdown-item" asp-controller="Gatepass" asp-action="Insert">Request Gatepass</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" asp-controller="Gatepass" asp-action="Validator">Validator</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" asp-controller="Gatepass" asp-action="ReceivedGP">List of Request</a> *@
+                            <a class="dropdown-item" asp-controller="Gatepass" asp-action="Insert">Request Gatepass</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" asp-controller="Gatepass" asp-action="Validator">Validator</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" asp-controller="Gatepass" asp-action="ReceivedGP">List of Request</a> *@
                         @*    <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Separated link</a> *@
+                            <a class="dropdown-item" href="#">Separated link</a> *@
                         @*       </div>
-                        </li>
-                        }   *@
+                            </li>
+                            }   *@
                         @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "DMS"))
                         {
                             <li class="nav-item dropdown">
@@ -91,7 +90,6 @@
                     <partial name="_LoginPartial" />
                 </div>
             </div>
-
         </nav>
     </header>
     <div class="container">
@@ -103,7 +101,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; @DateTime.Now.Year - DMS v2.0.5 - <a asp-controller="Home" asp-action="Index">Home</a>
+            &copy; @DateTime.Now.Year - DMS v2.0.6 - <a asp-controller="Home" asp-action="Index">Home</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
