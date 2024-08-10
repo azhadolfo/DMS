@@ -72,9 +72,6 @@
                                     <a class="dropdown-item" asp-controller="Dms" asp-action="Index">Uploaded Files</a>
                                 </div>
                             </li>
-                        }
-                        @if (userrole == "admin")
-                        {
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Logs" asp-action="Index">Logs</a>
                             </li>
@@ -101,7 +98,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; @DateTime.Now.Year - DMS v2.0.6 - <a asp-controller="Home" asp-action="Index">Home</a>
+            &copy; @DateTime.Now.Year - DMS v2.0.7 - <a asp-controller="Home" asp-action="Index">Home</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

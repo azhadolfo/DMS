@@ -4,6 +4,7 @@ Welcome to the Document Management System (DMS) repository! DMS is a system desi
 
 ## Version History
 
+- **v2.0.7** - Open the access for logs - 8/10/2024
 - **v2.0.6** - Add server pagination in uploaded files - 7/27/2024
 - **v2.0.5** - Add new category Weekly Reports - 6/14/2024
 - **v2.0.4** - Add loading spinner and minor revisions in views - 4/30/2024
