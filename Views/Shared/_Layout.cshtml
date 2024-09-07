@@ -46,21 +46,21 @@
                             </li>
                         }
                         @* @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "Gatepass"))
-                            {
-                            <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Gatepass</a>
-                            <div class="dropdown-menu">
+        {
+        <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Gatepass</a>
+        <div class="dropdown-menu">
 
-                            <a class="dropdown-item" asp-controller="Gatepass" asp-action="Insert">Request Gatepass</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" asp-controller="Gatepass" asp-action="Validator">Validator</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" asp-controller="Gatepass" asp-action="ReceivedGP">List of Request</a> *@
+        <a class="dropdown-item" asp-controller="Gatepass" asp-action="Insert">Request Gatepass</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" asp-controller="Gatepass" asp-action="Validator">Validator</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" asp-controller="Gatepass" asp-action="ReceivedGP">List of Request</a> *@
                         @*    <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Separated link</a> *@
+        <a class="dropdown-item" href="#">Separated link</a> *@
                         @*       </div>
-                            </li>
-                            }   *@
+        </li>
+        }   *@
                         @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "DMS"))
                         {
                             <li class="nav-item dropdown">
@@ -74,6 +74,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Logs" asp-action="Index">Logs</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Report" asp-action="ActivityReportForm">Activity Report</a>
                             </li>
                         }
                     </ul>
@@ -98,7 +101,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; @DateTime.Now.Year - DMS v2.0.7 - <a asp-controller="Home" asp-action="Index">Home</a>
+            &copy; @DateTime.Now.Year - DMS v2.1.0 - <a asp-controller="Home" asp-action="Index">Home</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

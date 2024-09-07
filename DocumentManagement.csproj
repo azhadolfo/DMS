@@ -29,8 +29,6 @@
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.3" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Repository\" />
-    <Folder Include="wwwroot\Files\" />
     <Folder Include="wwwroot\img\" />
   </ItemGroup>
 </Project>

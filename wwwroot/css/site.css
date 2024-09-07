@@ -103,4 +103,36 @@ input[type=number] {
     }
 }
 
+@media print {
+    body {
+        -webkit-print-color-adjust: exact !important;
+    }
+
+    .container {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100%;
+    }
+
+    .buttons {
+        display: none;
+        visibility: hidden;
+    }
+
+    .dropdown {
+        display: none;
+        visibility: hidden;
+    }
+
+    header {
+        display: none;
+        visibility: hidden;
+    }
+
+    footer {
+        display: none;
+        visibility: hidden;
+    }
+}
+
 

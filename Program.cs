@@ -19,6 +19,7 @@ builder.Services.AddSession();
 //DI
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<UserRepo>();
+builder.Services.AddScoped<ReportRepo>();
 
 var app = builder.Build();
 

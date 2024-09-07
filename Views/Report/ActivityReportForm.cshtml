@@ -13,12 +13,12 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="mb-3 col-6">
                 <label asp-for="DateFrom" class="form-label">Date From</label>
-                <input asp-for="DateFrom" type="date" class="form-control" id="dateFrom" />
+                <input asp-for="DateFrom" type="date" class="form-control" id="dateFrom" value="" />
                 <span asp-validation-for="DateFrom" class="text-danger"></span>
             </div>
             <div class="mb-3 col-6">
                 <label asp-for="DateTo" class="form-label">Date To</label>
-                <input asp-for="DateTo" type="date" class="form-control" id="dateTo" />
+                <input asp-for="DateTo" type="date" class="form-control" id="dateTo" value="" />
                 <span asp-validation-for="DateTo" class="text-danger"></span>
             </div>
             <div class="mb-3">
@@ -34,22 +34,22 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-    <script>
-        $(document).ready(function () {
-            $('#dateFrom').change(function () {
-                let dateFromValue = $(this).val();
-                $('#dateTo').val(dateFromValue);
-            });
-
-            $('form').submit(function (e) {
-                let dateFrom = new Date($('#dateFrom').val());
-                let dateTo = new Date($('#dateTo').val());
-
-                if (dateFrom > dateTo) {
-                    e.preventDefault();
-                    alert('Date From should not be greater than Date To.');
-                }
-            });
+<script>
+    $(document).ready(function () {
+        $('#dateFrom').change(function () {
+            let dateFromValue = $(this).val();
+            $('#dateTo').val(dateFromValue);
         });
-    </script>
+
+        $('form').submit(function (e) {
+            let dateFrom = new Date($('#dateFrom').val());
+            let dateTo = new Date($('#dateTo').val());
+
+            if (dateFrom > dateTo) {
+                e.preventDefault();
+                alert('Date From should not be greater than Date To.');
+            }
+        });
+    });
+</script>
 }
