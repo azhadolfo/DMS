@@ -161,6 +161,7 @@ namespace Document_Management.Controllers
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             var folders = Directory.GetDirectories(wwwrootPath).Select(Path.GetFileName);
+            
             return View(folders);
         }
 

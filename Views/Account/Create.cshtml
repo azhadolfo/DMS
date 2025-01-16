@@ -1,55 +1,113 @@
-﻿@model ActivityReportViewModel
+﻿@using Document_Management.Models.Enums
+@using System.ComponentModel.DataAnnotations;
+@model Document_Management.Models.Register
 
 @{
-    ViewData["Title"] = "File Upload Report Form";
+    ViewData["Title"] = "Register";
 }
 
-<h2><b>FILE UPLOAD REPORT FORM</b></h2>
-<hr />
+<partial name="_Notification" />
 
+<h1>Create User</h1>
+
+<h4>Employee</h4>
+<hr />
 <div class="row">
     <div class="col">
-        <form asp-action="GenerateFileUploadReport" method="get">
+            <form asp-action="Create" method="post" class="needs-validation">
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="mb-3 col-6">
-                <label asp-for="DateFrom" class="form-label">Date From</label>
-                <input asp-for="DateFrom" type="date" class="form-control" id="dateFrom" />
-                <span asp-validation-for="DateFrom" class="text-danger"></span>
-            </div>
-            <div class="mb-3 col-6">
-                <label asp-for="DateTo" class="form-label">Date To</label>
-                <input asp-for="DateTo" type="date" class="form-control" id="dateTo" />
-                <span asp-validation-for="DateTo" class="text-danger"></span>
+            <div class="mb-3">
+                <label asp-for="EmployeeNumber" class="form-label"></label>
+                <input asp-for="EmployeeNumber" type="number" value="" class="form-control" />
+                <span asp-validation-for="EmployeeNumber" class="text-danger"></span>
             </div>
             <div class="mb-3">
-                <input type="submit" value="Generate Report" class="btn btn-secondary" />
-                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to Home</a>
+                <label asp-for="FirstName" class="form-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="LastName" class="form-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+             <div class="mb-3">
+                <label asp-for="Department" class="form-label"></label>
+                    <select asp-for="Department" class="form-select">
+                        <option value="" selected disabled>-- Select the department --</option>
+                        @foreach (var department in Enum.GetValues(typeof(Departments)))
+                        {
+                            var enumMember = typeof(Departments).GetMember(department.ToString())[0];
+                            var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                            string displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
+
+                            <option value="@department">@displayName</option>
+                        }
+                    </select>
+                <span asp-validation-for="Department" class="text-danger"></span>
+             </div>
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Username" class="form-control" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Access Folders:</label>
+                    @foreach (var department in Enum.GetValues(typeof(Departments)))
+                {
+                        var enumMember = typeof(Departments).GetMember(department.ToString())[0];
+                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
+
+                        string displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
+
+                    <div>
+                        <input type="checkbox" name="AccessFolders" value="@department" /> @displayName
+                    </div>
+                }
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Module Access:</label>
+                @foreach (var modules in new List<string> { "DMS"})
+                {
+                    <div>
+                        <input type="checkbox" name="ModuleAccess" value="@modules" /> @modules
+                    </div>
+                }
+            </div>
+            <div class="mb-3">
+                <label asp-for="Role" class="form-label"></label>
+                    <select asp-for="Role" class="form-select">
+                        <option value="" selected disabled>-- Select user role --</option>
+                        @foreach (var department in Enum.GetValues(typeof(Roles)))
+                    {
+                        <option value="@department">@Enum.GetName(typeof(Roles), department)</option>
+                    }
+                    </select>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <input type="submit" value="Save" class="btn btn-secondary" />
+                <a asp-action="Index" class="btn btn-primary">Back to List</a>
             </div>
         </form>
     </div>
 </div>
 
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        $(document).ready(function () {
-            $('#dateFrom').change(function () {
-                let dateFromValue = $(this).val();
-                $('#dateTo').val(dateFromValue);
-            });
-
-            $('form').submit(function (e) {
-                let dateFrom = new Date($('#dateFrom').val());
-                let dateTo = new Date($('#dateTo').val());
-
-                if (dateFrom > dateTo) {
-                    e.preventDefault();
-                    alert('Date From should not be greater than Date To.');
-                }
-            });
-        });
-    </script>
 }
