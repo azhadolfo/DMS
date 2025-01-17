@@ -4,6 +4,7 @@ Welcome to the Document Management System (DMS) repository! DMS is a system desi
 
 ## Version History
 
+- **v2.2.1** - Add logs for downloading the file and add additional access for each user - 01/17/2025
 - **v2.1.1** - Revise the general search link result into down-loadable - 10/22/2024
 - **v2.1.0** - Add new module to capture the activity report - 9/7/2024
 - **v2.0.7** - Open the access for logs - 8/10/2024
