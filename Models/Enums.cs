@@ -59,7 +59,8 @@ namespace Document_Management.Models.Enums
     {
         Admin,
         User,
-        Validator
+        Validator,
+        Uploader,
     }
 
     public enum Categories

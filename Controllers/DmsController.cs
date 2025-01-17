@@ -50,12 +50,13 @@ namespace Document_Management.Controllers
         private IActionResult CheckDepartmentAccess(string department)
         {
             var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
 
             // Split the userDepartment string into individual department names
             var userDepartments = userAccessFolders.Split(',');
 
             // Check if any of the user's departments allow access to the specified companyFolderName
-            if (!userDepartments.Any(dep => dep.Trim() == department))
+            if (userRole != "admin" && !userDepartments.Any(dep => dep.Trim() == department))
             {
                 TempData["ErrorMessage"] = $"You have no access to {department.Replace("_", " ")}. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
@@ -69,7 +70,21 @@ namespace Document_Management.Controllers
         public IActionResult UploadFile()
         {
             var accessCheckResult = CheckAccess();
-            return accessCheckResult == null ? View(new FileDocument()) : accessCheckResult;
+            if (accessCheckResult != null)
+            {
+                return accessCheckResult;
+            }
+            
+            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+
+            if (userRole != "admin" && userRole != "uploader")
+            {
+                TempData["ErrorMessage"] = "You have no access to upload a file. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
+            }
+            
+            return View(new FileDocument());
+            
         }
 
         [HttpPost]
