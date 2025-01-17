@@ -11,9 +11,9 @@
         <table class="table table-hover" id="myTable">
             <thead>
             <tr class="text-nowrap">
+                <th scope="col">Location Folder</th>
                 <th scope="col">File Name</th>
                 <th scope="col">Description</th>
-                <th scope="col">Location Folder</th>
                 <th scope="col">Uploaded By</th>
                 <th scope="col">Date Uploaded</th>
             </tr>
@@ -22,8 +22,6 @@
             @foreach (var file in Model)
             {
                 <tr class="align-items-center">
-                    <td>@file.OriginalFilename</td>
-                    <td>@file.Description</td>
                     <td>
                         <a title="@file.Company/@file.Year/@file.Department/@file.Category"
                            href="@Url.Action("Download", "Dms", new {
@@ -33,6 +31,8 @@
                             Click to download file
                         </a>
                     </td>
+                    <td>@file.OriginalFilename</td>
+                    <td>@file.Description</td>
                     <td>@file.Username</td>
                     <td>@file.DateUploaded</td>
                 </tr>

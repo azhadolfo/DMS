@@ -634,7 +634,7 @@ namespace Document_Management.Controllers
             {
                 var username = HttpContext.Session.GetString("username");
                 
-                var departmentFolderName = filepath.Split('/')[1];
+                var departmentFolderName = filepath.Split('/')[3];
                 
                 var depatmentAccessResult = CheckDepartmentAccess(departmentFolderName);
                 if (depatmentAccessResult != null)
