@@ -47,6 +47,23 @@ namespace Document_Management.Controllers
             return null;
         }
 
+        private IActionResult CheckDepartmentAccess(string department)
+        {
+            var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
+
+            // Split the userDepartment string into individual department names
+            var userDepartments = userAccessFolders.Split(',');
+
+            // Check if any of the user's departments allow access to the specified companyFolderName
+            if (!userDepartments.Any(dep => dep.Trim() == department))
+            {
+                TempData["ErrorMessage"] = $"You have no access to {department.Replace("_", " ")}. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+            }
+            
+            return null;
+        }
+
         //Get for the Action Dms/Upload
         [HttpGet]
         public IActionResult UploadFile()
@@ -210,17 +227,10 @@ namespace Document_Management.Controllers
                 return accessCheckResult;
             }
 
-            // Retrieve the user's department from the session or any other method you're using
-            var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
-
-            // Split the userDepartment string into individual department names
-            var userDepartments = userAccessFolders.Split(',');
-
-            // Check if any of the user's departments allow access to the specified companyFolderName
-            if (!userDepartments.Any(dep => dep.Trim() == departmentFolderName))
+            var depatmentAccessResult = CheckDepartmentAccess(departmentFolderName);
+            if (depatmentAccessResult != null)
             {
-                TempData["Denied"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("YearFolder", new { companyFolderName = companyFolderName, yearFolderName = yearFolderName }); // Redirect to the login page or another appropriate action
+                return depatmentAccessResult;
             }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
@@ -260,21 +270,6 @@ namespace Document_Management.Controllers
             ViewBag.YearFolder = yearFolderName;
             ViewBag.DepartmentFolder = departmentFolderName;
             ViewBag.CurrentFolder = documentTypeFolderName;
-
-            var cleanDepartmentName = departmentFolderName.Replace("_", " ");
-
-            // Retrieve the user's department from the session or any other method you're using
-            var userAccessFolders = HttpContext.Session.GetString("useraccessfolders");
-
-            // Split the userDepartment string into individual department names
-            var userDepartments = userAccessFolders.Split(',');
-
-            // Check if any of the user's departments allow access to the specified companyFolderName
-            if (!userDepartments.Any(dep => dep.Trim() == departmentFolderName))
-            {
-                TempData["Denied"] = $"You have no access to {cleanDepartmentName}. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("YearFolder", new { companyFolderName = companyFolderName, yearFolderName = yearFolderName }); // Redirect to the login page or another appropriate action
-            }
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             string folderPath;
@@ -613,6 +608,52 @@ namespace Document_Management.Controllers
             else
             {
                 return NotFound();
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Download(string filepath, string originalFilename, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var username = HttpContext.Session.GetString("username");
+                
+                var departmentFolderName = filepath.Split('/')[1];
+                
+                var depatmentAccessResult = CheckDepartmentAccess(departmentFolderName);
+                if (depatmentAccessResult != null)
+                {
+                    return depatmentAccessResult;
+                }
+                
+                // Convert the web path to physical path
+                string webRootPath = _hostingEnvironment.WebRootPath;
+                string fullPath = Path.Combine(webRootPath, filepath);
+
+                // Create log entry
+                LogsModel logs = new LogsModel(
+                    username, 
+                    $"Downloaded file: {originalFilename} from path: {filepath}"
+                );
+
+                await _dbcontext.Logs.AddAsync(logs, cancellationToken);
+                await _dbcontext.SaveChangesAsync(cancellationToken);
+
+                // Check if file exists
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    return NotFound();
+                }
+                
+                // Return the file
+                var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+                return File(fileBytes, "application/octet-stream", originalFilename);
+            }
+            catch (Exception ex)
+            {
+                // Handle any errors appropriately
+                return BadRequest("Error downloading file");
             }
         }
     }

@@ -26,11 +26,25 @@
                     <td>
                         @if(file.SubCategory == "N/A")
                         {
-                            <a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.Name)" download="@file.OriginalFilename" class="btn btn-primary">Download</a>
+                            //<a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.Name)" download="@file.OriginalFilename" class="btn btn-primary">Download</a>
+                            <a class="btn btn-primary"
+                               href="@Url.Action("Download", "Dms", new {
+                                         filepath = $"Files/{file.Company}/{file.Year}/{file.Department}/{file.Category}/{file.Name}",
+                                         originalFilename = file.OriginalFilename
+                                     })">
+                                Download
+                            </a>
                         }
                         else
                         {
-                            <a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.SubCategory + "/" + file.Name)" download="@file.OriginalFilename" class="btn btn-primary">Download</a>
+                            //<a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.SubCategory + "/" + file.Name)" download="@file.OriginalFilename" class="btn btn-primary">Download</a>
+                            <a class="btn btn-primary"
+                               href="@Url.Action("Download", "Dms", new {
+                                         filepath = $"Files/{file.Company}/{file.Year}/{file.Department}/{file.Category}/{file.SubCategory}/{file.Name}",
+                                         originalFilename = file.OriginalFilename
+                                     })">
+                                Download
+                            </a>
                         }
                     </td>
                     <td>@file.OriginalFilename</td>

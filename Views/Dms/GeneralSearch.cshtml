@@ -10,31 +10,33 @@
     <div class="table-responsive">
         <table class="table table-hover" id="myTable">
             <thead>
-                <tr class="text-nowrap">
-                    <th scope="col">File Name</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Location Folder</th>
-                    <th scope="col">Uploaded By</th>
-                    <th scope="col">Date Uploaded</th>
-                </tr>
+            <tr class="text-nowrap">
+                <th scope="col">File Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Location Folder</th>
+                <th scope="col">Uploaded By</th>
+                <th scope="col">Date Uploaded</th>
+            </tr>
             </thead>
             <tbody>
-                @foreach (var file in Model)
-                {
-                    <tr class="align-items-center">
-                        <td>@file.OriginalFilename</td>
-                        <td>@file.Description</td>
-                        <td>
-                            <a title="@file.Company/@file.Year/@file.Department/@file.Category"
-                               href="javascript:void(0);"
-                               onclick="downloadFile('@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.Name)', '@file.OriginalFilename')">
-                                Click to download file
-                            </a>
-                        </td>
-                        <td>@file.Username</td>
-                        <td>@file.DateUploaded</td>
-                    </tr>
-                }
+            @foreach (var file in Model)
+            {
+                <tr class="align-items-center">
+                    <td>@file.OriginalFilename</td>
+                    <td>@file.Description</td>
+                    <td>
+                        <a title="@file.Company/@file.Year/@file.Department/@file.Category"
+                           href="@Url.Action("Download", "Dms", new {
+                                     filepath = $"Files/{file.Company}/{file.Year}/{file.Department}/{file.Category}/{file.Name}",
+                                     originalFilename = file.OriginalFilename
+                                 })">
+                            Click to download file
+                        </a>
+                    </td>
+                    <td>@file.Username</td>
+                    <td>@file.DateUploaded</td>
+                </tr>
+            }
             </tbody>
         </table>
     </div>
@@ -43,14 +45,3 @@ else
 {
     <p><i>No file found for this keywords.</i></p>
 }
-
-<script type="text/javascript">
-    function downloadFile(fileUrl, fileName) {
-        const link = document.createElement('a');
-        link.href = fileUrl;
-        link.setAttribute('download', fileName);  // This attribute triggers the download
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-</script>
