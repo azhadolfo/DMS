@@ -57,10 +57,14 @@
                                 </div>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Logs" asp-action="Index">Logs</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Report" asp-action="ActivityReportForm">Activity Report</a>
+                            </li>
+                        }
+                        
+                        @if (userrole == "admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Logs" asp-action="Index">Logs</a>
                             </li>
                         }
                     </ul>
