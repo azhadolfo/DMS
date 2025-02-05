@@ -1,0 +1,108 @@
+@model dynamic
+
+@{
+    // Get ViewBag values safely using ViewData dictionary
+    var companyFolder = ViewData["CompanyFolder"]?.ToString();
+    var yearFolder = ViewData["YearFolder"]?.ToString();
+    var departmentFolder = ViewData["DepartmentFolder"]?.ToString();
+    var categoryFolder = ViewData["DocumentTypeFolder"]?.ToString();
+    var currentView = ViewData["CurrentFolder"]?.ToString();
+
+    var breadcrumbs = new List<BreadcrumbItem>();
+    
+    // Add Home as the first breadcrumb
+    breadcrumbs.Add(new BreadcrumbItem { 
+        Name = "Companies", 
+        Action = "DownloadFile", 
+        Controller = "Dms" 
+    });
+
+    // Build breadcrumbs based on available ViewData values
+    if (!string.IsNullOrEmpty(companyFolder))
+    {
+        breadcrumbs.Add(new BreadcrumbItem
+        {
+            Name = companyFolder.Replace("_", " "),
+            Action = "CompanyFolder",
+            Controller = "Dms",
+            RouteValues = new { folderName = companyFolder }
+        });
+
+        if (!string.IsNullOrEmpty(yearFolder))
+        {
+            breadcrumbs.Add(new BreadcrumbItem
+            {
+                Name = yearFolder.Replace("_", " "),
+                Action = "YearFolder",
+                Controller = "Dms",
+                RouteValues = new { companyFolderName = companyFolder, yearFolderName = yearFolder }
+            });
+
+            if (!string.IsNullOrEmpty(departmentFolder))
+            {
+                breadcrumbs.Add(new BreadcrumbItem
+                {
+                    Name = departmentFolder.Replace("_", " "),
+                    Action = "DepartmentFolder",
+                    Controller = "Dms",
+                    RouteValues = new { 
+                        companyFolderName = companyFolder, 
+                        yearFolderName = yearFolder,
+                        departmentFolderName = departmentFolder 
+                    }
+                });
+
+                if (!string.IsNullOrEmpty(categoryFolder))
+                {
+                    breadcrumbs.Add(new BreadcrumbItem
+                    {
+                        Name = categoryFolder.Replace("_", " "),
+                        Action = "SubCategoryFolder",
+                        Controller = "Dms",
+                        RouteValues = new { 
+                            companyFolderName = companyFolder,
+                            yearFolderName = yearFolder,
+                            departmentFolderName = departmentFolder,
+                            documentTypeFolderName = categoryFolder
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    // Add current view as the last breadcrumb if specified
+    if (!string.IsNullOrEmpty(currentView))
+    {
+        breadcrumbs.Add(new BreadcrumbItem { Name = currentView.Replace("_", " "), IsActive = true });
+    }
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        @foreach (var breadcrumb in breadcrumbs)
+        {
+            if (breadcrumb.IsActive)
+            {
+                <li class="breadcrumb-item active" aria-current="page">@breadcrumb.Name</li>
+            }
+            else
+            {
+                <li class="breadcrumb-item">
+                    <a href="@Url.Action(breadcrumb.Action, breadcrumb.Controller, breadcrumb.RouteValues)">@breadcrumb.Name</a>
+                </li>
+            }
+        }
+    </ol>
+</nav>
+
+@functions {
+    public class BreadcrumbItem
+    {
+        public string Name { get; set; }
+        public string Action { get; set; }
+        public string Controller { get; set; }
+        public object RouteValues { get; set; }
+        public bool IsActive { get; set; } = false;
+    }
+}

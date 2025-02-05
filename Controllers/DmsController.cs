@@ -199,7 +199,7 @@ namespace Document_Management.Controllers
 
         public IActionResult CompanyFolder(string folderName)
         {
-            ViewBag.FolderName = folderName;
+            ViewBag.CompanyFolder = folderName;
 
             var accessCheckResult = CheckAccess();
             if (accessCheckResult != null)
@@ -284,7 +284,8 @@ namespace Document_Management.Controllers
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
             ViewBag.DepartmentFolder = departmentFolderName;
-            ViewBag.CurrentFolder = documentTypeFolderName;
+            ViewBag.DocumentTypeFolder = documentTypeFolderName;
+            ViewBag.CurrentFolder = subCategoryFolder ?? documentTypeFolderName;
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
             string folderPath;
