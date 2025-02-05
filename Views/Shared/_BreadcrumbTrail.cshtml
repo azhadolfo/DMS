@@ -6,6 +6,7 @@
     var yearFolder = ViewData["YearFolder"]?.ToString();
     var departmentFolder = ViewData["DepartmentFolder"]?.ToString();
     var categoryFolder = ViewData["DocumentTypeFolder"]?.ToString();
+    var subCategoryFolder = ViewData["SubCategoryFolder"]?.ToString();
     var currentView = ViewData["CurrentFolder"]?.ToString();
 
     var breadcrumbs = new List<BreadcrumbItem>();
@@ -52,7 +53,7 @@
                     }
                 });
 
-                if (!string.IsNullOrEmpty(categoryFolder))
+                if (!string.IsNullOrEmpty(subCategoryFolder))
                 {
                     breadcrumbs.Add(new BreadcrumbItem
                     {

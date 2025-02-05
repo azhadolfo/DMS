@@ -285,6 +285,7 @@ namespace Document_Management.Controllers
             ViewBag.YearFolder = yearFolderName;
             ViewBag.DepartmentFolder = departmentFolderName;
             ViewBag.DocumentTypeFolder = documentTypeFolderName;
+            ViewBag.SubCategoryFolder = subCategoryFolder;
             ViewBag.CurrentFolder = subCategoryFolder ?? documentTypeFolderName;
 
             var wwwrootPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files");
