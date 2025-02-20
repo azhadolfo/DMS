@@ -23,6 +23,10 @@ namespace Document_Management.Models.Enums
 
         MIS,
         Operation,
+
+        [Display(Name = "Retail Audit")]
+        Retail_Audit,
+
         RCD,
 
         [Display(Name = "Site Dev And Acquisition")]
