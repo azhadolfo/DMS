@@ -429,7 +429,7 @@ namespace Document_Management.Controllers
         //POST for Editing
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(FileDocument model, CancellationToken cancellationToken)
+        public async Task<IActionResult> Edit(FileDocument model, IFormFile newFile, CancellationToken cancellationToken)
         {
             var accessCheckResult = CheckAccess();
             if (accessCheckResult != null)
@@ -446,21 +446,111 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
+            bool detailsChanged = false;
+            bool fileChanged = false;
+            string oldFileName = file.OriginalFilename;
+            
+            // Update file details if changed
             if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
             {
                 file.Description = model.Description;
                 file.NumberOfPages = model.NumberOfPages;
+                detailsChanged = true;
+            }
 
-                // Implementing the logs
-                LogsModel logs = new(username, $"Update the details of file# {file.Id}.");
+            if (newFile != null && newFile.Length > 0)
+            {
+                if (newFile.ContentType != "application/pdf")
+                {
+                    TempData["error"] = "Please upload pdf file only!";
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+
+                if (newFile.Length > 20000000)
+                {
+                    TempData["error"] = "File is too large 20MB is the maximum size allowed.";
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+                
+                // Save the old file name in case we need it later
+                string oldFilePath = file.Location;
+                
+                // Delete the old file if needed
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    try 
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                    catch (Exception)
+                    {
+                        TempData["error"] = "Error on replacing file.";
+                        return RedirectToAction("Edit", new { id = model.Id });
+                    }
+                }
+                
+                var filename = Path.GetFileName(newFile.FileName);
+                
+                var uniquePart = $"{file.Department}_{DateTime.Now:yyyyMMddHHmmssfff}";
+                filename = filename.Replace("#", "");
+                filename = $"{uniquePart}_{filename}";
+                
+                string departmentSubdirectory  = file.SubCategory == "N/A"
+                    ? Path.Combine("Files", file.Company, file.Year, file.Department, file.Category)
+                    : Path.Combine("Files", file.Company, file.Year, file.Department, file.Category, file.SubCategory);
+                
+                var uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, departmentSubdirectory);
+                
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+        
+                string filePath = Path.Combine(uploadsFolder, filename);
+                
+                // Save the new file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await newFile.CopyToAsync(fileStream, cancellationToken);
+                }
+                
+                // Update file information
+                file.Name = filename;
+                file.Location = filePath;
+                file.FileSize = newFile.Length;
+                file.OriginalFilename = newFile.FileName;
+                
+                
+                fileChanged = true;
+                
+            }
+            
+            if (detailsChanged || fileChanged)
+            {
+                string changeDescription = "";
+
+                if (detailsChanged && fileChanged)
+                {
+                    changeDescription = $"Updated details and replaced file for document# {file.Id} from {oldFileName} to {file.OriginalFilename}";
+                }
+                else if (detailsChanged)
+                {
+                    changeDescription = $"Updated details for document# {file.Id}";
+                }
+                else if (fileChanged)
+                {
+                    changeDescription = $"Replaced file for document# {file.Id} from {oldFileName} to {file.OriginalFilename}";
+                }
+            
+                LogsModel logs = new(username, changeDescription);
                 await _dbcontext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbcontext.SaveChangesAsync(cancellationToken);
-                TempData["success"] = "File details updated successfully";
+                TempData["success"] = "File document updated successfully";
                 return RedirectToAction("Index");
             }
 
-            return RedirectToAction("Edit");
+            return RedirectToAction("Edit", new { id = model.Id });
         }
 
         public IActionResult GeneralSearch(string search)

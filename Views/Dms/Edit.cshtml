@@ -1,48 +1,48 @@
 ﻿@model Document_Management.Models.FileDocument
-
 @{
     ViewData["Title"] = "Edit";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<partial name="_Notification" />
+
 <h1>Edit</h1>
 
-<h4>Details</h4>
+<h4>File Document Details</h4>
 <hr />
 <div class="row">
-    <div class="container">
-        <form asp-action="Edit" method="post">
+    <div class="col-md-8">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="mb-3">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" disabled/>
-                <span asp-validation-for="Name" class="text-danger"></span>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="mb-3">
-                <label asp-for="Department" class="control-label"></label>
-                <input asp-for="Department" class="form-control" disabled/>
-                <span asp-validation-for="Department" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
+
+            <div class="form-group mb-3">
                 <label asp-for="NumberOfPages" class="control-label"></label>
                 <input asp-for="NumberOfPages" class="form-control" />
                 <span asp-validation-for="NumberOfPages" class="text-danger"></span>
             </div>
-            <div class="mb-3">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="5" autofocus></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
+
+            <div class="form-group mb-3">
+                <label class="control-label">Current File</label>
+                <div>@Model.Name</div>
             </div>
-            <div class="mb-3">
-                <label asp-for="DateUploaded" class="control-label"></label>
-                <input asp-for="DateUploaded" class="form-control" disabled/>
-                <span asp-validation-for="DateUploaded" class="text-danger"></span>
+
+            <div class="form-group mb-3">
+                <label class="control-label">Upload New File</label>
+                <input type="file" name="newFile" class="form-control" accept=".pdf"  />
+                <small class="form-text text-muted">Upload a new file to replace the current one (optional)</small>
             </div>
-            <div class="mb-3">
-                <input type="submit" value="Update" class="btn btn-secondary" />
-                <a asp-action="Index" class="btn btn-primary">Back to List</a>
+
+            <div class="form-group mb-4">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
     </div>
@@ -53,4 +53,3 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-
