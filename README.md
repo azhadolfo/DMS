@@ -4,6 +4,7 @@ Welcome to the Document Management System (DMS) repository! DMS is a system desi
 
 ## Version History
 
+- **v2.3.1** - Redesign layout for Uploading files, uploaded files and activity logs - 05/29/2025
 - **v2.3.0** - Modified the edit, and add the feature to upload a new file - 04/29/2025
 - **v2.2.3** - Add retail audit department - 02/20/2025
 - **v2.2.2** - Implement breadcrumb in download module - 02/05/2025
