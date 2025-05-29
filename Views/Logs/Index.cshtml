@@ -6,29 +6,75 @@
 
 <div class="d-flex justify-content-center align-items-center my-3">
     <div class="table-responsive">
-        <table id="myTableNoSort" class="table table-hover" style="table-layout: fixed; width: 100%;">
+        <table id="paginatedTable" class="table table-hover" style="table-layout: fixed; width: 100%;">
             <colgroup>
                 <col style="width: 20%" />
                 <col style="width: 100%" />
-                <col style="width: 20%" />
+                <col style="width: 22%" />
             </colgroup>
             <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Activity</th>
-                    <th>Date</th>
-                </tr>
+            <tr>
+                <th class="text-center">Username</th>
+                <th class="text-center">Activity</th>
+                <th class="text-center">Date</th>
+            </tr>
             </thead>
             <tbody>
-                @foreach (var logs in Model)
-                {
-                    <tr>
-                        <td>@logs.Username</td>
-                        <td>@logs.Activity</td>
-                        <td>@logs.Date</td>
-                    </tr>
-                }
             </tbody>
         </table>
     </div>
 </div>
+
+@section Scripts
+{
+    <script>
+        $('#paginatedTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "language": {
+                "processing": `<div class="d-flex justify-content-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                 </div>`
+            },
+            "ajax": {
+                "url": "@Url.Action("GetActivityLogs", "Logs")",
+                "type": "POST",
+                "data": function (d) {
+                    return $.extend({}, d, {
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    });
+                },
+                "error": function (xhr, error, thrown) {
+                    console.error('DataTables error:', error);
+                    alert('An error occurred while loading the data');
+                }
+            },
+            "preDrawCallback": function(settings) {
+                $('#paginatedTable').addClass('table-loading');
+            },
+            "drawCallback": function(settings) {
+                $('#paginatedTable').removeClass('table-loading');
+
+                // Initialize all tooltips
+                $('[data-bs-toggle="tooltip"]').tooltip();
+            },
+            "columns": [
+                { "data": "username" },
+                { "data": "activity" },
+                { "data": "date", "render": function (data) {
+                    var date = new Date(data);
+                    return date.toLocaleDateString('en-US', { 
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+                }}
+            ]
+        });
+    </script>
+}
