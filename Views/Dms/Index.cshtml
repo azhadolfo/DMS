@@ -5,6 +5,16 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    table.dataTable td {
+        position: relative;
+        overflow: visible !important;
+    }
+    .dropdown-menu {
+        z-index: 9999; /* Ensure it's above DataTables or modals */
+    }
+</style>
+
 <div class="content">
     <partial name="_Notification" />
 
@@ -14,15 +24,15 @@
     </p>
 
     <div class="table-responsive">
-        <table class="table table-hover" id="paginatedTable" style="width: 100%; table-layout: fixed;">
+        <table class="table table-hover" id="paginatedTable" style="width: 100%;">
             <thead>
                 <tr>
-                    <th style="width: 23%;"></th>
-                    <th style="width: 25%;">File</th>
-                    <th style="width: 15%;">@Html.DisplayNameFor(model => model.Description)</th>
-                    <th style="width: 15%;">Location Folder</th>
-                    <th style="width: 15%;">Uploaded By</th>
-                    <th style="width: 15%;">@Html.DisplayNameFor(model => model.DateUploaded)</th>
+                    <th></th>
+                    <th>File</th>
+                    <th>@Html.DisplayNameFor(model => model.Description)</th>
+                    <th>Location Folder</th>
+                    <th>Uploaded By</th>
+                    <th>@Html.DisplayNameFor(model => model.DateUploaded)</th>
                 </tr>
             </thead>
         </table>
@@ -45,28 +55,33 @@
                 columns: [
                     {
                         data: null, render: function (data, type, row, meta) {
-                            return `<a href="/DMS/Edit/${row.id}" class="btn btn-secondary">Edit</a>
-                                            <a class="btn btn-secondary" onclick="confirmDelete(${row.id})">Delete</a>
-                                            <a href="/DMS/Transfer/${row.id}" class="btn btn-secondary">Transfer</a>`;
+                            return `
+                                <div class="dropdown">
+                                  <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Actions
+                                  </button>
+                                  <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/DMS/Edit/${row.id}">Edit</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete(${row.id})">Delete</a></li>
+                                    <li><a class="dropdown-item" href="/DMS/Transfer/${row.id}">Transfer</a></li>
+                                  </ul>
+                                </div>`;
                         },
                         orderable: false,
-                        width: "23%"
                     },
-                    { data: 'name', width: "25%" },
-                    { data: 'description', width: "15%" },
+                    { data: 'name' },
+                    { data: 'description' },
                     {
                         data: 'locationFolder', render: function (data, type, row) {
                             return `<a href="/Dms/DisplayFiles?${data}" title="Click this to download the file.">Location Path</a>`;
-                        },
-                        width: "15%"
+                        }
                     },
-                    { data: 'uploadedBy', width: "15%" },
+                    { data: 'uploadedBy' },
                     {
                         data: 'dateUploaded',
                         render: function (data, type, row) {
                             return new Date(data).toLocaleString();
-                        },
-                        width: "15%"
+                        }
                     }
                 ],
                 order: [[5, 'desc']], // Default sorting column index and direction
