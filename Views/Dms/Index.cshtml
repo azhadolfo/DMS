@@ -18,13 +18,15 @@
 <div class="content">
     <partial name="_Notification" />
 
-    <h2><b>UPLOADED FILES</b></h2>
-    <p>
-        <a asp-action="UploadFile" class="btn btn-secondary">Upload New</a>
-    </p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold mb-0">Uploaded Files</h2>
+        <a asp-action="UploadFile" class="btn btn-primary">
+            Upload New
+        </a>
+    </div>
 
     <div class="table-responsive">
-        <table class="table table-hover" id="paginatedTable" style="width: 100%;">
+        <table class="table table-hover" id="paginatedTable">
             <thead>
                 <tr>
                     <th></th>
@@ -45,12 +47,28 @@
             $('#paginatedTable').DataTable({
                 processing: true,
                 serverSide: true,
+                language: {
+                    processing: `<div class="d-flex justify-content-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                 </div>`
+                },
                 ajax: {
                     url: '/DMS/GetUploadedFiles',
                     type: 'POST',
                     data: function (d) {
                         d.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
                     }
+                },
+                preDrawCallback: function(settings) {
+                    $('#paginatedTable').addClass('table-loading');
+                },
+                drawCallback: function(settings) {
+                    $('#paginatedTable').removeClass('table-loading');
+
+                    // Initialize all tooltips
+                    $('[data-bs-toggle="tooltip"]').tooltip();
                 },
                 columns: [
                     {
