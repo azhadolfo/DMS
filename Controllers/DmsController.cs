@@ -272,6 +272,7 @@ namespace Document_Management.Controllers
             string yearFolderName,
             string documentTypeFolderName,
             string? subCategoryFolder, 
+            string? fileName,
             CancellationToken cancellation)
         {
             var accessCheckResult = CheckAccess();
@@ -298,7 +299,7 @@ namespace Document_Management.Controllers
                 .Where(file => file.Company == companyFolderName 
                                && file.Year == yearFolderName 
                                && file.Category == documentTypeFolderName 
-                               && pdfFiles.Contains(file.Name))
+                               && (fileName != null ? file.Name == fileName : pdfFiles.Contains(fileName)))
                 .Select(file => new FileDocument
                 {
                     Name = file.Name,
@@ -364,8 +365,8 @@ namespace Document_Management.Controllers
                     Name = f.Name!,
                     Description = f.Description!,
                     LocationFolder = f.SubCategory == "N/A" ?
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}" :
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={f.SubCategory}",
+                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={null}&fileName={f.Name}" :
+                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={f.SubCategory}&fileName={f.Name}",
                     UploadedBy = f.Username!,
                     DateUploaded = f.DateUploaded
                 }).ToList();
