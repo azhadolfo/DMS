@@ -299,7 +299,7 @@ namespace Document_Management.Controllers
                 .Where(file => file.Company == companyFolderName 
                                && file.Year == yearFolderName 
                                && file.Category == documentTypeFolderName 
-                               && (fileName != null ? file.Name == fileName : pdfFiles.Contains(fileName)))
+                               && (fileName != null ? file.Name == fileName : pdfFiles.Contains(file.Name)))
                 .Select(file => new FileDocument
                 {
                     Name = file.Name,
