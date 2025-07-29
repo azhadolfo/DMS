@@ -1,9 +1,10 @@
-# Document Management Sytem (DMS)
+# Document Management System (DMS)
 
 Welcome to the Document Management System (DMS) repository! DMS is a system designed to help you organize and manage your files efficiently.
 
 ## Version History
 
+- **v2.6.0** - Refactored the source code - 07/29/2025
 - **v2.5.0** - Changed the logo and modified the video tutorial - 07/25/2025
 - **v2.4.0** - Added video tutorial on the homepage - 07/19/2025
 - **v2.3.1** - Redesign layout for Uploading files, uploaded files and activity logs - 05/29/2025
