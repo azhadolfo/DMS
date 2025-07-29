@@ -85,6 +85,7 @@
     <div class="container">
         <main role="main" class="py-3">
             <input type="hidden" id="hfUsername" value="@HttpContextAccessor.HttpContext?.Session.GetString("username")" />
+            <partial name="_Notification" />
             @RenderBody()
         </main>
     </div>

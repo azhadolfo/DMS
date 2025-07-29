@@ -52,6 +52,6 @@ namespace Document_Management.Models
 
         public string AccessFolders { get; set; } = null!;
 
-        public string ModuleAccess { get; set; } = null!;
+        public string ModuleAccess { get; set; } = "DMS";
     }
 }

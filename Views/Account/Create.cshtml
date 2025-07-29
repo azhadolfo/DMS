@@ -6,8 +6,6 @@
     ViewData["Title"] = "Register";
 }
 
-<partial name="_Notification" />
-
 <h1>Create User</h1>
 
 <h4>Employee</h4>
@@ -36,12 +34,14 @@
                 <label asp-for="Department" class="form-label"></label>
                     <select asp-for="Department" class="form-select">
                         <option value="" selected disabled>-- Select the department --</option>
-                        @foreach (var department in Enum.GetValues(typeof(Departments)))
+                        @foreach (var department in Enum.GetNames(typeof(Departments)))
                         {
-                            var enumMember = typeof(Departments).GetMember(department.ToString())[0];
+                            var enumMember = typeof(Departments).GetMember(department)[0];
                             var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
 
-                            string displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
+                            var displayName = displayAttribute != null 
+                                ? displayAttribute.Name 
+                                : department;
 
                             <option value="@department">@displayName</option>
                         }
@@ -67,22 +67,13 @@
                 <label class="form-label">Access Folders:</label>
                     @foreach (var department in Enum.GetValues(typeof(Departments)))
                 {
-                        var enumMember = typeof(Departments).GetMember(department.ToString())[0];
+                        var enumMember = typeof(Departments).GetMember(department.ToString()!)[0];
                         var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
 
-                        string displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
+                        var displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
 
                     <div>
                         <input type="checkbox" name="AccessFolders" value="@department" /> @displayName
-                    </div>
-                }
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Module Access:</label>
-                @foreach (var modules in new List<string> { "DMS"})
-                {
-                    <div>
-                        <input type="checkbox" name="ModuleAccess" value="@modules" /> @modules
                     </div>
                 }
             </div>

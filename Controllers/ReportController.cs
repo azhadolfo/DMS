@@ -13,7 +13,7 @@ namespace Document_Management.Controllers
             _reportRepo = reportRepo;
         }
 
-        private IActionResult CheckAccess()
+        public IActionResult? CheckAccess()
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("username")))
             {
@@ -24,24 +24,25 @@ namespace Document_Management.Controllers
             var userModuleAccess = HttpContext.Session.GetString("usermoduleaccess");
             var userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
 
-            if (userRole != "admin" && !userAccess.Any(module => module.Trim() == "DMS"))
+            if (userRole == "admin" || userAccess.Any(module => module.Trim() == "DMS"))
             {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
+                return null;
             }
+            
+            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
 
-            return null;
         }
 
         // Display the form
         public IActionResult ActivityReportForm()
         {
             var accessCheckResult = CheckAccess();
-            return accessCheckResult == null ? View(new ActivityReportViewModel()) : accessCheckResult;
+            return accessCheckResult ?? View(new ActivityReportViewModel());
         }
 
         // Generate the report
-        public async Task<IActionResult> GenerateFileUploadReport(DateOnly DateFrom, DateOnly DateTo)
+        public async Task<IActionResult> GenerateFileUploadReport(DateOnly dateFrom, DateOnly dateTo)
         {
             var accessCheckResult = CheckAccess();
             if (accessCheckResult != null)
@@ -49,15 +50,14 @@ namespace Document_Management.Controllers
                 return accessCheckResult;
             }
 
-            var uploadedFiles = await _reportRepo.GenerateUploadedFiles(DateFrom, DateTo);
+            var uploadedFiles = await _reportRepo.GenerateUploadedFiles(dateFrom, dateTo);
 
             var model = new ActivityReportViewModel
             {
-                DateFrom = DateFrom,
-                DateTo = DateTo,
+                DateFrom = dateFrom,
+                DateTo = dateTo,
                 UploadedFiles = uploadedFiles,
-                CurrentUser = HttpContext.Session?.GetString("username")
-
+                CurrentUser = HttpContext.Session.GetString("username") ?? string.Empty
             };
 
             return View("FileUploadReport", model);

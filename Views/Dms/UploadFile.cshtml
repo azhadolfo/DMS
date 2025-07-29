@@ -6,8 +6,6 @@
     ViewData["Title"] = "Upload";
 }
 
-<partial name="_Notification" />
-
 <h2><b>UPLOAD FILE</b></h2>
 <hr />
 
@@ -39,12 +37,12 @@
             <div class="col">
                 <select asp-for="Company" class="form-select full-width" id="companyDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the company --</option>
-                    @foreach (var company in Enum.GetValues(typeof(Companies)))
+                    @foreach (var company in Enum.GetNames(typeof(Companies)))
                     {
-                        var enumMember = typeof(Companies).GetMember(company.ToString())[0];
+                        var enumMember = typeof(Companies).GetMember(company)[0];
                         var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
 
-                        string displayName = displayAttribute != null ? displayAttribute.Name : company.ToString();
+                        var displayName = displayAttribute != null ? displayAttribute.Name : company;
 
                         <option value="@company">@displayName</option>
                     }
@@ -67,12 +65,12 @@
             <div class="col">
                 <select asp-for="Department" class="form-select full-width" id="departmentDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the department --</option>
-                    @foreach (var department in Enum.GetValues(typeof(Departments)))
+                    @foreach (var department in Enum.GetNames(typeof(Departments)))
                     {
-                        var enumMember = typeof(Departments).GetMember(department.ToString())[0];
+                        var enumMember = typeof(Departments).GetMember(department)[0];
                         var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
 
-                        string displayName = displayAttribute != null ? displayAttribute.Name : department.ToString();
+                        var displayName = displayAttribute != null ? displayAttribute.Name : department;
 
                         <option value="@department">@displayName</option>
                     }
@@ -86,12 +84,12 @@
             <div class="col">
                 <select asp-for="Category" class="form-select full-width" id="categoryDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the category --</option>
-                    @foreach (var category in Enum.GetValues(typeof(Categories)))
+                    @foreach (var category in Enum.GetNames(typeof(Categories)))
                     {
-                        var enumMember = typeof(Categories).GetMember(category.ToString())[0];
+                        var enumMember = typeof(Categories).GetMember(category)[0];
                         var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
 
-                        string displayName = displayAttribute != null ? displayAttribute.Name : category.ToString();
+                        var displayName = displayAttribute != null ? displayAttribute.Name : category;
 
                         <option value="@category">@displayName</option>
                     }
@@ -106,12 +104,12 @@
             <div class="col">
                 <select asp-for="SubCategory" class="form-select full-width" id="deliveryDropdown" style="width:100%">
                     <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var delivery in Enum.GetValues(typeof(DeliverySubCategories)))
+                    @foreach (var delivery in Enum.GetNames(typeof(DeliverySubCategories)))
                     {
-                        var enumMember = typeof(DeliverySubCategories).GetMember(delivery.ToString())[0];
+                        var enumMember = typeof(DeliverySubCategories).GetMember(delivery)[0];
                         var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
 
-                        string displayName = displayAttribute != null ? displayAttribute.Name : delivery.ToString();
+                        var displayName = displayAttribute != null ? displayAttribute.Name : delivery;
 
                         <option value="@delivery">@displayName</option>
                     }
@@ -126,12 +124,12 @@
             <div class="col">
                 <select asp-for="SubCategory" class="form-select full-width" id="governmentDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var government in Enum.GetValues(typeof(GovernmentSubCategories)))
+                    @foreach (var government in Enum.GetNames(typeof(GovernmentSubCategories)))
                     {
-                        var enumMember = typeof(GovernmentSubCategories).GetMember(government.ToString())[0];
+                        var enumMember = typeof(GovernmentSubCategories).GetMember(government)[0];
                         var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
 
-                        string displayName = displayAttribute != null ? displayAttribute.Name : government.ToString();
+                        var displayName = displayAttribute != null ? displayAttribute.Name : government;
 
                         <option value="@government">@displayName</option>
                     }
@@ -175,7 +173,6 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
         const fileInput = document.querySelector('#fileInput'); // Target the file input by its id
-        const form = document.querySelector('form');
         const selectedFileNameSpan = document.getElementById('selectedFileName');
         const hiddenFileNameInput = document.querySelector('input[type="hidden"][name="OriginalFilename"]');
         const uploadButton = document.getElementById('uploadButton'); // Target the "Upload" button by its id
@@ -240,13 +237,13 @@
     <script>
         $(document).ready(function () {
             $('#categoryDropdown').change(function () {
-                if ($(this).val() == 'Delivery_Documents') {
+                if ($(this).val() === 'Delivery_Documents') {
                     $('#deliverySubCategories').show();
                 } else {
                     $('#deliverySubCategories').hide();
                 }
 
-                if ($(this).val() == 'Government_Agency_Documents') {
+                if ($(this).val() === 'Government_Agency_Documents') {
                     $('#governmentSubCategories').show();
                 } else {
                     $('#governmentSubCategories').hide();

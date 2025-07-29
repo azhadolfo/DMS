@@ -9,310 +9,286 @@ namespace Document_Management.Controllers
 {
     public class AccountController : Controller
     {
-        //Database Context
-        private readonly ApplicationDbContext _dbcontext;
-
-        private readonly string? userrole;
-        private readonly string? username;
-
-        //Passing the dbcontext in to another variable
+        private readonly ApplicationDbContext _dbContext;
+        private readonly string? _userRole;
+        private readonly string? _userName;
+        
         public AccountController(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
-            _dbcontext = context;
-
-            // Ensure that HttpContext and the session value are not null
+            _dbContext = context;
+            
             if (httpContextAccessor.HttpContext != null)
             {
-                userrole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
-                username = httpContextAccessor.HttpContext.Session.GetString("username");
+                _userRole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
+                _userName = httpContextAccessor.HttpContext.Session.GetString("username");
             }
             else
             {
-                userrole = null; // or set a default value as needed
+                _userRole = null;
             }
         }
-
-        //Action for Account/Index
+        
         public async Task<IActionResult> Index()
         {
-            if (!string.IsNullOrEmpty(username))
-            {
-                if (userrole != "admin")
-                {
-                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-                }
-
-                var users = await _dbcontext.Account
-                    .OrderBy(u => u.EmployeeNumber)
-                    .ToListAsync();
-
-                return View(users);
-            }
-            else
+            if (string.IsNullOrEmpty(_userName))
             {
                 return RedirectToAction("Login", "Account");
             }
-        }
+            
+            if (_userRole != "admin")
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
+            }
 
-        //Get for the Action Account/Create
+            var users = await _dbContext.Account
+                .OrderBy(u => u.EmployeeNumber)
+                .ToListAsync();
+
+            return View(users);
+
+        }
+        
         [HttpGet]
         public IActionResult Create()
         {
-            if (string.IsNullOrEmpty(username))
+            if (!string.IsNullOrEmpty(_userName))
             {
-                if (userrole != "admin")
-                {
-                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
-                }
+                return View(new Register());
+            }
+
+            if (_userRole == "admin")
+            {
                 return RedirectToAction("Login", "Account");
             }
+            
+            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
 
-            return View(new Register());
         }
-
-        //Post for the Action Account/Create
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Register user, string[] AccessFolders, string[] ModuleAccess)
+        public async Task<IActionResult> Create(Register user, string[] accessFolders, CancellationToken cancellationToken)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var usernameExists = _dbcontext.Account
-                    .Any(u => u.Username == user.Username);
+                return View(user);
+            }
+            
+            var usernameExists = await _dbContext.Account
+                .AnyAsync(u => u.Username == user.Username, cancellationToken);
 
-                var employeeNumberExists = _dbcontext.Account
-                    .Any(u => u.EmployeeNumber == user.EmployeeNumber);
+            var employeeNumberExists = await _dbContext.Account
+                .AnyAsync(u => u.EmployeeNumber == user.EmployeeNumber, cancellationToken);
 
-                if (usernameExists && employeeNumberExists)
-                {
+            switch (usernameExists)
+            {
+                case true when employeeNumberExists:
                     ModelState.AddModelError("", "Both Username and Employee Number are already in use by other users.");
-                }
-                else if (usernameExists)
-                {
+                    break;
+                case true:
                     ModelState.AddModelError("", "Username is already in use by another user.");
-                }
-                else if (employeeNumberExists)
+                    break;
+                default:
                 {
-                    ModelState.AddModelError("", "Employee Number is already in use by another user.");
-                }
+                    if (employeeNumberExists)
+                    {
+                        ModelState.AddModelError("", "Employee Number is already in use by another user.");
+                    }
 
-                if (usernameExists || employeeNumberExists)
-                {
-                    return View(user); // Return the user object that failed validation
-                }
-
-                if (!string.IsNullOrEmpty(username))
-                {
-                    // Join selected departments into a comma-separated string
-                    user.AccessFolders = string.Join(",", AccessFolders);
-                    user.ModuleAccess = string.Join(",", ModuleAccess);
-
-                    user.Password = HashPassword(user.Password);
-                    _dbcontext.Account.Add(user);
-
-                    //Implementing the logs
-                    LogsModel logs = new(username, $"Add new user: {user.Username}");
-                    _dbcontext.Logs.Add(logs);
-
-                    _dbcontext.SaveChanges();
-                    TempData["success"] = "User created successfully";
-                    return RedirectToAction("Index", "Account");
-                }
-                else
-                {
-                    return RedirectToAction("Login", "Account");
+                    break;
                 }
             }
 
-            return View(user);
-        }
+            if (usernameExists || employeeNumberExists)
+            {
+                return View(user);
+            }
 
-        //Get for Action Account/Login
+            if (string.IsNullOrEmpty(_userName))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            user.AccessFolders = string.Join(",", accessFolders);
+
+            user.Password = HashPassword(user.Password);
+            await _dbContext.Account.AddAsync(user, cancellationToken);
+            
+            LogsModel logs = new(_userName, $"Add new user: {user.Username}");
+            await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            TempData["success"] = "User created successfully";
+            return RedirectToAction("Index", "Account");
+
+        }
+        
         [HttpGet]
         public IActionResult Login()
         {
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(_userName))
             {
                 return View();
             }
             return RedirectToAction("Index", "Home");
         }
-
-        //Post for Action Account/Login
+        
         [HttpPost]
-        public IActionResult Login(string username, string password)
+        public async Task<IActionResult> Login(string userName, string password, CancellationToken cancellationToken)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = _dbcontext.Account
-                    .FirstOrDefault(u => u.Username == username);
-
-                if (user != null && user.Password == HashPassword(password))
-                {
-                    HttpContext.Session.SetString("username", user.Username); // Store username in session
-                    HttpContext.Session.SetString("userrole", user.Role); // Store user role in session
-                    HttpContext.Session.SetString("useraccessfolders", user.AccessFolders); // Store user folder access in session
-                    HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess); // Store user module access in session
-                    HttpContext.Session.SetString("userfirstname", user.FirstName); // Store user module access in session
-
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Invalid username or password");
-                }
+                return View();
             }
+            
+            var user = await _dbContext.Account
+                .FirstOrDefaultAsync(u => u.Username == userName, cancellationToken);
+
+            if (user != null && user.Password == HashPassword(password))
+            {
+                HttpContext.Session.SetString("username", user.Username);
+                HttpContext.Session.SetString("userrole", user.Role);
+                HttpContext.Session.SetString("useraccessfolders", user.AccessFolders);
+                HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess);
+                HttpContext.Session.SetString("userfirstname", user.FirstName);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            ModelState.AddModelError("", "Invalid username or password");
 
             return View();
         }
-
-        //Get for the Action Account/Edit
+        
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(_userName))
             {
-                if (userrole != "admin")
+                if (_userRole == "admin")
                 {
-                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                    return RedirectToAction("Login", "Account");
                 }
-                return RedirectToAction("Login", "Account");
+                
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
             }
-
-            // Retrieve the user from the database
-            var user = _dbcontext.Account
-                .FirstOrDefault(x => x.Id == id);
+            
+            var user = await _dbContext.Account
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
             if (user == null)
             {
                 return NotFound();
             }
-
-            // Split the comma-separated AccessFolders into a list of selected departments
-            if (!string.IsNullOrEmpty(user.AccessFolders))
+            
+            if (string.IsNullOrEmpty(user.AccessFolders))
             {
-                var selectedDepartments = user.AccessFolders.Split(',').ToList();
-
-                // Join the selected departments back into a comma-separated string
-                user.AccessFolders = string.Join(",", selectedDepartments);
+                return View(user);
             }
+            
+            var selectedDepartments = user.AccessFolders.Split(',').ToList();
+            
+            user.AccessFolders = string.Join(",", selectedDepartments);
 
             return View(user);
         }
-
-        //Post for the Action Account/Edit
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Register model, string[] AccessFolders, string[] ModuleAccess, string newPassword, string newConfirmPassword)
+        public async Task<IActionResult> Edit(Register model,
+            string[] accessFolders,
+            string newPassword,
+            string newConfirmPassword,
+            CancellationToken cancellationToken)
         {
-            var user = await _dbcontext.Account
-                .FindAsync(model.Id);
+            var user = await _dbContext.Account
+                .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
 
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(_userName))
             {
-                if (userrole != "admin")
+                if (_userRole == "admin")
                 {
-                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                    return RedirectToAction("Login", "Account");
                 }
-                return RedirectToAction("Login", "Account");
+                
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
             }
 
-            if (user != null)
+            if (user == null)
             {
-                // Check if there are any changes in user data
-                bool dataChanged = user.EmployeeNumber != model.EmployeeNumber ||
-                                   user.FirstName != model.FirstName ||
-                                   user.LastName != model.LastName ||
-                                   user.Department != model.Department ||
-                                   user.Username != model.Username ||
-                                   user.Role != model.Role ||
-                                   (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword)) ||
-                                   !Enumerable.SequenceEqual(user.AccessFolders?.Split(','), AccessFolders ?? new string[0]) ||
-                                   !Enumerable.SequenceEqual(user.ModuleAccess?.Split(','), ModuleAccess ?? new string[0]);
+                return RedirectToAction("Index");
+            }
+            
+            var dataChanged = user.EmployeeNumber != model.EmployeeNumber ||
+                              user.FirstName != model.FirstName ||
+                              user.LastName != model.LastName ||
+                              user.Department != model.Department ||
+                              user.Username != model.Username ||
+                              user.Role != model.Role ||
+                              (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword)) ||
+                              !user.AccessFolders.Split(',').SequenceEqual(accessFolders);
 
-                if (dataChanged)
-                {
-                    // Update the user properties
-                    user.EmployeeNumber = model.EmployeeNumber;
-                    user.FirstName = model.FirstName;
-                    user.LastName = model.LastName;
-                    user.Department = model.Department;
-                    user.Username = model.Username;
-                    user.Role = model.Role;
-
-                    // Check if a new password is provided
-                    if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
-                    {
-                        if (newPassword == newConfirmPassword)
-                        {
-                            // Hash and update the new password
-                            user.Password = HashPassword(newPassword);
-                        }
-                        else
-                        {
-                            TempData["error"] = "Password is not the same";
-                            return View(model);
-                        }
-                    }
-
-                    // Join the selected departments into a comma-separated string
-                    if (AccessFolders != null && AccessFolders.Length > 0)
-                    {
-                        user.AccessFolders = string.Join(",", AccessFolders);
-                    }
-                    else
-                    {
-                        // Handle the case where no departments are selected
-                        user.AccessFolders = string.Empty;
-                    }
-
-                    if (ModuleAccess != null && ModuleAccess.Length > 0)
-                    {
-                        user.ModuleAccess = string.Join(",", ModuleAccess);
-                    }
-                    else
-                    {
-                        // Handle the case where no departments are selected
-                        user.ModuleAccess = string.Empty;
-                    }
-
-                    // Implementing the logs
-                    LogsModel logs = new(username, $"Update user: {user.Username}");
-                    _dbcontext.Logs.Add(logs);
-
-                    await _dbcontext.SaveChangesAsync();
-                    TempData["success"] = "User updated successfully";
-                    return RedirectToAction("Index");
-                }
+            if (!dataChanged)
+            {
                 return RedirectToAction("Edit");
             }
-
-            return RedirectToAction("Index");
-        }
-
-        // GET: Account/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (string.IsNullOrEmpty(username))
+            
+            user.EmployeeNumber = model.EmployeeNumber;
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Department = model.Department;
+            user.Username = model.Username;
+            user.Role = model.Role;
+            
+            if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
             {
-                if (userrole != "admin")
+                if (newPassword == newConfirmPassword)
                 {
-                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                    user.Password = HashPassword(newPassword);
                 }
-                return RedirectToAction("Login", "Account");
+                else
+                {
+                    TempData["error"] = "Password is not the same";
+                    return View(model);
+                }
             }
 
-            if (id == null || _dbcontext.Account == null)
+            user.AccessFolders = accessFolders.Length > 0 ? string.Join(",", accessFolders) : string.Empty;
+            
+            LogsModel logs = new(_userName, $"Update user: {user.Username}");
+            await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            TempData["success"] = "User updated successfully";
+            return RedirectToAction("Index");
+
+        }
+        
+        public async Task<IActionResult> Delete(int? id, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(_userName))
+            {
+                if (_userRole == "admin")
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+                
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
+            }
+
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var employee = await _dbcontext.Account.FirstOrDefaultAsync(m => m.Id == id);
+            var employee = await _dbContext.Account
+                .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+            
             if (employee == null)
             {
                 return NotFound();
@@ -320,45 +296,39 @@ namespace Document_Management.Controllers
 
             return View(employee);
         }
-
-        // POST: Account/Delete/5
+        
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
         {
-            if (_dbcontext.Account == null)
+            if (string.IsNullOrEmpty(_userName))
             {
-                return Problem("Entity set 'ApplicationDbContext.Account'  is null.");
-            }
-
-            if (string.IsNullOrEmpty(username))
-            {
-                if (userrole != "admin")
+                if (_userRole == "admin")
                 {
-                    TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                    return RedirectToAction("Privacy", "Home"); // Redirect to the login page or another appropriate action
+                    return RedirectToAction("Login", "Account");
                 }
+                
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
 
-                return RedirectToAction("Login", "Account");
             }
 
-            var employee = await _dbcontext.Account
-                .FindAsync(id);
+            var employee = await _dbContext.Account
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
             if (employee != null)
             {
-                _dbcontext.Account.Remove(employee);
+                _dbContext.Account.Remove(employee);
+                
+                LogsModel logs = new(_userName, $"Delete user: {employee.Username}");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
-                //Implementing the logs
-                LogsModel logs = new(username, $"Delete user: {employee.Username}");
-                _dbcontext.Logs.Add(logs);
-
-                await _dbcontext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync(cancellationToken);
 
                 TempData["success"] = "User deleted successfully";
             }
 
-            await _dbcontext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return RedirectToAction(nameof(Index));
         }
 
@@ -369,39 +339,38 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangePassword(Register model)
+        public async Task<IActionResult> ChangePassword(Register model, CancellationToken cancellationToken)
         {
-            var user = await _dbcontext.Account
-                .FirstOrDefaultAsync(x => x.Username == username);
+            var user = await _dbContext.Account
+                .FirstOrDefaultAsync(x => x.Username == _userName, cancellationToken);
 
-            if (user != null)
+            if (user == null)
             {
-                if (user.Password == HashPassword(model.Password))
-                {
-                    TempData["error"] = "New password must not the same with the previous.";
-                }
-
-                user.Password = HashPassword(model.Password);
-                await _dbcontext.SaveChangesAsync();
+                return NotFound();
             }
+
+            if (user.Password == HashPassword(model.Password))
+            {
+                TempData["error"] = "New password must not the same with the previous.";
+            }
+
+            user.Password = HashPassword(model.Password);
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             TempData["success"] = "Change password successfully";
             return View();
         }
-
-        //Action for Account/Logout and remove the session
+        
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
 
             return RedirectToAction("Index", "Home");
         }
-
-        // Hash the password using a salt
-        public static string HashPassword(string password)
+        
+        private static string HashPassword(string password)
         {
-            using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
             return Convert.ToBase64String(hashedBytes);
         }
     }

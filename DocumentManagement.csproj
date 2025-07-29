@@ -28,4 +28,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.5" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\Files\" />
+  </ItemGroup>
 </Project>

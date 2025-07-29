@@ -1,4 +1,5 @@
-﻿using System.Linq.Dynamic.Core;
+﻿using System.Globalization;
+using System.Linq.Dynamic.Core;
 using Document_Management.Data;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -9,26 +10,22 @@ namespace Document_Management.Controllers
     public class LogsController : Controller
     {
         //Database Context
-        private readonly ApplicationDbContext _dbcontext;
+        private readonly ApplicationDbContext _dbContext;
 
         //Passing the dbcontext in to another variable
         public LogsController(ApplicationDbContext context)
         {
-            _dbcontext = context;
+            _dbContext = context;
         }
 
-        public async Task<IActionResult> IndexAsync(CancellationToken cancellationToken)
+        public IActionResult Index()
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("username")))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var logs = await _dbcontext.Logs
-                .OrderByDescending(u => u.Date)
-                .ToListAsync(cancellationToken);
-
-            return View(logs);
+            return View();
         }
 
         [HttpPost]
@@ -37,7 +34,7 @@ namespace Document_Management.Controllers
         {
             try
             {
-                var logs = await _dbcontext.Logs
+                var logs = await _dbContext.Logs
                     .OrderByDescending(u => u.Date)
                     .ToListAsync(cancellationToken);
                 
@@ -49,13 +46,13 @@ namespace Document_Management.Controllers
                         .Where(s =>
                             s.Username.ToLower().Contains(searchValue) ||
                             s.Activity.ToLower().Contains(searchValue) ||
-                            s.Date.ToString().Contains(searchValue)
+                            s.Date.ToString(CultureInfo.InvariantCulture).Contains(searchValue)
                         )
                         .ToList();
                 }
                 
                 // Sorting
-                if (parameters.Order != null && parameters.Order.Count > 0)
+                if (parameters.Order.Count > 0)
                 {
                     var orderColumn = parameters.Order[0];
                     var columnName = parameters.Columns[orderColumn.Column].Data;
@@ -67,7 +64,7 @@ namespace Document_Management.Controllers
                         .ToList();
                 }
                 
-                var totalRecords = logs.Count();
+                var totalRecords = logs.Count;
 
                 var pagedData = logs
                     .Skip(parameters.Start)

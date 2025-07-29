@@ -124,8 +124,7 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    var url = `/DMS/Delete?id=${id}`;
-                    window.location.href = url;
+                    window.location.href = `/DMS/Delete?id=${id}`;
                 }
             });
         }
