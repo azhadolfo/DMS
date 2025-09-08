@@ -153,6 +153,10 @@ namespace Document_Management.Controllers
                 HttpContext.Session.SetString("useraccessfolders", user.AccessFolders);
                 HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess);
                 HttpContext.Session.SetString("userfirstname", user.FirstName);
+                
+                LogsModel logs = new(user.Username, $"Login Successfully");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+                await  _dbContext.SaveChangesAsync(cancellationToken);
 
                 return RedirectToAction("Index", "Home");
             }
@@ -361,8 +365,12 @@ namespace Document_Management.Controllers
             return View();
         }
         
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout(CancellationToken cancellationToken)
         {
+            LogsModel logs = new(_userName, $"Logout Successfully");
+            await _dbContext.Logs.AddAsync(logs, cancellationToken);
+            await  _dbContext.SaveChangesAsync(cancellationToken);
+            
             HttpContext.Session.Clear();
 
             return RedirectToAction("Index", "Home");
