@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using Document_Management.Data;
 using Document_Management.Models;
 using Document_Management.Repository;
@@ -99,6 +100,9 @@ namespace Document_Management.Controllers
                 return accessCheckResult;
             }
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             try
             {
                 if (!ModelState.IsValid || file == null || file.Length == 0)
@@ -129,7 +133,7 @@ namespace Document_Management.Controllers
                 var filename = Path.GetFileName(file.FileName);
                 var uniquePart = $"{fileDocument.Department}_{DateTime.Now:yyyyMMddHHmmssfff}";
                 filename = filename.Replace("#", "");
-                filename = $"{uniquePart}_{filename}"; // Combine uniquePart with the original filename
+                filename = $"{uniquePart}_{filename}";
 
                 var departmentSubdirectory = fileDocument.SubCategory == "N/A"
                     ? Path.Combine("Files", fileDocument.Company!, fileDocument.Year!, fileDocument.Department!, fileDocument.Category!)
@@ -146,7 +150,7 @@ namespace Document_Management.Controllers
 
                 await using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    await file.CopyToAsync(stream, cancellationToken); // Copy the file to the server
+                    await file.CopyToAsync(stream, cancellationToken);
                 }
 
                 fileDocument.DateUploaded = DateTime.Now;
@@ -157,8 +161,14 @@ namespace Document_Management.Controllers
                 fileDocument.OriginalFilename = file.FileName;
                 await _dbContext.FileDocuments.AddAsync(fileDocument, cancellationToken);
 
-                // Implementing the logs
-                var logs = new LogsModel(username!, $"Upload {file.FileName} in {departmentSubdirectory} {fileDocument.NumberOfPages} page(s).");
+                stopwatch.Stop();
+                var duration = stopwatch.Elapsed; // Capture time consumed
+
+                // Implementing the logs with duration
+                var logs = new LogsModel(
+                    username!,
+                    $"Upload {file.FileName} in {departmentSubdirectory} {fileDocument.NumberOfPages} page(s). Duration: {duration.TotalSeconds:F2} seconds."
+                );
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -169,7 +179,6 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
                 _logger.LogError(ex, "Error occurred during file upload.");
                 TempData["error"] = "Contact MIS: An error occurred during file upload.";
             }

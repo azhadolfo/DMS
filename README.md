@@ -27,10 +27,6 @@ Welcome to the Document Management System (DMS) repository! DMS is a system desi
 - **v1.0.1** - Added a new field for file size - 2/16/2024
 - **v1.0.0** - Newly published - 2/3/2024
 
-## Getting Started
-
-To get started with DMS, please refer to the [documentation](link_to_documentation) for installation and usage instructions.
-
 ## Feedback
 
 If you have any feedback, suggestions, or issues, please feel free to open an [issue](https://github.com/azhadolfo/DMS/issues) or submit a [pull request](https://github.com/azhadolfo/DMS/pulls). We welcome your contributions to make DMS even better!
