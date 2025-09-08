@@ -162,12 +162,14 @@ namespace Document_Management.Controllers
                 await _dbContext.FileDocuments.AddAsync(fileDocument, cancellationToken);
 
                 stopwatch.Stop();
-                var duration = stopwatch.Elapsed; // Capture time consumed
+                var duration = stopwatch.Elapsed; 
+                var fileSizeInMb = (file.Length / (1024.0 * 1024.0)); // Convert to MB
 
-                // Implementing the logs with duration
+                // Implementing the logs with duration and file size
                 var logs = new LogsModel(
                     username!,
-                    $"Upload {file.FileName} in {departmentSubdirectory} {fileDocument.NumberOfPages} page(s). Duration: {duration.TotalSeconds:F2} seconds."
+                    $"Upload {file.FileName} in {departmentSubdirectory} {fileDocument.NumberOfPages} page(s). " +
+                    $"Size: {fileSizeInMb:F2} MB. Duration: {duration.TotalSeconds:F2} seconds."
                 );
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
