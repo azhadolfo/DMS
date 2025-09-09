@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Document_Management.Utility.Helper;
 
 namespace Document_Management.Models
 {
@@ -19,7 +20,7 @@ namespace Document_Management.Models
         {
             Username = username;
             Activity = activity;
-            Date = DateTime.Now;
+            Date = DateTimeHelper.GetCurrentPhilippineTime();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿@model ActivityReportViewModel
+﻿@using Document_Management.Utility.Helper
+@model ActivityReportViewModel
 
 @{
     ViewData["Title"] = "File Upload Report";
@@ -55,7 +56,7 @@ else
 }
 
 <div class="footer-section" style="margin: 0 2em 0 2em">
-    <p><i>This report was generated on @DateTime.Now.ToString("MMM dd, yyyy")</i></p>
+    <p><i>This report was generated on @DateTimeHelper.GetCurrentPhilippineTime().ToString("MMM dd, yyyy")</i></p>
 </div>
 
 <a asp-controller="Report" asp-action="ActivityReportForm" class="btn btn-primary buttons" style="margin: 0 2em 0 2em">Back</a>

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using Document_Management.Services;
+using Document_Management.Utility.Helper;
 using Google.Cloud.Storage.V1;
 
 namespace Document_Management.Controllers
@@ -130,7 +131,7 @@ namespace Document_Management.Controllers
 
                 var username = HttpContext.Session.GetString("username");
                 var filename = Path.GetFileName(file.FileName);
-                var uniquePart = $"{fileDocument.Department}_{DateTime.Now:yyyyMMddHHmmssfff}";
+                var uniquePart = $"{fileDocument.Department}_{DateTimeHelper.GetCurrentPhilippineTime():yyyyMMddHHmmssfff}";
                 filename = filename.Replace("#", "");
                 filename = $"{uniquePart}_{filename}";
 
@@ -142,7 +143,7 @@ namespace Document_Management.Controllers
                 // Upload to Cloud Storage
                 var objectName = await _cloudStorage.UploadFileAsync(file, cloudStoragePath);
 
-                fileDocument.DateUploaded = DateTime.Now;
+                fileDocument.DateUploaded = DateTimeHelper.GetCurrentPhilippineTime();
                 fileDocument.Name = filename;
                 fileDocument.Location = objectName; // Store cloud storage path instead of local path
                 fileDocument.FileSize = file.Length;
@@ -527,7 +528,7 @@ namespace Document_Management.Controllers
                 }
                 
                 var filename = Path.GetFileName(newFile.FileName);
-                var uniquePart = $"{file.Department}_{DateTime.Now:yyyyMMddHHmmssfff}";
+                var uniquePart = $"{file.Department}_{DateTimeHelper.GetCurrentPhilippineTime():yyyyMMddHHmmssfff}";
                 filename = filename.Replace("#", "");
                 filename = $"{uniquePart}_{filename}";
                 
