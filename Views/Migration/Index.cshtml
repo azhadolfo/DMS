@@ -1,0 +1,207 @@
+@{
+    ViewData["Title"] = "Cloud Storage Migration";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        Cloud Storage Migration Tool
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Files Pending Migration</h5>
+                                    <h2 class="text-warning" id="pendingCount">@ViewBag.PendingMigrationCount</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Migration Status</h5>
+                                    <span class="badge badge-secondary" id="migrationStatus">Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Migration Information</h5>
+                        <ul class="mb-0">
+                            <li>This tool will migrate all files from local VM storage to Google Cloud Storage</li>
+                            <li>Files will remain accessible through the same interface</li>
+                            <li>Original files will be preserved until migration is confirmed successful</li>
+                            <li>Migration may take several minutes depending on file count and size</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="button" class="btn btn-primary btn-lg" id="startMigrationBtn" 
+                                onclick="startMigration()" 
+                                @(ViewBag.PendingMigrationCount == 0 ? "disabled" : "")>
+                            <i class="fas fa-play"></i>
+                            Start Migration
+                        </button>
+                        <button type="button" class="btn btn-secondary ml-2" onclick="refreshStatus()">
+                            <i class="fas fa-sync"></i>
+                            Refresh Status
+                        </button>
+                    </div>
+
+                    <!-- Progress section -->
+                    <div id="progressSection" class="mt-4" style="display: none;">
+                        <div class="progress mb-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 id="progressBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div id="progressText" class="text-center">
+                            <small class="text-muted">Migration in progress...</small>
+                        </div>
+                    </div>
+
+                    <!-- Results section -->
+                    <div id="resultsSection" class="mt-4" style="display: none;">
+                        <div class="alert" id="resultsAlert">
+                            <h5 id="resultsTitle"></h5>
+                            <div id="resultsContent"></div>
+                            <div id="failedFiles" style="display: none;">
+                                <h6 class="mt-3">Failed Files:</h6>
+                                <ul id="failedFilesList"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let migrationInProgress = false;
+
+    function startMigration() {
+        if (migrationInProgress) {
+            return;
+        }
+
+        if (!confirm('Are you sure you want to start the migration? This process cannot be stopped once started.')) {
+            return;
+        }
+
+        migrationInProgress = true;
+        
+        // Update UI
+        $('#startMigrationBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Migrating...');
+        $('#migrationStatus').removeClass('badge-secondary').addClass('badge-warning').text('In Progress');
+        $('#progressSection').show();
+        $('#resultsSection').hide();
+        
+        // Start progress animation
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress > 90) progress = 90;
+            $('#progressBar').css('width', progress + '%');
+        }, 1000);
+
+        // Make AJAX call to start migration
+        $.ajax({
+            url: '@Url.Action("StartMigration", "Migration")',
+            type: 'POST',
+            headers: {
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function(response) {
+                clearInterval(progressInterval);
+                $('#progressBar').css('width', '100%');
+                
+                migrationInProgress = false;
+                $('#startMigrationBtn').prop('disabled', false).html('<i class="fas fa-play"></i> Start Migration');
+                
+                if (response.success) {
+                    $('#migrationStatus').removeClass('badge-warning').addClass('badge-success').text('Completed');
+                    $('#resultsAlert').removeClass('alert-danger').addClass('alert-success');
+                    $('#resultsTitle').html('<i class="fas fa-check-circle"></i> Migration Successful!');
+                    $('#resultsContent').html(`
+                        <p><strong>Files migrated:</strong> ${response.successCount}</p>
+                        <p>All files have been successfully moved to Google Cloud Storage.</p>
+                    `);
+                } else {
+                    $('#migrationStatus').removeClass('badge-warning').addClass('badge-danger').text('Completed with Errors');
+                    $('#resultsAlert').removeClass('alert-success').addClass('alert-warning');
+                    $('#resultsTitle').html('<i class="fas fa-exclamation-triangle"></i> Migration Completed with Issues');
+                    $('#resultsContent').html(`
+                        <p><strong>Successful migrations:</strong> ${response.successCount}</p>
+                        <p><strong>Failed migrations:</strong> ${response.failureCount}</p>
+                        ${response.generalError ? `<p><strong>General Error:</strong> ${response.generalError}</p>` : ''}
+                    `);
+                    
+                    if (response.failedFiles && response.failedFiles.length > 0) {
+                        $('#failedFilesList').empty();
+                        response.failedFiles.forEach(file => {
+                            $('#failedFilesList').append(`<li>${file.fileName} (ID: ${file.fileId}): ${file.error}</li>`);
+                        });
+                        $('#failedFiles').show();
+                    }
+                }
+                
+                $('#resultsSection').show();
+                refreshStatus();
+            },
+            error: function(xhr, status, error) {
+                clearInterval(progressInterval);
+                migrationInProgress = false;
+                $('#startMigrationBtn').prop('disabled', false).html('<i class="fas fa-play"></i> Start Migration');
+                $('#migrationStatus').removeClass('badge-warning').addClass('badge-danger').text('Failed');
+                
+                $('#resultsAlert').removeClass('alert-success').addClass('alert-danger');
+                $('#resultsTitle').html('<i class="fas fa-times-circle"></i> Migration Failed');
+                $('#resultsContent').html(`<p>An error occurred during migration: ${error}</p>`);
+                $('#resultsSection').show();
+            }
+        });
+    }
+
+    function refreshStatus() {
+        $.ajax({
+            url: '@Url.Action("GetStatus", "Migration")',
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $('#pendingCount').text(response.pendingCount);
+                    
+                    if (response.pendingCount === 0) {
+                        $('#startMigrationBtn').prop('disabled', true);
+                        if (!migrationInProgress) {
+                            $('#migrationStatus').removeClass('badge-secondary badge-warning').addClass('badge-success').text('All Files Migrated');
+                        }
+                    } else {
+                        $('#startMigrationBtn').prop('disabled', migrationInProgress);
+                    }
+                }
+            }
+        });
+    }
+
+    // Refresh status every 30 seconds
+    setInterval(refreshStatus, 30000);
+</script>
+
+@section Scripts {
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+}

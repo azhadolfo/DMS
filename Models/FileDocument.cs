@@ -46,5 +46,8 @@ namespace Document_Management.Models
         public int NumberOfPages { get; set; }
 
         public long FileSize { get; set; }
+        
+        // Add this property to track storage location
+        public bool IsInCloudStorage { get; set; } = false;
     }
 }

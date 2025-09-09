@@ -1,0 +1,169 @@
+# cloudbuild.yaml
+steps:
+  # Step 1: Build and test the application
+  - name: 'mcr.microsoft.com/dotnet/sdk:8.0'
+    id: 'build-and-test'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Starting build and test..."
+        dotnet restore Document_Management.csproj
+        dotnet build Document_Management.csproj -c Release --no-restore
+        echo "Build completed successfully"
+        
+        # Run tests if you have any
+        # dotnet test --no-build -c Release --logger trx --results-directory ./testresults
+    waitFor: ['-']
+
+  # Step 2: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/document-management:$BUILD_ID',
+      '-t', 'gcr.io/$PROJECT_ID/document-management:latest',
+      '-f', 'Dockerfile',
+      '.'
+    ]
+    waitFor: ['build-and-test']
+
+  # Step 3: Push Docker image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args: [
+      'push',
+      'gcr.io/$PROJECT_ID/document-management:$BUILD_ID'
+    ]
+    waitFor: ['build-image']
+
+  # Step 4: Push latest tag
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-latest'
+    args: [
+      'push',
+      'gcr.io/$PROJECT_ID/document-management:latest'
+    ]
+    waitFor: ['build-image']
+
+  # Step 5: Deploy to Cloud Run (Staging)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-staging'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'document-management-staging'
+      - '--image=gcr.io/$PROJECT_ID/document-management:$BUILD_ID'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--memory=2Gi'
+      - '--cpu=2'
+      - '--min-instances=0'
+      - '--max-instances=10'
+      - '--timeout=3600'
+      - '--port=8080'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=ASPNETCORE_ENVIRONMENT=Staging'
+      - '--set-env-vars=GoogleCloudStorage__BucketName=${_STORAGE_BUCKET_STAGING}'
+      - '--set-env-vars=ConnectionStrings__DefaultConnection=${_DB_CONNECTION_STAGING}'
+    waitFor: ['push-image']
+
+  # Step 6: Run integration tests against staging
+  - name: 'gcr.io/cloud-builders/curl'
+    id: 'integration-tests'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Running integration tests..."
+        
+        # Get the staging URL
+        STAGING_URL=$(gcloud run services describe document-management-staging --region=us-central1 --format="value(status.url)")
+        echo "Testing staging deployment at: $STAGING_URL"
+        
+        # Wait for service to be ready
+        sleep 30
+        
+        # Test health endpoint
+        curl -f "$STAGING_URL/health" || exit 1
+        echo "Health check passed"
+        
+        # Test main page
+        curl -f "$STAGING_URL/" || exit 1
+        echo "Main page accessible"
+        
+        echo "Integration tests completed successfully"
+    waitFor: ['deploy-staging']
+
+  # Step 7: Deploy to Production (only on main branch)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-production'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "master" ]; then
+          echo "Deploying to production..."
+          gcloud run deploy document-management-prod \
+            --image=gcr.io/$PROJECT_ID/document-management:$BUILD_ID \
+            --region=us-central1 \
+            --platform=managed \
+            --memory=2Gi \
+            --cpu=2 \
+            --min-instances=1 \
+            --max-instances=20 \
+            --timeout=3600 \
+            --port=8080 \
+            --allow-unauthenticated \
+            --set-env-vars=ASPNETCORE_ENVIRONMENT=Production \
+            --set-env-vars=GoogleCloudStorage__BucketName=${_STORAGE_BUCKET_PROD} \
+            --set-env-vars=ConnectionStrings__DefaultConnection=${_DB_CONNECTION_PROD}
+          echo "Production deployment completed"
+        else
+          echo "Skipping production deployment for branch: $BRANCH_NAME"
+        fi
+    waitFor: ['integration-tests']
+
+  # Step 8: Clean up old images (optional)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'cleanup'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Cleaning up old images..."
+        # Keep only the 10 most recent images
+        gcloud container images list-tags gcr.io/$PROJECT_ID/document-management \
+          --limit=999 --sort-by=TIMESTAMP \
+          --format="get(digest)" | tail -n +11 | \
+        while read digest; do
+          gcloud container images delete "gcr.io/$PROJECT_ID/document-management@$digest" --quiet
+        done || echo "No old images to clean up"
+    waitFor: ['deploy-production']
+
+# Substitute variables - these will be provided via triggers or CLI
+substitutions:
+  _STORAGE_BUCKET_STAGING: 'document-management-staging-bucket'
+  _STORAGE_BUCKET_PROD: 'document-management-prod-bucket'
+  _DB_CONNECTION_STAGING: 'Server=staging-db;Database=DocumentManagementDb;...'
+  _DB_CONNECTION_PROD: 'Server=prod-db;Database=DocumentManagementDb;...'
+
+# Build configuration
+options:
+  # Use a more powerful machine for faster builds
+  machineType: 'E2_HIGHCPU_8'
+  # Increase disk size if needed
+  diskSizeGb: 100
+  # Enable logs streaming
+  logging: CLOUD_LOGGING_ONLY
+
+# Build timeout (max 2 hours)
+timeout: 7200s
+
+# Specify which files/folders to include in the build context
+# This helps reduce build time by excluding unnecessary files
+# Note: Make sure your .dockerignore is properly configured
+images:
+  - 'gcr.io/$PROJECT_ID/document-management:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/document-management:latest'
