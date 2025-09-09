@@ -32,6 +32,7 @@ public class CloudStorageMigrationService
                 // Get all files that are not yet in cloud storage
                 var filesToMigrate = await _context.FileDocuments
                     .Where(f => !f.IsInCloudStorage)
+                    .Take(10)
                     .ToListAsync(cancellationToken);
 
                 _logger.LogInformation($"Starting migration of {filesToMigrate.Count} files to Cloud Storage");
