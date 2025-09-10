@@ -1,6 +1,6 @@
 using Document_Management.Data;
 using Document_Management.Repository;
-using Document_Management.Services;
+using Document_Management.Service;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -4,7 +4,8 @@ Welcome to the Document Management System (DMS) repository! DMS is a system desi
 
 ## Version History
 
-- **v2.7.0** - Added stopwatch to calculate the duration of uploading, add audit trail for login and log out - 07/29/2025
+- **v3.0.0** - Migrate to serverless approach with CI/CD - 09/10/2025
+- **v2.7.0** - Added stopwatch to calculate the duration of uploading, add audit trail for login and log out - 09/08/2025
 - **v2.6.0** - Refactored the source code - 07/29/2025
 - **v2.5.0** - Changed the logo and modified the video tutorial - 07/25/2025
 - **v2.4.0** - Added video tutorial on the homepage - 07/19/2025

@@ -1,4 +1,4 @@
-using Document_Management.Services;
+using Document_Management.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Document_Management.Controllers

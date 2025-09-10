@@ -4,7 +4,7 @@ using System.Net;
 using Google;
 using Object = Google.Apis.Storage.v1.Data.Object;
 
-namespace Document_Management.Services
+namespace Document_Management.Service
 {
     public interface ICloudStorageService
     {

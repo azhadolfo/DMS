@@ -2,7 +2,7 @@ using Document_Management.Data;
 using Document_Management.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Document_Management.Services;
+namespace Document_Management.Service;
 
 public class CloudStorageMigrationService
     {

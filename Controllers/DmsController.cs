@@ -6,9 +6,8 @@ using Document_Management.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
-using Document_Management.Services;
+using Document_Management.Service;
 using Document_Management.Utility.Helper;
-using Google.Cloud.Storage.V1;
 
 namespace Document_Management.Controllers
 {

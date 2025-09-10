@@ -6,6 +6,7 @@
     <RootNamespace>Document_Management</RootNamespace>
 	<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<UserSecretsId>8bbe22e7-c279-4b91-b990-0d65aa85f43a</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="NewFolder\**" />
