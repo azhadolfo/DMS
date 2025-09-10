@@ -30,6 +30,7 @@
                         {
                             //<a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.Name)" download="@file.OriginalFilename" class="btn btn-primary">Download</a>
                             <a class="btn btn-primary"
+                               target="_blank"
                                href="@Url.Action("Download", "Dms", new {
                                          filepath = $"Files/{file.Company}/{file.Year}/{file.Department}/{file.Category}/{file.Name}",
                                          originalFilename = file.OriginalFilename
@@ -41,6 +42,7 @@
                         {
                             //<a href="@Url.Content("~/Files/" + file.Company + "/" + file.Year + "/" + file.Department + "/" + file.Category + "/" + file.SubCategory + "/" + file.Name)" download="@file.OriginalFilename" class="btn btn-primary">Download</a>
                             <a class="btn btn-primary"
+                               target="_blank"
                                href="@Url.Action("Download", "Dms", new {
                                          filepath = $"Files/{file.Company}/{file.Year}/{file.Department}/{file.Category}/{file.SubCategory}/{file.Name}",
                                          originalFilename = file.OriginalFilename
