@@ -19,15 +19,42 @@ namespace Document_Management.Services
         private readonly StorageClient _storageClient;
         private readonly string _bucketName;
         private readonly ILogger<GoogleCloudStorageService> _logger;
+        private readonly GoogleCredential _googleCredential;
 
-        public GoogleCloudStorageService(ILogger<GoogleCloudStorageService> logger, IConfiguration configuration)
+        public GoogleCloudStorageService(ILogger<GoogleCloudStorageService> logger,
+            IConfiguration configuration)
         {
             _logger = logger;
             _bucketName = configuration["GoogleCloudStorage:BucketName"] ??
                           throw new ArgumentException("GoogleCloudStorage:BucketName configuration is required");
 
-            // Use default credentials in Cloud Run (no service account file needed)
-            _storageClient = StorageClient.Create();
+            try
+            {
+                var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                if (environment == Environments.Production)
+                {
+                    _googleCredential = GoogleCredential.GetApplicationDefault();
+                    _logger.LogInformation("Using default application credentials (Cloud Run).");
+                }
+                else
+                {
+                    var credentialPath = configuration["GoogleCloudStorage:CredentialPath"];
+                    if (string.IsNullOrEmpty(credentialPath) || !File.Exists(credentialPath))
+                    {
+                        throw new FileNotFoundException("Service account credential file not found", credentialPath);
+                    }
+                
+                    _googleCredential = GoogleCredential.FromFile(credentialPath);
+                    _logger.LogInformation("Using service account credentials from file (local dev).");
+                }
+
+                _storageClient = StorageClient.Create(_googleCredential);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize Google Cloud Storage client");
+                throw;
+            }
         }
 
         public async Task<string> UploadFileAsync(IFormFile file, string objectName)
@@ -48,12 +75,12 @@ namespace Document_Management.Services
 
                 await _storageClient.UploadObjectAsync(googleObject, stream);
 
-                _logger.LogInformation($"File uploaded successfully to Cloud Storage: {objectName}");
+                _logger.LogInformation("File uploaded successfully to Cloud Storage: {ObjectName}", objectName);
                 return objectName;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error uploading file to Cloud Storage: {objectName}");
+                _logger.LogError(ex, "Error uploading file to Cloud Storage: {ObjectName}", objectName);
                 throw;
             }
         }
@@ -69,7 +96,7 @@ namespace Document_Management.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error downloading file from Cloud Storage: {objectName}");
+                _logger.LogError(ex, "Error downloading file from Cloud Storage: {ObjectName}", objectName);
                 throw;
             }
         }
@@ -79,17 +106,17 @@ namespace Document_Management.Services
             try
             {
                 await _storageClient.DeleteObjectAsync(_bucketName, objectName);
-                _logger.LogInformation($"File deleted successfully from Cloud Storage: {objectName}");
+                _logger.LogInformation("File deleted successfully from Cloud Storage: {ObjectName}", objectName);
                 return true;
             }
             catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
             {
-                _logger.LogWarning($"File not found in Cloud Storage for deletion: {objectName}");
+                _logger.LogWarning("File not found in Cloud Storage for deletion: {ObjectName}", objectName);
                 return false;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error deleting file from Cloud Storage: {objectName}");
+                _logger.LogError(ex, "Error deleting file from Cloud Storage: {ObjectName}", objectName);
                 throw;
             }
         }
@@ -98,17 +125,16 @@ namespace Document_Management.Services
         {
             try
             {
-                var credential = GoogleCredential.GetApplicationDefault();
-                var urlSigner = UrlSigner.FromCredential(credential);
+                var urlSigner = UrlSigner.FromCredential(_googleCredential);
 
                 var signedUrl = await urlSigner.SignAsync(_bucketName, objectName, expiry, HttpMethod.Get);
 
-                _logger.LogInformation($"Generated signed URL for: {objectName}");
+                _logger.LogInformation("Generated signed URL for: {ObjectName}", objectName);
                 return signedUrl;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error generating signed URL for: {objectName}");
+                _logger.LogError(ex, "Error generating signed URL for: {ObjectName}", objectName);
                 throw;
             }
         }
