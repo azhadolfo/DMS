@@ -26,7 +26,7 @@ public class MaintenanceMiddleware
                 .Select(s => s.Value == "true")
                 .FirstOrDefaultAsync();
 
-            if (isMaintenanceMode && !context.Request.Path.StartsWithSegments("/User/Home/Maintenance"))
+            if (isMaintenanceMode && !context.Request.Path.StartsWithSegments("/Home/Maintenance"))
             {
                 context.Response.Redirect("/Home/Maintenance");
                 return;
