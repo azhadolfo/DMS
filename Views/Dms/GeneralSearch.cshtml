@@ -26,7 +26,7 @@
                         <a title="@file.Company/@file.Year/@file.Department/@file.Category"
                            target="_blank"
                            href="@Url.Action("Download", "Dms", new {
-                                     filepath = $"Files/{file.Company}/{file.Year}/{file.Department}/{file.Category}/{file.Name}",
+    documentId = file.Id,
                                      originalFilename = file.OriginalFilename
                                  })">
                             Click to download file

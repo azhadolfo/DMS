@@ -1,5 +1,5 @@
-﻿@using Document_Management.Models.Enums
-@using System.ComponentModel.DataAnnotations;
+﻿@using System.ComponentModel.DataAnnotations;
+@using Document_Management.Utility.Constants
 @model Document_Management.Models.FileDocument
 
 @{
@@ -25,14 +25,9 @@
             <div class="col">
                 <select asp-for="Company" class="form-select" id="companyDropdown" style="width:100%">
                     <option value="" selected disabled>-- Select the company --</option>
-                    @foreach (var company in Enum.GetNames(typeof(Companies)))
+                    @foreach (var company in Companies.All)
                     {
-                        var enumMember = typeof(Companies).GetMember(company)[0];
-                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
-
-                        var displayName = displayAttribute != null ? displayAttribute.Name : company;
-
-                        <option value="@company">@displayName</option>
+                        <option value="@company">@company</option>
                     }
                 </select>
                 <span asp-validation-for="Company" class="text-danger"></span>
@@ -50,14 +45,9 @@
             <div class="col">
                 <select asp-for="Department" class="form-select" id="departmentDropdown" style="width:100%">
                     <option value="" selected disabled>-- Select the department --</option>
-                    @foreach (var department in Enum.GetNames(typeof(Departments)))
+                    @foreach (var department in Departments.All)
                     {
-                        var enumMember = typeof(Departments).GetMember(department)[0];
-                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
-
-                        var displayName = displayAttribute != null ? displayAttribute.Name : department;
-
-                        <option value="@department">@displayName</option>
+                        <option value="@department">@department</option>
                     }
                 </select>
                 <span asp-validation-for="Department" class="text-danger"></span>
@@ -68,58 +58,135 @@
             <div class="col">
                 <select asp-for="Category" class="form-select" id="categoryDropdown" style="width:100%">
                     <option value="" selected disabled>-- Select the category --</option>
-                    @foreach (var category in Enum.GetNames(typeof(Categories)))
+                    @foreach (var category in Categories.All)
                     {
-                        var enumMember = typeof(Categories).GetMember(category)[0];
-                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
-
-                        var displayName = displayAttribute != null ? displayAttribute.Name : category;
-
-                        <option value="@category">@displayName</option>
+                        <option value="@category">@category</option>
                     }
                 </select>
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
         </div>
-        <!--Delivery Documents Sub Category Dropdown-->
-        <div class="form-group mb-3" id="deliverySubCategories" style="display: none;">
+        
+        <!--Administration Sub Category Dropdown-->
+        <div class="mb-3" id="administrationSubCategories" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
-                <select asp-for="SubCategory" class="form-select" id="deliveryDropdown" style="width:100%">
+                <select asp-for="SubCategory" class="form-select full-width" id="administrationDropdown" style="width:100%">
                     <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var delivery in Enum.GetNames(typeof(DeliverySubCategories)))
+                    @foreach (var subCategory in SubCategories.AdministrationSubCategory)
                     {
-                        var enumMember = typeof(DeliverySubCategories).GetMember(delivery)[0];
-                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
-
-                        var displayName = displayAttribute != null ? displayAttribute.Name : delivery;
-
-                        <option value="@delivery">@displayName</option>
+                        <option value="@subCategory">@subCategory</option>
                     }
                 </select>
                 <span asp-validation-for="SubCategory" class="text-danger"></span>
             </div>
         </div>
 
-        <!--Government Agency Documents Sub Category Dropdown-->
-        <div class="form-group mb-3" id="governmentSubCategories" style="display: none;">
+        <!--Operations Sub Category Dropdown-->
+        <div class="mb-3" id="operationsSubCategories" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
-                    <select asp-for="SubCategory" class="form-select" id="governmentDropdown" style="width:100%">
+                <select asp-for="SubCategory" class="form-select full-width" id="operationsDropdown" style="width:100%" required>
                     <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var government in Enum.GetNames(typeof(GovernmentSubCategories)))
+                    @foreach (var subCategory in SubCategories.OperationSubCategory)
                     {
-                        var enumMember = typeof(GovernmentSubCategories).GetMember(government)[0];
-                        var displayAttribute = enumMember.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() as DisplayAttribute;
-
-                        var displayName = displayAttribute != null ? displayAttribute.Name : government;
-
-                        <option value="@government">@displayName</option>
+                        <option value="@subCategory">@subCategory</option>
                     }
                 </select>
                 <span asp-validation-for="SubCategory" class="text-danger"></span>
             </div>
         </div>
+        
+        <!--Finance Sub Category Dropdown-->
+        <div class="mb-3" id="financeSubCategories" style="display: none;">
+            <label asp-for="SubCategory" class="form-label"></label>
+            <div class="col">
+                <select asp-for="SubCategory" class="form-select full-width" id="financeDropdown" style="width:100%">
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var subCategory in SubCategories.FinanceSubCategory)
+                    {
+                        <option value="@subCategory">@subCategory</option>
+                    }
+                </select>
+                <span asp-validation-for="SubCategory" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!--Check Vouchers Sub Category Dropdown-->
+        <div class="mb-3" id="checkVoucherSubCategories" style="display: none;">
+            <label asp-for="SubCategory" class="form-label"></label>
+            <div class="col">
+                <select asp-for="SubCategory" class="form-select full-width" id="checkVoucherDropdown" style="width:100%" required>
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var subCategory in SubCategories.CheckVouchersSubCategory)
+                    {
+                        <option value="@subCategory">@subCategory</option>
+                    }
+                </select>
+                <span asp-validation-for="SubCategory" class="text-danger"></span>
+            </div>
+        </div>
+        
+        <!--Payroll Sub Category Dropdown-->
+        <div class="mb-3" id="payrollSubCategories" style="display: none;">
+            <label asp-for="SubCategory" class="form-label"></label>
+            <div class="col">
+                <select asp-for="SubCategory" class="form-select full-width" id="payrollDropdown" style="width:100%">
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var subCategory in SubCategories.PayrollSubCategory)
+                    {
+                        <option value="@subCategory">@subCategory</option>
+                    }
+                </select>
+                <span asp-validation-for="SubCategory" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!--Compliance or Legal Sub Category Dropdown-->
+        <div class="mb-3" id="complianceLegalSubCategories" style="display: none;">
+            <label asp-for="SubCategory" class="form-label"></label>
+            <div class="col">
+                <select asp-for="SubCategory" class="form-select full-width" id="complianceLegalDropdown" style="width:100%" required>
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var subCategory in SubCategories.ComplianceOrLegalSubCategory)
+                    {
+                        <option value="@subCategory">@subCategory</option>
+                    }
+                </select>
+                <span asp-validation-for="SubCategory" class="text-danger"></span>
+            </div>
+        </div>
+        
+        <!--Investment Sub Category Dropdown-->
+        <div class="mb-3" id="investmentSubCategories" style="display: none;">
+            <label asp-for="SubCategory" class="form-label"></label>
+            <div class="col">
+                <select asp-for="SubCategory" class="form-select full-width" id="investmentDropdown" style="width:100%">
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var subCategory in SubCategories.InvestmentsSubCategory)
+                    {
+                        <option value="@subCategory">@subCategory</option>
+                    }
+                </select>
+                <span asp-validation-for="SubCategory" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!--Marketing Sub Category Dropdown-->
+        <div class="mb-3" id="marketingSubCategories" style="display: none;">
+            <label asp-for="SubCategory" class="form-label"></label>
+            <div class="col">
+                <select asp-for="SubCategory" class="form-select full-width" id="marketingDropdown" style="width:100%" required>
+                    <option value="" selected disabled>-- Select the sub category --</option>
+                    @foreach (var subCategory in SubCategories.MarketingSubCategory)
+                    {
+                        <option value="@subCategory">@subCategory</option>
+                    }
+                </select>
+                <span asp-validation-for="SubCategory" class="text-danger"></span>
+            </div>
+        </div>
+        
         <div class="form-group mb-3">
                 <input type="submit" value="Transfer" class="btn btn-secondary" />
                 <a asp-action="Index" class="btn btn-primary">Back</a>
@@ -152,44 +219,60 @@
             dropdown.appendChild(option);
         }
     </script>
-
+    
     <script>
         $(document).ready(function () {
             var dropdown = $('#categoryDropdown');
-            var selectedValue = dropdown.val();
-
-            if (selectedValue === 'Delivery_Documents') {
-                $('#deliverySubCategories').show();
-            } else {
-                $('#deliverySubCategories').hide();
+    
+            function toggleSubCategories(value) {
+                // Hide all subcategories and destroy select2
+                $('#administrationSubCategories, #operationsSubCategories, #financeSubCategories, #checkVoucherSubCategories, #payrollSubCategories, #complianceLegalSubCategories, #investmentSubCategories, #marketingSubCategories')
+                    .hide();
+    
+                let $target = null;
+    
+                switch (value) {
+                    case "@Categories.Administration":
+                        $target = $('#administrationSubCategories');
+                        break;
+                    case "@Categories.Operations":
+                        $target = $('#operationsSubCategories');
+                        break;
+                    case "@Categories.Finance":
+                        $target = $('#financeSubCategories');
+                        break;
+                    case "@Categories.CheckVouchers":
+                        $target = $('#checkVoucherSubCategories');
+                        break;
+                    case "@Categories.Payroll":
+                        $target = $('#payrollSubCategories');
+                        break;
+                    case "@Categories.ComplianceLegal":
+                        $target = $('#complianceLegalSubCategories');
+                        break;
+                    case "@Categories.Investments":
+                        $target = $('#investmentSubCategories');
+                        break;
+                    case "@Categories.Marketing":
+                        $target = $('#marketingSubCategories');
+                        break;
+                }
+    
+                if ($target) {
+                    $target.show().find("select").select2(); // re-init select2
+                }
             }
-
-            if (selectedValue === 'Government_Agency_Documents') {
-                $('#governmentSubCategories').show();
-            } else {
-                $('#governmentSubCategories').hide();
-            }
-
-            // Implement the change event
+    
+            // Initial check
+            toggleSubCategories(dropdown.val());
+    
+            // On change
             dropdown.change(function () {
-                var newValue = $(this).val();
-                console.log("New value:", newValue);
-
-                // Perform actions based on the new value
-                if (newValue === 'Delivery_Documents') {
-                    $('#deliverySubCategories').show();
-                } else {
-                    $('#deliverySubCategories').hide();
-                }
-
-                if (newValue === 'Government_Agency_Documents') {
-                    $('#governmentSubCategories').show();
-                } else {
-                    $('#governmentSubCategories').hide();
-                }
+                toggleSubCategories($(this).val());
             });
         });
-
     </script>
+
+
 
 }
