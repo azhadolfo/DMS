@@ -52,6 +52,7 @@ if (!app.Environment.IsDevelopment())
 // This code is to change the behaviour of timestamp of postgresql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+app.UseMiddleware<MaintenanceMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
