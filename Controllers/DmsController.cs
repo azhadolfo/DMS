@@ -773,17 +773,10 @@ namespace Document_Management.Controllers
                     return NotFound();
                 }
                 
-                // Extract department from the filepath for access check
-                var pathParts = document.Location!.Split('/');
-                if (pathParts.Length >= 4)
+                var departmentAccessResult = CheckDepartmentAccess(document.Department!);
+                if (departmentAccessResult != null)
                 {
-                    var departmentFolderName = pathParts[3];
-                    
-                    var departmentAccessResult = CheckDepartmentAccess(departmentFolderName);
-                    if (departmentAccessResult != null)
-                    {
-                        return departmentAccessResult;
-                    }
+                    return departmentAccessResult;
                 }
 
                 // Create log entry
@@ -792,7 +785,7 @@ namespace Document_Management.Controllers
                 await _dbContext.SaveChangesAsync(cancellationToken);
 
                 // Get signed URL for direct download (better performance)
-                var signedUrl = await _cloudStorage.GetSignedUrlAsync(document.Location, TimeSpan.FromMinutes(5));
+                var signedUrl = await _cloudStorage.GetSignedUrlAsync(document.Location!, TimeSpan.FromMinutes(5));
                 return Redirect(signedUrl);
             }
             catch (Exception ex)
@@ -817,17 +810,10 @@ namespace Document_Management.Controllers
                     return NotFound();
                 }
                 
-                // Extract department from the filepath for access check
-                var pathParts = document.Location!.Split('/');
-                if (pathParts.Length >= 4)
+                var departmentAccessResult = CheckDepartmentAccess(document.Department!);
+                if (departmentAccessResult != null)
                 {
-                    var departmentFolderName = pathParts[3];
-                    
-                    var departmentAccessResult = CheckDepartmentAccess(departmentFolderName);
-                    if (departmentAccessResult != null)
-                    {
-                        return departmentAccessResult;
-                    }
+                    return departmentAccessResult;
                 }
 
                 // Create log entry
@@ -836,7 +822,7 @@ namespace Document_Management.Controllers
                 await _dbContext.SaveChangesAsync(cancellationToken);
 
                 // Download file from Cloud Storage and stream to user
-                var fileStream = await _cloudStorage.DownloadFileStreamAsync(document.Location);
+                var fileStream = await _cloudStorage.DownloadFileStreamAsync(document.Location!);
                 return File(fileStream, "application/pdf", originalFilename);
             }
             catch (Exception ex)
