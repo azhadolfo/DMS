@@ -4,6 +4,7 @@ Welcome to the Document Management System (DMS) repository! DMS is a system desi
 
 ## Version History
 
+- **v3.1.1** - Fixed an error when transferring the file - 09/20/2025
 - **v3.1.0** - Update the company, department, category and sub-category - 09/17/2025
 - **v3.0.1** - Add maintenance mode - 09/17/2025
 - **v3.0.0** - Migrate to serverless approach with CI/CD - 09/10/2025
