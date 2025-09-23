@@ -123,6 +123,8 @@ public class SubCategories
     public const string Mmsi = "MMSI";
     public const string FilprideResourcesInc = "FILPRIDE RESOURCES, INC.";
     public const string Statutory = "STATUTORY";
+    public const string DirectDisbursement = "DIRECT DISBURSEMENT";
+    public const string NotesToPayroll = "NOTES TO PAYROLL";
 
     public static readonly string[] PayrollSubCategory =
     {
@@ -130,6 +132,8 @@ public class SubCategories
         Mmsi,
         FilprideResourcesInc,
         Statutory,
+        DirectDisbursement,
+        NotesToPayroll
     };
     
     
