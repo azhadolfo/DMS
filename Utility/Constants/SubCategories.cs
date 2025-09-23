@@ -47,6 +47,7 @@ public class SubCategories
     public const string ProspectiveLessor = "PROSPECTIVE LESSOR";
     public const string MissionReports = "MISSION REPORTS";
     public const string SafetyAndSecurity = "SAFETY AND SECURITY";
+    public const string DeliveryDocuments = "DELIVERY DOCUMENTS";
 
     public static readonly string[] OperationSubCategory =
     {
@@ -61,7 +62,8 @@ public class SubCategories
         ProspectiveDepotsSites,
         ProspectiveLessor,
         MissionReports,
-        SafetyAndSecurity
+        SafetyAndSecurity,
+        DeliveryDocuments
     };
     
     public const string BankAccounts = "BANK ACCOUNTS";
@@ -102,7 +104,6 @@ public class SubCategories
     public const string PettyCashFund = "PETTY CASH FUND";
     public const string Advances = "ADVANCES";
     public const string Reimbursements = "REIMBURSEMENTS";
-    public const string DeliveryDocuments = "DELIVERY DOCUMENTS";
     public const string Freight = "FREIGHT";
     public const string LiquidationOfAdvances = "LIQUIDATION OF ADVANCES";
     public const string Dmcm = "DM/CM";

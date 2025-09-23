@@ -18,6 +18,11 @@ public static class Departments
     public const string Audit = "AUDIT";
     public const string HrRecruitment = "HR RECRUITMENT";
     public const string Admin = "ADMIN";
+    public const string HrPayroll = "HR PAYROLL";
+    public const string Legal = "LEGAL";
+    public const string Tax = "TAX";
+    public const string Permits = "PERMITS";
+    public const string CeoOffice = "CEO OFFICE";
 
 
     public static readonly string[] All =
@@ -37,6 +42,11 @@ public static class Departments
         Rcd,
         Audit,
         HrRecruitment,
-        Admin
+        HrPayroll,
+        Admin,
+        Legal,
+        Tax,
+        Permits,
+        CeoOffice
     };
 }

@@ -7,7 +7,7 @@ public class Categories
     public const string Finance = "FINANCE";
     public const string CheckVouchers = "CHECK VOUCHERS";
     public const string Payroll = "PAYROLL";
-    public const string ComplianceLegal = "COMPLIANCE / LEGAL";
+    public const string Compliance = "COMPLIANCE";
     public const string Files201 = "201 FILES";
     public const string Investments = "INVESTMENTS";
     public const string Marketing = "MARKETING";
@@ -19,7 +19,7 @@ public class Categories
         Finance,
         CheckVouchers,
         Payroll,
-        ComplianceLegal,
+        Compliance,
         Files201,
         Investments,
         Marketing,
