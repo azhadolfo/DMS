@@ -127,6 +127,7 @@ public class SubCategories
     public const string NotesToPayroll = "NOTES TO PAYROLL";
     public const string FundTransfer = "FUND TRANSFER";
     public const string IndividualChecks = "INDIVIDUAL CHECKS";
+    public const string DebitAdvise = "DEBIT ADVISE";
 
     public static readonly string[] PayrollSubCategory =
     {
@@ -138,6 +139,7 @@ public class SubCategories
         NotesToPayroll,
         FundTransfer,
         IndividualChecks,
+        DebitAdvise
     };
     
     
