@@ -125,6 +125,8 @@ public class SubCategories
     public const string Statutory = "STATUTORY";
     public const string DirectDisbursement = "DIRECT DISBURSEMENT";
     public const string NotesToPayroll = "NOTES TO PAYROLL";
+    public const string FundTransfer = "FUND TRANSFER";
+    public const string IndividualChecks = "INDIVIDUAL CHECKS";
 
     public static readonly string[] PayrollSubCategory =
     {
@@ -133,7 +135,9 @@ public class SubCategories
         FilprideResourcesInc,
         Statutory,
         DirectDisbursement,
-        NotesToPayroll
+        NotesToPayroll,
+        FundTransfer,
+        IndividualChecks,
     };
     
     
