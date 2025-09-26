@@ -561,6 +561,7 @@ namespace Document_Management.Controllers
 
             if (!detailsChanged && !fileChanged)
             {
+                TempData["info"] = "No changes were made.";
                 return RedirectToAction("Edit", new { id = model.Id });
             }
             
