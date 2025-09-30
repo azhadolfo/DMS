@@ -55,31 +55,19 @@ $(document).ready(function () {
 
 //dropwdown
 $(document).ready(function () {
-    $("#categoryDropdown").select2({
-        placeholder: "Select a category...",
+    $('.js-select2').select2({
+        placeholder: "Select an option...",
         allowClear: true,
-        width: 'resolve'
+        width: 'resolve',
+        theme: 'classic'
     });
-    $("#departmentDropdown").select2({
-        placeholder: "Select a department...",
+});
+
+$(document).ready(function () {
+    $('.js-multiple').select2({
+        placeholder: "Select an option",
         allowClear: true,
-        width: 'resolve'
-    });
-    $("#companyDropdown").select2({
-        placeholder: "Select a company...",
-        allowClear: true,
-        width: 'resolve'
-    });
-    $("#yearDropdown").select2({
-        width: 'resolve'
-    });
-    $("#subCategoryDropdown").select2({
-        placeholder: "Select a sub-category...",
-    });
-    $("#deliveryDropdown").select2({
-        placeholder: "Select a sub-category...",
-    });
-    $("#governmentDropdown").select2({
-        placeholder: "Select a sub-category...",
+        width: 'resolve',
+        closeOnSelect: false
     });
 });

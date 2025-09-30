@@ -1,0 +1,43 @@
+@model SubCategoryViewModel
+
+@{
+    ViewData["Title"] = "Create Sub Category";
+}
+
+<h1>Create Sub Category</h1>
+
+<h4>Sub Category</h4>
+<hr />
+<div class="row">
+    <div class="col">
+            <form asp-action="Create" method="post" class="needs-validation">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label">Category</label>
+                <div class="col">
+                    <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select js-select2 full-width" style="width:100%" required>
+                        <option value="" selected disabled>-- Select the category --</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="SubCategoryName" class="form-label">Sub Category Name</label>
+                <input asp-for="SubCategoryName" value="" class="form-control" />
+                <span asp-validation-for="SubCategoryName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <input type="submit" value="Save" class="btn btn-secondary" />
+                <a asp-action="Index" class="btn btn-primary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

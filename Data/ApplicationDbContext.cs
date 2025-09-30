@@ -13,6 +13,10 @@ namespace Document_Management.Data
         public DbSet<FileDocument> FileDocuments { get; set; }
         public DbSet<LogsModel> Logs { get; set; }
         public DbSet<AppSetting> AppSettings { get; set; }
+        public DbSet<Company> Companies { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<SubCategory> SubCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -29,6 +33,19 @@ namespace Document_Management.Data
             });
 
             builder.Entity<LogsModel>(l => l.HasIndex(l => l.Date));
+            builder.Entity<Company>(c => c.HasIndex(c => c.CompanyName));
+            builder.Entity<Department>(d => d.HasIndex(d => d.DepartmentName));
+            builder.Entity<Category>(c => c.HasIndex(c => c.CategoryName));
+            builder.Entity<SubCategory>(sc =>
+            {
+                sc.HasIndex(sc => sc.SubCategoryName);
+                sc.HasOne(c => c.Category)
+                    .WithMany(c => c.SubCategories)
+                    .HasForeignKey(sc => sc.CategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+            
+            
         }
     }
 }

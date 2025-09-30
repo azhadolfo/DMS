@@ -1,0 +1,62 @@
+@model IEnumerable<Department>
+
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<h2><b>DEPARTMENTS</b></h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-secondary rounded-3">Create New</a>
+</p>
+
+<div class="table-responsive">
+    <table id="myTable" class="table table-hover">
+        <thead>
+            <tr class="text-nowrap">
+                <th class="text-primary">Department</th>
+                <th class="text-primary">Created by</th>
+                <th class="text-primary">Created Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var department in Model)
+            {
+                <tr class="align-text-bottom">
+                    <td>
+                        @Html.DisplayFor(model => department.DepartmentName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => department.CreatedBy)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => department.CreatedDate)
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@department.Id" class="btn btn-light">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#searchInput").on("keyup", function () {
+                var searchText = $(this).val().toLowerCase();
+
+                $("tbody tr").each(function () {
+                    var row = $(this).text().toLowerCase();
+                    if (row.includes(searchText)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        });
+    </script>
+}
