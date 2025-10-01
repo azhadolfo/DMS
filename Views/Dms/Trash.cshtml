@@ -1,5 +1,5 @@
-﻿@{
-    ViewData["Title"] = "Uploaded Files";
+@{
+    ViewData["Title"] = "Deleted Files";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -15,12 +15,9 @@
 
 <div class="content">
     <partial name="_Notification" />
-
+    
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold mb-0">Uploaded Files</h2>
-        <a asp-action="UploadFile" class="btn btn-primary">
-            Upload New
-        </a>
+        <h2 class="fw-bold mb-0">Deleted Files</h2>
     </div>
 
     <div class="table-responsive">
@@ -30,7 +27,6 @@
                     <th></th>
                     <th>File</th>
                     <th>Description</th>
-                    <th>Location Folder</th>
                     <th>Uploaded By</th>
                     <th>Date Uploaded</th>
                 </tr>
@@ -53,7 +49,7 @@
                                  </div>`
                 },
                 ajax: {
-                    url: '/DMS/GetUploadedFiles',
+                    url: '/DMS/GetDeletedFiles',
                     type: 'POST',
                     data: function (d) {
                         d.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
@@ -77,9 +73,8 @@
                                     Actions
                                   </button>
                                   <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="/DMS/Edit/${row.id}">Edit</a></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="confirmDelete(${row.id})">Delete</a></li>
-                                    <li><a class="dropdown-item" href="/DMS/Transfer/${row.id}">Transfer</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="confirmPermanentDelete(${row.id})">Delete</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0);" onclick="confirmRestore(${row.id})">Restore</a></li>
                                   </ul>
                                 </div>`;
                         },
@@ -87,11 +82,6 @@
                     },
                     { data: 'name' },
                     { data: 'description' },
-                    {
-                        data: 'locationFolder', render: function (data, type, row) {
-                            return `<a href="/Dms/DisplayFiles?${data}" title="Click this to download the file.">Location Path</a>`;
-                        }
-                    },
                     { data: 'uploadedBy' },
                     {
                         data: 'dateUploaded',
@@ -100,7 +90,7 @@
                         }
                     }
                 ],
-                order: [[5, 'desc']], // Default sorting column index and direction
+                order: [[4, 'desc']], // Default sorting column index and direction
                 pageLength: 10, // Default page size
                 lengthMenu: [10, 25, 50, 100], // Page size options
                 columnDefs: [
@@ -111,19 +101,36 @@
             });
         });
 
-        function confirmDelete(id) {
+        function confirmPermanentDelete(id) {
             Swal.fire({
-                title: "Move to Trash?",
-                text: "This will move the file to Trash. You can restore it later from there if needed.",
+                title: "Confirm Permanent Deletion",
+                text: "This action will permanently delete the item and cannot be undone.",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, move to Trash",
+                confirmButtonText: "Yes, delete permanently",
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `/DMS/Delete?id=${id}`;
+                    window.location.href = `/DMS/PermanentDelete?id=${id}`;
+                }
+            });
+        }
+
+        function confirmRestore(id) {
+            Swal.fire({
+                title: "Restore File?",
+                text: "This will restore the file. You can undo this action later if needed.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, restore it",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/DMS/Restore?id=${id}`;
                 }
             });
         }

@@ -47,8 +47,9 @@ namespace Document_Management.Models
 
         public long FileSize { get; set; }
         
-        // Add this property to track storage location
         public bool IsInCloudStorage { get; set; }
+
+        public bool IsDeleted { get; set; }
 
 
         #region Select List Properties

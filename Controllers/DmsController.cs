@@ -382,7 +382,8 @@ namespace Document_Management.Controllers
                 .Where(file => file.Company == companyFolderName 
                                && file.Year == yearFolderName 
                                && file.Department == departmentFolderName
-                               && file.Category == documentTypeFolderName);
+                               && file.Category == documentTypeFolderName
+                               && !file.IsDeleted);
 
             // Add subcategory filter
             if (!string.IsNullOrEmpty(subCategoryFolder))
@@ -656,7 +657,7 @@ namespace Document_Management.Controllers
             return View(result);
         }
 
-        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> PermanentDelete(int id, CancellationToken cancellationToken)
         {
             var accessCheckResult = CheckAccess();
             if (accessCheckResult != null)
@@ -687,6 +688,49 @@ namespace Document_Management.Controllers
 
                 _dbContext.Remove(model);
 
+                LogsModel logs = new(username!, $"Permanently delete the file from Cloud Storage: {model.Name}.");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                TempData["success"] = "File has been permanently deleted from Cloud Storage.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during file permanently deletion from Cloud Storage.");
+                TempData["error"] = "Failed to permanently delete file from Cloud Storage.";
+            }
+
+            return RedirectToAction(nameof(Trash));
+        }
+        
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        {
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
+            {
+                return accessCheckResult;
+            }
+
+            if (id == 0)
+            {
+                return NotFound();
+            }
+
+            var username = HttpContext.Session.GetString("username");
+
+            var model = await _dbContext
+                .FileDocuments
+                .FirstOrDefaultAsync(x =>x.Id == id, cancellationToken);
+
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                model.IsDeleted = true;
+
                 LogsModel logs = new(username!, $"Delete the file from Cloud Storage: {model.Name}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
@@ -700,6 +744,49 @@ namespace Document_Management.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+        
+        public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        {
+            var accessCheckResult = CheckAccess();
+            if (accessCheckResult != null)
+            {
+                return accessCheckResult;
+            }
+
+            if (id == 0)
+            {
+                return NotFound();
+            }
+
+            var username = HttpContext.Session.GetString("username");
+
+            var model = await _dbContext
+                .FileDocuments
+                .FirstOrDefaultAsync(x =>x.Id == id, cancellationToken);
+
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                model.IsDeleted = false;
+
+                LogsModel logs = new(username!, $"Restore the file from Cloud Storage: {model.Name}.");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                TempData["success"] = "File has been restored from Cloud Storage.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during file restoration from Cloud Storage.");
+                TempData["error"] = "Failed to restore file from Cloud Storage.";
+            }
+
+            return RedirectToAction(nameof(Trash));
         }
 
         [HttpGet]
@@ -920,6 +1007,88 @@ namespace Document_Management.Controllers
             catch (Exception ex)
             {
                 return Json(new List<SelectListItem>());
+            }
+        }
+        
+        [HttpGet]
+        public IActionResult Trash()
+        {
+            var accessCheckResult = CheckAccess();
+            return accessCheckResult ?? View();
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> GetDeletedFiles([FromForm] DataTablesParameters parameters, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var username = HttpContext.Session.GetString("username");
+                var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+
+                IEnumerable<FileDocument> files;
+
+                if (userRole == "admin")
+                {
+                    files = await _userRepo.DisplayAllDeletedFiles(cancellationToken);
+                }
+                else
+                {
+                    files = await _userRepo.DisplayAllDeletedFiles(username!, cancellationToken);
+                }
+
+                // Search filter
+                if (!string.IsNullOrEmpty(parameters.Search.Value))
+                {
+                    var searchValue = parameters.Search.Value.ToLower();
+                    files = files.Where(f =>
+                        f.Name!.ToLower().Contains(searchValue) ||
+                        f.Description!.ToLower().Contains(searchValue) ||
+                        f.DateUploaded.ToString(CultureInfo.InvariantCulture).Contains(searchValue)
+                    ).ToList();
+                }
+
+                // Map to ViewModel
+                var viewModel = files.Select(f => new UploadedFilesViewModel
+                {
+                    Id = f.Id,
+                    Name = f.Name!,
+                    Description = f.Description!,
+                    LocationFolder = f.SubCategory == "N/A" ?
+                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={null}&fileName={f.Name}" :
+                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={f.SubCategory}&fileName={f.Name}",
+                    UploadedBy = f.Username!,
+                    DateUploaded = f.DateUploaded
+                }).ToList();
+
+                // Sorting
+                if (parameters.Order.Count > 0)
+                {
+                    var orderColumn = parameters.Order[0];
+                    var columnName = parameters.Columns[orderColumn.Column].Data;
+                    var sortDirection = orderColumn.Dir.ToLower() == "asc" ? "ascending" : "descending";
+
+                    viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
+                }
+
+                var totalRecords = viewModel.Count;
+
+                // Apply pagination
+                var pagedData = viewModel
+                    .Skip(parameters.Start)
+                    .Take(parameters.Length)
+                    .ToList();
+
+                return Json(new
+                {
+                    draw = parameters.Draw,
+                    recordsTotal = totalRecords,
+                    recordsFiltered = totalRecords,
+                    data = pagedData
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
             }
         }
     }

@@ -28,13 +28,14 @@ namespace Document_Management.Repository
         public async Task<List<FileDocument>> DisplayAllUploadedFiles(CancellationToken cancellationToken = default)
         {
             return await dbContext.FileDocuments
+                .Where(f => !f.IsDeleted)
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<List<FileDocument>> DisplayUploadedFiles(string username, CancellationToken cancellationToken = default)
         {
             return await dbContext.FileDocuments
-                .Where(file => file.Username == username)
+                .Where(file => file.Username == username && !file.IsDeleted)
                 .ToListAsync(cancellationToken);
         }
 
@@ -47,8 +48,22 @@ namespace Document_Management.Repository
         {
             return dbContext.FileDocuments
                 .AsEnumerable() // Switch to client-side evaluation
-                .Where(f => keywords.All(k => f.Description.Contains(k, StringComparison.CurrentCultureIgnoreCase)))
+                .Where(f => !f.IsDeleted && keywords.All(k => f.Description.Contains(k, StringComparison.CurrentCultureIgnoreCase)))
                 .ToList();
+        }
+        
+        public async Task<List<FileDocument>> DisplayAllDeletedFiles(CancellationToken cancellationToken = default)
+        {
+            return await dbContext.FileDocuments
+                .Where(f => f.IsDeleted)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<FileDocument>> DisplayAllDeletedFiles(string username, CancellationToken cancellationToken = default)
+        {
+            return await dbContext.FileDocuments
+                .Where(file => file.Username == username && file.IsDeleted)
+                .ToListAsync(cancellationToken);
         }
     }
 }
