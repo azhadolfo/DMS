@@ -36,18 +36,6 @@ input[type=number] {
     margin: 0;
 }
 
-/* Change the hover and active color for select2 options */
-.select2-container--default .select2-results__option--highlighted[aria-selected]:hover,
-.select2-container--default .select2-results__option--highlighted[aria-selected]:active {
-    background-color: #1a1a1a; /* Change the hover and active background color to gray */
-    color: white; /* Change the text color on hover and active (if needed) */
-}
-
-.select2-container--default .select2-results__option--highlighted[aria-selected] {
-    background-color: #1a1a1a !important;
-    color: white !important;
-}
-
 .table-responsive {
     table-layout: fixed;
     width: 100%;

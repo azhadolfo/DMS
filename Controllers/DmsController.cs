@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using Document_Management.Service;
 using Document_Management.Utility.Helper;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Document_Management.Controllers
 {
@@ -68,8 +69,46 @@ namespace Document_Management.Controllers
             return RedirectToAction("Privacy", "Home");
         }
 
+        private async Task<FileDocument> GetModelSelectList(FileDocument model, CancellationToken cancellationToken)
+        {
+            model.Companies = await _dbContext
+                .Companies
+                .OrderBy(x => x.CompanyName)
+                .Select(x => new SelectListItem { Text = x.CompanyName, Value = x.CompanyName })
+                .ToListAsync(cancellationToken);
+
+            var currentYear = DateTimeHelper.GetCurrentPhilippineTime().Year;
+            var yearsList = new List<SelectListItem>();
+            
+            for (var i = currentYear - 20; i <= currentYear + 10; i++)
+            {
+                yearsList.Add(new SelectListItem
+                {
+                    Value = i.ToString(),
+                    Text = i.ToString(),
+                    Selected = i.ToString() == model.Year
+                });
+            }
+        
+            model.Years = yearsList;
+            
+            model.Departments = await _dbContext
+                .Departments
+                .OrderBy(x => x.DepartmentName)
+                .Select(x => new SelectListItem { Text = x.DepartmentName, Value = x.DepartmentName })
+                .ToListAsync(cancellationToken);
+            
+            model.Categories = await _dbContext
+                .Categories
+                .OrderBy(x => x.CategoryName)
+                .Select(x => new SelectListItem { Text = x.CategoryName, Value = x.CategoryName })
+                .ToListAsync(cancellationToken);
+            
+            return model;
+        }
+
         [HttpGet]
-        public IActionResult UploadFile()
+        public async Task<IActionResult> UploadFile(CancellationToken cancellationToken)
         {
             var accessCheckResult = CheckAccess();
             if (accessCheckResult != null)
@@ -81,7 +120,9 @@ namespace Document_Management.Controllers
 
             if (userRole == "admin" || userRole == "uploader")
             {
-                return View(new FileDocument());
+                var model = await GetModelSelectList(new FileDocument(), cancellationToken);
+                
+                return View(model);
             }
             
             TempData["ErrorMessage"] = "You have no access to upload a file. Please contact the MIS Department if you think this is a mistake.";
@@ -100,6 +141,8 @@ namespace Document_Management.Controllers
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+            
+            fileDocument = await GetModelSelectList(fileDocument, cancellationToken);
 
             try
             {
@@ -846,6 +889,34 @@ namespace Document_Management.Controllers
             }
 
             return input.Trim('_'); // prevent accidental trailing underscores
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetSubCategories(string categoryName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(categoryName))
+                {
+                    return Json(new List<SelectListItem>());
+                }
+                
+                var subCategories = await _dbContext.SubCategories
+                    .Include(x => x.Category)
+                    .Where(x => x.Category.CategoryName == categoryName)
+                    .Select(sc => new SelectListItem
+                    {
+                        Value = sc.SubCategoryName,
+                        Text = sc.SubCategoryName
+                    })
+                    .ToListAsync();
+
+                return Json(subCategories);
+            }
+            catch (Exception ex)
+            {
+                return Json(new List<SelectListItem>());
+            }
         }
     }
 }
