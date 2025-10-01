@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Document_Management.Models
 {
@@ -53,5 +54,12 @@ namespace Document_Management.Models
         public string AccessFolders { get; set; } = null!;
 
         public string ModuleAccess { get; set; } = "DMS";
+
+        #region Select List Properties
+
+        [NotMapped]
+        public List<SelectListItem>? Departments { get; set; }
+
+        #endregion
     }
 }

@@ -31,23 +31,21 @@
             </div>
             <div class="mb-3">
                 <label asp-for="Department" class="form-label"></label>
-                <select asp-for="Department" class="form-select">
+                <select asp-for="Department" asp-items="Model.Departments" class="form-select js-select2">
                     <option value="" selected disabled>-- Select the department --</option>
-                    @foreach (var department in Departments.All)
-                    {
-                        <option value="@department">@department</option>
-                    }
                 </select>
                 <span asp-validation-for="Department" class="text-danger"></span>
-
             </div>
             <div class="mb-3">
                 <label class="form-label">Access Folders:</label>
-                @foreach (var department in Departments.All)
+                @if (Model.Departments != null)
                 {
-                    <div>
-                        <input type="checkbox" name="AccessFolders" value="@department" @(Model.AccessFolders.Contains(department) ? "checked" : "") /> @department
-                    </div>
+                    foreach (var department in Model.Departments)
+                    {
+                        <div>
+                            <input type="checkbox" name="AccessFolders" value="@department.Value"/> @department.Text
+                        </div>
+                    }
                 }
             </div>
             <div class="mb-3">

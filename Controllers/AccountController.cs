@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Document_Management.Controllers
 {
@@ -50,11 +51,21 @@ namespace Document_Management.Controllers
         }
         
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             if (!string.IsNullOrEmpty(_userName))
             {
-                return View(new Register());
+                return View(new Register
+                {
+                    Departments = await _dbContext.Departments
+                        .OrderBy(d => d.DepartmentName)
+                        .Select(s => new SelectListItem
+                        {
+                            Text = s.DepartmentName,
+                            Value = s.DepartmentName
+                        })
+                        .ToListAsync()
+                });
             }
 
             if (_userRole == "admin")
@@ -105,6 +116,15 @@ namespace Document_Management.Controllers
             {
                 return View(user);
             }
+
+            user.Departments = await _dbContext.Departments
+                .OrderBy(d => d.DepartmentName)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.DepartmentName,
+                    Value = s.DepartmentName
+                })
+                .ToListAsync(cancellationToken);
 
             if (string.IsNullOrEmpty(_userName))
             {
@@ -196,6 +216,14 @@ namespace Document_Management.Controllers
             var selectedDepartments = user.AccessFolders.Split(',').ToList();
             
             user.AccessFolders = string.Join(",", selectedDepartments);
+            user.Departments = await _dbContext.Departments
+                .OrderBy(d => d.DepartmentName)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.DepartmentName,
+                    Value = s.DepartmentName
+                })
+                .ToListAsync(cancellationToken);
 
             return View(user);
         }
@@ -224,8 +252,17 @@ namespace Document_Management.Controllers
 
             if (user == null)
             {
-                return RedirectToAction("Index");
+                return NotFound();
             }
+            
+            user.Departments = await _dbContext.Departments
+                .OrderBy(d => d.DepartmentName)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.DepartmentName,
+                    Value = s.DepartmentName
+                })
+                .ToListAsync(cancellationToken);
             
             var dataChanged = user.EmployeeNumber != model.EmployeeNumber ||
                               user.FirstName != model.FirstName ||
