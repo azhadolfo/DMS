@@ -72,7 +72,7 @@
             </div>
         </div>
         
-        <div class="mb-3" style="display: none;">
+        <div class="mb-3" id="subCategoryContainer" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
                 <select asp-for="SubCategory" asp-items="Model.SubCategories" class="form-select js-select2 full-width" style="width:100%">
@@ -154,7 +154,7 @@
         $(document).ready(function () {
             var categoryDropdown = $('#Category');
             var subCategoryDropdown = $('#SubCategory');
-            var subCategoryContainer = subCategoryDropdown.closest('.mb-3');
+            var subCategoryContainer = $('#subCategoryContainer');
             
             // Function to load subcategories
             function loadSubCategories(categoryName, selectedSubCategory) {

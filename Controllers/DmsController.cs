@@ -713,7 +713,9 @@ namespace Document_Management.Controllers
 
             var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
 
-            return files == null ? NotFound() : View(files);
+            return files == null 
+                ? NotFound() 
+                : View(await GetModelSelectList(files, cancellationToken));
         }
 
         [HttpPost]
@@ -736,6 +738,8 @@ namespace Document_Management.Controllers
             {
                 return NotFound();
             }
+            
+            model = await GetModelSelectList(model, cancellationToken);
 
             try
             {

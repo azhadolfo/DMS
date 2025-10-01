@@ -23,12 +23,8 @@
         <div class="form-group mb-3">
             <label asp-for="Company" class="form-label"></label>
             <div class="col">
-                <select asp-for="Company" class="form-select" id="companyDropdown" style="width:100%">
+                <select asp-for="Company" asp-items="Model.Companies" class="form-select js-select2" style="width:100%">
                     <option value="" selected disabled>-- Select the company --</option>
-                    @foreach (var company in Companies.All)
-                    {
-                        <option value="@company">@company</option>
-                    }
                 </select>
                 <span asp-validation-for="Company" class="text-danger"></span>
             </div>
@@ -36,19 +32,17 @@
         <div class="form-group mb-3">
             <label asp-for="Year" class="form-label"></label>
             <div class="col">
-                <select asp-for="Year" id="yearDropdown" class="form-select" style="width:100%"></select>
+                <select asp-for="Year" asp-items="Model.Years" class="form-select js-select2" style="width:100%">
+                    <option value="" selected disabled>-- Select the year --</option>
+                </select>
                 <span asp-validation-for="Year" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group mb-3">
             <label asp-for="Department" class="form-label"></label>
             <div class="col">
-                <select asp-for="Department" class="form-select" id="departmentDropdown" style="width:100%">
+                <select asp-for="Department" asp-items="Model.Departments" class="form-select js-select2" style="width:100%">
                     <option value="" selected disabled>-- Select the department --</option>
-                    @foreach (var department in Departments.All)
-                    {
-                        <option value="@department">@department</option>
-                    }
                 </select>
                 <span asp-validation-for="Department" class="text-danger"></span>
             </div>
@@ -56,132 +50,18 @@
         <div class="form-group mb-3">
             <label asp-for="Category" class="form-label"></label>
             <div class="col">
-                <select asp-for="Category" class="form-select" id="categoryDropdown" style="width:100%">
+                <select asp-for="Category" asp-items="Model.Categories" class="form-select js-select2" style="width:100%">
                     <option value="" selected disabled>-- Select the category --</option>
-                    @foreach (var category in Categories.All)
-                    {
-                        <option value="@category">@category</option>
-                    }
                 </select>
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
         </div>
         
-        <!--Administration Sub Category Dropdown-->
-        <div class="mb-3" id="administrationSubCategories" style="display: none;">
+        <div class="mb-3" id="subCategoryContainer" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
-                <select name="SubCategory" class="form-select full-width" id="administrationDropdown" style="width:100%">
+                <select asp-for="SubCategory" asp-items="Model.SubCategories" class="form-select js-select2 full-width" style="width:100%">
                     <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var subCategory in SubCategories.AdministrationSubCategory)
-                    {
-                        <option value="@subCategory">@subCategory</option>
-                    }
-                </select>
-                <span asp-validation-for="SubCategory" class="text-danger"></span>
-            </div>
-        </div>
-
-        <!--Operations Sub Category Dropdown-->
-        <div class="mb-3" id="operationsSubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="form-label"></label>
-            <div class="col">
-                <select name="SubCategory" class="form-select full-width" id="operationsDropdown" style="width:100%">
-                    <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var subCategory in SubCategories.OperationSubCategory)
-                    {
-                        <option value="@subCategory">@subCategory</option>
-                    }
-                </select>
-                <span asp-validation-for="SubCategory" class="text-danger"></span>
-            </div>
-        </div>
-        
-        <!--Finance Sub Category Dropdown-->
-        <div class="mb-3" id="financeSubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="form-label"></label>
-            <div class="col">
-                <select name="SubCategory" class="form-select full-width" id="financeDropdown" style="width:100%">
-                    <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var subCategory in SubCategories.FinanceSubCategory)
-                    {
-                        <option value="@subCategory">@subCategory</option>
-                    }
-                </select>
-                <span asp-validation-for="SubCategory" class="text-danger"></span>
-            </div>
-        </div>
-
-        <!--Check Vouchers Sub Category Dropdown-->
-        <div class="mb-3" id="checkVoucherSubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="form-label"></label>
-            <div class="col">
-                <select name="SubCategory" class="form-select full-width" id="checkVoucherDropdown" style="width:100%">
-                    <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var subCategory in SubCategories.CheckVouchersSubCategory)
-                    {
-                        <option value="@subCategory">@subCategory</option>
-                    }
-                </select>
-                <span asp-validation-for="SubCategory" class="text-danger"></span>
-            </div>
-        </div>
-        
-        <!--Payroll Sub Category Dropdown-->
-        <div class="mb-3" id="payrollSubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="form-label"></label>
-            <div class="col">
-                <select name="SubCategory" class="form-select full-width" id="payrollDropdown" style="width:100%">
-                    <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var subCategory in SubCategories.PayrollSubCategory)
-                    {
-                        <option value="@subCategory">@subCategory</option>
-                    }
-                </select>
-                <span asp-validation-for="SubCategory" class="text-danger"></span>
-            </div>
-        </div>
-
-        <!--Compliance or Legal Sub Category Dropdown-->
-        <div class="mb-3" id="complianceLegalSubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="form-label"></label>
-            <div class="col">
-                <select name="SubCategory" class="form-select full-width" id="complianceLegalDropdown" style="width:100%">
-                    <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var subCategory in SubCategories.ComplianceOrLegalSubCategory)
-                    {
-                        <option value="@subCategory">@subCategory</option>
-                    }
-                </select>
-                <span asp-validation-for="SubCategory" class="text-danger"></span>
-            </div>
-        </div>
-        
-        <!--Investment Sub Category Dropdown-->
-        <div class="mb-3" id="investmentSubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="form-label"></label>
-            <div class="col">
-                <select name="SubCategory" class="form-select full-width" id="investmentDropdown" style="width:100%">
-                    <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var subCategory in SubCategories.InvestmentsSubCategory)
-                    {
-                        <option value="@subCategory">@subCategory</option>
-                    }
-                </select>
-                <span asp-validation-for="SubCategory" class="text-danger"></span>
-            </div>
-        </div>
-
-        <!--Marketing Sub Category Dropdown-->
-        <div class="mb-3" id="marketingSubCategories" style="display: none;">
-            <label asp-for="SubCategory" class="form-label"></label>
-            <div class="col">
-                <select name="SubCategory" class="form-select full-width" id="marketingDropdown" style="width:100%">
-                    <option value="" selected disabled>-- Select the sub category --</option>
-                    @foreach (var subCategory in SubCategories.MarketingSubCategory)
-                    {
-                        <option value="@subCategory">@subCategory</option>
-                    }
                 </select>
                 <span asp-validation-for="SubCategory" class="text-danger"></span>
             </div>
@@ -199,129 +79,72 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        const dropdown = document.getElementById('yearDropdown');
-        let currentYear = new Date().getFullYear();
-        let yearsInPast = 20; // Number of years in the past
-        let yearsInFuture = 10; // Number of years in the future
-
-        // Populate the dropdown with years
-        for (var i = currentYear - yearsInPast; i <= currentYear + yearsInFuture; i++) {
-            var option = document.createElement('option');
-            option.value = i;
-            option.text = i;
-
-            if (i === currentYear) {
-                option.setAttribute('selected', 'selected'); // Set the current year as the default
-            }
-            dropdown.appendChild(option);
-        }
-        
-        // Set the model value after populating options
-        if (@Model.Year !== 0) {
-            dropdown.value = @Model.Year;
-        }
-    </script>
     
     <script>
         $(document).ready(function () {
-            var categoryDropdown = $('#categoryDropdown');
-            var allSubCategoryContainers = [
-                '#administrationSubCategories', 
-                '#operationsSubCategories', 
-                '#financeSubCategories', 
-                '#checkVoucherSubCategories', 
-                '#payrollSubCategories', 
-                '#complianceLegalSubCategories', 
-                '#investmentSubCategories', 
-                '#marketingSubCategories'
-            ];
+            var categoryDropdown = $('#Category');
+            var subCategoryDropdown = $('#SubCategory');
+            var subCategoryContainer = $('#subCategoryContainer');
             
-            var allSubCategoryDropdowns = [
-                '#administrationDropdown',
-                '#operationsDropdown',
-                '#financeDropdown',
-                '#checkVoucherDropdown',
-                '#payrollDropdown',
-                '#complianceLegalDropdown',
-                '#investmentDropdown',
-                '#marketingDropdown'
-            ];
-    
-            function clearAllSubCategories() {
-                // Hide all subcategory containers
-                $(allSubCategoryContainers.join(', ')).hide();
+            // Function to load subcategories
+            function loadSubCategories(categoryName, selectedSubCategory) {
+                if (!categoryName) {
+                    subCategoryContainer.hide();
+                    return;
+                }
                 
-                // Reset all subcategory dropdowns to default option and clear their values
-                allSubCategoryDropdowns.forEach(function(dropdownId) {
-                    var $dropdown = $(dropdownId);
-                    if ($dropdown.hasClass('select2-hidden-accessible')) {
-                        $dropdown.select2('destroy');
+                // Clear existing options
+                subCategoryDropdown.empty();
+                subCategoryDropdown.append('<option value="" selected disabled>-- Select the sub category --</option>');
+                
+                $.ajax({
+                    url: '@Url.Action("GetSubCategories", "Dms")',
+                    type: 'GET',
+                    data: { categoryName: categoryName },
+                    dataType: 'json',
+                    success: function (data) {
+                        
+                        if (data && data.length > 0) {
+                            // Populate subcategory dropdown
+                            $.each(data, function (index, item) {
+                                var option = $('<option></option>').val(item.value).text(item.text);
+                                
+                                // Set selected if it matches the model value
+                                if (selectedSubCategory && item.value == selectedSubCategory) {
+                                    option.attr('selected', 'selected');
+                                }
+                                
+                                subCategoryDropdown.append(option);
+                            });
+                            
+                            // Show the subcategory field
+                            subCategoryContainer.show();
+                        } else {
+                            // Hide if no subcategories
+                            subCategoryContainer.hide();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching subcategories:', error);
+                        console.error('Response:', xhr.responseText);
+                        subCategoryContainer.hide();
                     }
-                    $dropdown.prop('selectedIndex', 0).val('');
                 });
             }
-    
-            function toggleSubCategories(value) {
-                // Clear all subcategories first
-                clearAllSubCategories();
-    
-                let targetContainer = null;
-                let targetDropdown = null;
-    
-                switch (value) {
-                    case "@Categories.Administration":
-                        targetContainer = '#administrationSubCategories';
-                        targetDropdown = '#administrationDropdown';
-                        break;
-                    case "@Categories.Operations":
-                        targetContainer = '#operationsSubCategories';
-                        targetDropdown = '#operationsDropdown';
-                        break;
-                    case "@Categories.Finance":
-                        targetContainer = '#financeSubCategories';
-                        targetDropdown = '#financeDropdown';
-                        break;
-                    case "@Categories.CheckVouchers":
-                        targetContainer = '#checkVoucherSubCategories';
-                        targetDropdown = '#checkVoucherDropdown';
-                        break;
-                    case "@Categories.Payroll":
-                        targetContainer = '#payrollSubCategories';
-                        targetDropdown = '#payrollDropdown';
-                        break;
-                    case "@Categories.Compliance":
-                        targetContainer = '#complianceLegalSubCategories';
-                        targetDropdown = '#complianceLegalDropdown';
-                        break;
-                    case "@Categories.Investments":
-                        targetContainer = '#investmentSubCategories';
-                        targetDropdown = '#investmentDropdown';
-                        break;
-                    case "@Categories.Marketing":
-                        targetContainer = '#marketingSubCategories';
-                        targetDropdown = '#marketingDropdown';
-                        break;
-                }
-    
-                if (targetContainer && targetDropdown) {
-                    // Show the target container and initialize select2 on the dropdown
-                    $(targetContainer).show();
-                    $(targetDropdown).select2();
-                }
-            }
-    
-            // Handle category change
-            categoryDropdown.on('change', function () {
-                toggleSubCategories($(this).val());
-            });
             
-            // Initial check - only if category has a value
-            var initialCategoryValue = categoryDropdown.val();
-            if (initialCategoryValue) {
-                toggleSubCategories(initialCategoryValue);
+            // Load subcategories on page load if category is already selected
+            var initialCategoryName = categoryDropdown.val();
+            var initialSubCategory = '@Model.SubCategory';
+            
+            if (initialCategoryName) {
+                loadSubCategories(initialCategoryName, initialSubCategory);
             }
+            
+            // Handle category change event
+            categoryDropdown.on('change', function () {
+                var categoryName = $(this).val();
+                loadSubCategories(categoryName, null);
+            });
         });
     </script>
 }
