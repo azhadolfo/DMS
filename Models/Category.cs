@@ -10,7 +10,7 @@ public class Category
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-    [Column(TypeName = "varchar(20)")]
+    [Column(TypeName = "varchar(100)")]
     [Display(Name = "Category")]
     public string CategoryName { get; set; }
 

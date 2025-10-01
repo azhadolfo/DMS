@@ -10,7 +10,7 @@ public class SubCategory
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-    [Column(TypeName = "varchar(20)")]
+    [Column(TypeName = "varchar(100)")]
     [Display(Name = "Sub Category")]
     public string SubCategoryName { get; set; }
 

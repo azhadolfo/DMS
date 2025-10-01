@@ -46,7 +46,7 @@ namespace Document_Management.Migrations
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -78,7 +78,7 @@ namespace Document_Management.Migrations
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -117,7 +117,7 @@ namespace Document_Management.Migrations
 
                     b.Property<string>("DepartmentName")
                         .IsRequired()
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("EditedBy")
                         .HasColumnType("varchar(100)");
@@ -316,7 +316,7 @@ namespace Document_Management.Migrations
 
                     b.Property<string>("SubCategoryName")
                         .IsRequired()
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
 
