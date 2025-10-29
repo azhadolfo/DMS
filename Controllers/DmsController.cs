@@ -1014,7 +1014,20 @@ namespace Document_Management.Controllers
         public IActionResult Trash()
         {
             var accessCheckResult = CheckAccess();
-            return accessCheckResult ?? View();
+            if (accessCheckResult != null)
+            {
+                return accessCheckResult;
+            }
+            
+            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+
+            if (userRole == "admin" || userRole == "uploader")
+            {
+                return View();
+            }
+            
+            TempData["ErrorMessage"] = "You have no access to trash. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
         }
         
         [HttpPost]

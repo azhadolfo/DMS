@@ -4,6 +4,7 @@ Welcome to the Document Management System (DMS) repository! DMS is a system desi
 
 ## Version History
 
+- **v4.1.1** - Added validation of user role before proceeding to trash module - 10/29/2025
 - **v4.1.0** - Added feature to store the deleted file in trash, user can restore and permanently deleted it - 10/01/2025
 - **v4.0.0** - Make the selection list for the file details dynamic - 10/01/2025
 - **v3.1.1** - Fixed an error when transferring the file - 09/20/2025
