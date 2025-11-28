@@ -34,9 +34,3 @@ For full version history, see the [CHANGELOG](CHANGELOG.md).
 
 ---
 
-## 📦 Installation & Setup
-
-### **1. Clone the Repository**
-```bash
-git clone https://github.com/azhadolfo/DMS.git
-cd DMS
