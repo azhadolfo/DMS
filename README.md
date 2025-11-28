@@ -1,40 +1,42 @@
 # Document Management System (DMS)
 
-Welcome to the Document Management System (DMS) repository! DMS is a system designed to help you organize and manage your files efficiently.
+The **Document Management System (DMS)** is a secure and efficient platform designed to help organizations store, organize, track, and manage documents with ease.  
+It includes file categorization, user access control, audit logging, upload management, and department-based workflows.
 
-## Version History
+---
 
-- **v4.1.1** - Added validation of user role before proceeding to trash module - 10/29/2025
-- **v4.1.0** - Added feature to store the deleted file in trash, user can restore and permanently deleted it - 10/01/2025
-- **v4.0.0** - Make the selection list for the file details dynamic - 10/01/2025
-- **v3.1.1** - Fixed an error when transferring the file - 09/20/2025
-- **v3.1.0** - Update the company, department, category and sub-category - 09/17/2025
-- **v3.0.1** - Add maintenance mode - 09/17/2025
-- **v3.0.0** - Migrate to serverless approach with CI/CD - 09/10/2025
-- **v2.7.0** - Added stopwatch to calculate the duration of uploading, add audit trail for login and log out - 09/08/2025
-- **v2.6.0** - Refactored the source code - 07/29/2025
-- **v2.5.0** - Changed the logo and modified the video tutorial - 07/25/2025
-- **v2.4.0** - Added video tutorial on the homepage - 07/19/2025
-- **v2.3.1** - Redesign layout for Uploading files, uploaded files and activity logs - 05/29/2025
-- **v2.3.0** - Modified the edit, and add the feature to upload a new file - 04/29/2025
-- **v2.2.3** - Add retail audit department - 02/20/2025
-- **v2.2.2** - Implement breadcrumb in download module - 02/05/2025
-- **v2.2.1** - Add logs for downloading the file and add additional access for each user - 01/17/2025
-- **v2.1.1** - Revise the general search link result into down-loadable - 10/22/2024
-- **v2.1.0** - Add new module to capture the activity report - 9/7/2024
-- **v2.0.7** - Open the access for logs - 8/10/2024
-- **v2.0.6** - Add server pagination in uploaded files - 7/27/2024
-- **v2.0.5** - Add new category Weekly Reports - 6/14/2024
-- **v2.0.4** - Add loading spinner and minor revisions in views - 4/30/2024
-- **v2.0.3** - Redesigned tables and cleaned up the script for data-table - 4/15/2024
-- **v2.0.2** - Added restriction in deleting files; only File Custodian can delete files. Also fixed an error in the search bar if the user empties the search - 4/4/2024
-- **v2.0.1** - Fixed an issue where the transfer process created unnecessary folders, making files hard to locate - 3/16/2024
-- **v2.0.0** - Upgraded to .NET 8 and optimized the codebase - 3/15/2024
-- **v1.0.3** - Added a new category and department - 3/14/2024
-- **v1.0.2** - Revised the uploading functionality to maximize speed (under monitoring) - 2/21/2024
-- **v1.0.1** - Added a new field for file size - 2/16/2024
-- **v1.0.0** - Newly published - 2/3/2024
+## 🚀 Features
 
-## Feedback
+- 📁 Upload, organize, and categorize documents
+- 🔐 Role-based access control
+- 🗑️ Trash module with restore & permanent delete
+- 🧭 Breadcrumb navigation
+- 🎥 Video tutorials integrated into UI
+- 📊 Activity and audit logging (upload, download, login, logout)
+- 📂 Dynamic file properties (company, category, department, sub-category)
+- ⚙️ Maintenance mode
+- ⚡ Optimized uploading performance
+- ☁️ Serverless deployment with CI/CD
+- 🕒 Stopwatch for upload duration
 
-If you have any feedback, suggestions, or issues, please feel free to open an [issue](https://github.com/azhadolfo/DMS/issues) or submit a [pull request](https://github.com/azhadolfo/DMS/pulls). We welcome your contributions to make DMS even better!
+For full version history, see the [CHANGELOG](CHANGELOG.md).
+
+---
+
+## 🏗️ Tech Stack
+
+- **ASP.NET Core (.NET 8)**
+- **C#**
+- **Entity Framework Core**
+- **PostgreSQL**
+- **Bootstrap / jQuery / DataTables**
+- **Deployed via Serverless / CI-CD (Cloud Run, etc.)**
+
+---
+
+## 📦 Installation & Setup
+
+### **1. Clone the Repository**
+```bash
+git clone https://github.com/azhadolfo/DMS.git
+cd DMS
