@@ -21,12 +21,13 @@ options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")
 
 // Configure session services
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
+builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    options.SlidingExpiration = true;
+    options.LoginPath = $"/Identity/Account/Login";
+    options.LogoutPath = $"/Identity/Account/Logout";
+    options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 });
 
 //DI
@@ -35,15 +36,6 @@ builder.Services.AddScoped<UserRepo>();
 builder.Services.AddScoped<ReportRepo>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
-
-// Configure for Cloud Run if deployed there
-// if (builder.Environment.IsProduction())
-// {
-//     builder.WebHost.ConfigureKestrel(options =>
-//     {
-//         options.ListenAnyIP(8080); // Cloud Run requires port 8080
-//     });
-// }
 
 var app = builder.Build();
 
