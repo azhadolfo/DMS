@@ -62,6 +62,8 @@ app.UseMiddleware<MaintenanceMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.MapGet("/health", () => Results.Ok("Healthy"));
+
 app.UseRouting();
 
 app.UseSession();

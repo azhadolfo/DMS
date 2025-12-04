@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v4.1.2] - 2025-10-29
+### Added
+- Added health check endpoint.
+
+---
+
 ## [v4.1.1] - 2025-10-29
 ### Added
 - Validation of user role before proceeding to trash module.
