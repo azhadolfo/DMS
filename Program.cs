@@ -37,6 +37,14 @@ builder.Services.AddScoped<ReportRepo>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
 
+if (builder.Environment.IsProduction())
+{
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenAnyIP(8080);
+    });
+}
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
