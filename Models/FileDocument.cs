@@ -20,16 +20,16 @@ namespace Document_Management.Models
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public string Company { get; set; }
+        public string Company { get; set; }  = string.Empty;
 
-        public string Year { get; set; }
+        public string Year { get; set; } =  string.Empty;
 
         [Required(ErrorMessage = "Department is required.")]
-        public string Department { get; set; }
+        public string Department { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Description is required.")]
         [Display(Name = "Description")]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Display(Name = "Date Uploaded")]
         public DateTime DateUploaded { get; set; }
@@ -37,7 +37,7 @@ namespace Document_Management.Models
         public string Username { get; set; } = string.Empty;
 
         [Required]
-        public string Category { get; set; }
+        public string Category { get; set; } = string.Empty;
 
         [Display(Name = "Sub Category")]
         public string SubCategory { get; set; } = "N/A";

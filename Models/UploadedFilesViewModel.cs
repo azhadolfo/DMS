@@ -4,13 +4,13 @@
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string Description { get; set; }
+        public required string Description { get; set; }
 
-        public string LocationFolder { get; set; }
+        public string LocationFolder { get; set; } = string.Empty;
 
-        public string UploadedBy { get; set; }
+        public string UploadedBy { get; set; } = string.Empty;
 
         public DateTime DateUploaded { get; set; }
     }

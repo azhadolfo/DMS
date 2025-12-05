@@ -6,7 +6,7 @@ public class SubCategoryViewModel
 {
     public int Id { get; set; }
 
-    public string SubCategoryName { get; set; }
+    public string SubCategoryName { get; set; } = string.Empty;
 
     public List<SelectListItem>? Categories { get; set; }
 

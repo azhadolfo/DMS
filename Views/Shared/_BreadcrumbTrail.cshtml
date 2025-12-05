@@ -57,7 +57,7 @@
                 {
                     breadcrumbs.Add(new BreadcrumbItem
                     {
-                        Name = categoryFolder.Replace("_", " "),
+                        Name = categoryFolder?.Replace("_", " "),
                         Action = "SubCategoryFolder",
                         Controller = "Dms",
                         RouteValues = new { 
@@ -100,10 +100,10 @@
 @functions {
     public class BreadcrumbItem
     {
-        public string Name { get; set; }
-        public string Action { get; set; }
-        public string Controller { get; set; }
-        public object RouteValues { get; set; }
-        public bool IsActive { get; set; } = false;
+        public string? Name { get; set; }
+        public string? Action { get; set; }
+        public string? Controller { get; set; }
+        public object? RouteValues { get; set; }
+        public bool IsActive { get; set; }
     }
 }

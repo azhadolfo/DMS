@@ -12,10 +12,10 @@ public class Category
 
     [Column(TypeName = "varchar(100)")]
     [Display(Name = "Category")]
-    public string CategoryName { get; set; }
+    public string CategoryName { get; set; } = string.Empty;
 
     [Column(TypeName = "varchar(100)")]
-    public string CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
 
     [Column(TypeName = "timestamp without time zone")]
     public DateTime CreatedDate { get; set; } = DateTimeHelper.GetCurrentPhilippineTime();
@@ -26,5 +26,5 @@ public class Category
     [Column(TypeName = "timestamp without time zone")]
     public DateTime? EditedDate { get; set; }
     
-    public ICollection<SubCategory> SubCategories { get; set; }
+    public ICollection<SubCategory>? SubCategories { get; set; }
 }

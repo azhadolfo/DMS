@@ -112,12 +112,12 @@ public class SubCategoryController : Controller
         {
             SubCategoryName = viewModel.SubCategoryName,
             CategoryId = viewModel.CategoryId,
-            CreatedBy = _userName,
+            CreatedBy = _userName!,
         };
         
         await _dbContext.SubCategories.AddAsync(subCategory,  cancellationToken);
         
-        LogsModel logs = new(_userName, $"Add new sub-category: {viewModel.SubCategoryName}");
+        LogsModel logs = new(_userName!, $"Add new sub-category: {viewModel.SubCategoryName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
         
         await _dbContext.SaveChangesAsync(cancellationToken);

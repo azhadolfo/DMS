@@ -87,12 +87,12 @@ public class CompanyController : Controller
         var company = new Company
         {
             CompanyName = viewModel.CompanyName,
-            CreatedBy = _userName,
+            CreatedBy = _userName!,
         };
         
         await _dbContext.Companies.AddAsync(company,  cancellationToken);
         
-        LogsModel logs = new(_userName, $"Add new company: {viewModel.CompanyName}");
+        LogsModel logs = new(_userName!, $"Add new company: {viewModel.CompanyName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
         
         await _dbContext.SaveChangesAsync(cancellationToken);

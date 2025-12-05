@@ -12,10 +12,10 @@ public class SubCategory
 
     [Column(TypeName = "varchar(100)")]
     [Display(Name = "Sub Category")]
-    public string SubCategoryName { get; set; }
+    public string SubCategoryName { get; set; } = string.Empty;
 
     [Column(TypeName = "varchar(100)")]
-    public string CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
 
     [Column(TypeName = "timestamp without time zone")]
     public DateTime CreatedDate { get; set; } = DateTimeHelper.GetCurrentPhilippineTime();
@@ -29,5 +29,5 @@ public class SubCategory
     public int CategoryId { get; set; }
     
     [ForeignKey(nameof(CategoryId))]
-    public Category Category { get; set; }
+    public Category Category { get; set; } = new();
 }

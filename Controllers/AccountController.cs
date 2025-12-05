@@ -404,7 +404,7 @@ namespace Document_Management.Controllers
         
         public async Task<IActionResult> Logout(CancellationToken cancellationToken)
         {
-            LogsModel logs = new(_userName, $"Logout Successfully");
+            LogsModel logs = new(_userName!, $"Logout Successfully");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);
             await  _dbContext.SaveChangesAsync(cancellationToken);
             

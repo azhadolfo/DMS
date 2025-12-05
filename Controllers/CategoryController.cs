@@ -87,12 +87,12 @@ public class CategoryController : Controller
         var category = new Category
         {
             CategoryName = viewModel.CategoryName,
-            CreatedBy = _userName,
+            CreatedBy = _userName!,
         };
         
         await _dbContext.Categories.AddAsync(category,  cancellationToken);
         
-        LogsModel logs = new(_userName, $"Add new category: {viewModel.CategoryName}");
+        LogsModel logs = new(_userName!, $"Add new category: {viewModel.CategoryName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
         
         await _dbContext.SaveChangesAsync(cancellationToken);

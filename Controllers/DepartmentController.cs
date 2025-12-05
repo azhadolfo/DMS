@@ -87,12 +87,12 @@ public class DepartmentController : Controller
         var department = new Department
         {
             DepartmentName = viewModel.DepartmentName,
-            CreatedBy = _userName,
+            CreatedBy = _userName!,
         };
         
         await _dbContext.Departments.AddAsync(department,  cancellationToken);
         
-        LogsModel logs = new(_userName, $"Add new department: {viewModel.DepartmentName}");
+        LogsModel logs = new(_userName!, $"Add new department: {viewModel.DepartmentName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
         
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -12,10 +12,10 @@ public class Company
 
     [Column(TypeName = "varchar(100)")]
     [Display(Name = "Company")]
-    public string CompanyName { get; set; }
+    public string CompanyName { get; set; } = string.Empty;
 
     [Column(TypeName = "varchar(100)")]
-    public string CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
 
     [Column(TypeName = "timestamp without time zone")]
     public DateTime CreatedDate { get; set; } = DateTimeHelper.GetCurrentPhilippineTime();

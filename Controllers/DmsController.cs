@@ -195,7 +195,7 @@ namespace Document_Management.Controllers
                 fileDocument.Name = filename;
                 fileDocument.Location = objectName;
                 fileDocument.FileSize = file.Length;
-                fileDocument.Username = username;
+                fileDocument.Username = username!;
                 fileDocument.OriginalFilename = file.FileName;
                 fileDocument.IsInCloudStorage = true;
 
@@ -1004,7 +1004,7 @@ namespace Document_Management.Controllers
 
                 return Json(subCategories);
             }
-            catch (Exception ex)
+            catch 
             {
                 return Json(new List<SelectListItem>());
             }
