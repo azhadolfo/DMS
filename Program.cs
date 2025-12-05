@@ -5,86 +5,88 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load configuration
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
+
+//// Load configuration based on the environment
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-// MVC
-builder.Services.AddControllersWithViews();
-
-// Database
+//New added middleware
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Session + Cookies
-builder.Services.ConfigureApplicationCookie(options =>
+// Configure session services
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
 {
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-    options.SlidingExpiration = true;
-    options.LoginPath = "/Identity/Account/Login";
-    options.LogoutPath = "/Identity/Account/Logout";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// DI
+//DI
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<UserRepo>();
 builder.Services.AddScoped<ReportRepo>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
 
+// Configure for Cloud Run if deployed there
+// if (builder.Environment.IsProduction())
+// {
+//     builder.WebHost.ConfigureKestrel(options =>
+//     {
+//         options.ListenAnyIP(8080); // Cloud Run requires port 8080
+//     });
+// }
+
 var app = builder.Build();
 
-
-// Health check (Cloud Run)
-app.MapGet("/health", () => Results.Ok("Healthy"));
-
-// HSTS ONLY in browser environment
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-// PostgreSQL compatibility switch
+// This code is to change the behaviour of timestamp of postgresql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-// Static files FIRST (same as your working project)
+app.UseMiddleware<MaintenanceMiddleware>();
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Maintenance middleware
-app.UseMiddleware<MaintenanceMiddleware>();
+app.MapGet("/health", () => Results.Ok("Healthy"));
 
-// Routing
 app.UseRouting();
 
-// Session (same order as your working project)
 app.UseSession();
 
-// Authentication (if you add identity later)
-app.UseAuthentication();
-
-// Authorization
 app.UseAuthorization();
 
-// Default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
-// DMS routes
+// Additional routes for your DMS controller
 app.MapControllerRoute(
     name: "dmsRoutes",
     pattern: "Dms/{action=Index}/{id?}",
     defaults: new { controller = "Dms" });
 
+// Route for file downloads
 app.MapControllerRoute(
     name: "fileDownload",
     pattern: "Dms/Download/{*filepath}",
     defaults: new { controller = "Dms", action = "Download" });
 
+// Route for displaying files with complex parameters
 app.MapControllerRoute(
     name: "displayFiles",
     pattern: "Dms/DisplayFiles/{companyFolderName}/{yearFolderName}/{departmentFolderName}/{documentTypeFolderName}/{subCategoryFolder?}",
