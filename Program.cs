@@ -5,12 +5,10 @@ using Document_Management.Utility;
 using Google.Cloud.Storage.V1;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddSignalR();
 
 //// Load configuration based on the environment
 builder.Configuration
@@ -31,6 +29,17 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 //DI
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
