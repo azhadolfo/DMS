@@ -1,6 +1,9 @@
 using Document_Management.Data;
 using Document_Management.Repository;
 using Document_Management.Service;
+using Document_Management.Utility;
+using Google.Cloud.Storage.V1;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,14 +39,22 @@ builder.Services.AddScoped<ReportRepo>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
 
-// Configure for Cloud Run if deployed there
-// if (builder.Environment.IsProduction())
-// {
-//     builder.WebHost.ConfigureKestrel(options =>
-//     {
-//         options.ListenAnyIP(8080); // Cloud Run requires port 8080
-//     });
-// }
+if (builder.Environment.IsProduction())
+{
+    var bucketName = builder.Configuration["GoogleCloudStorage:BucketName"]!;
+    var storageClient = StorageClient.Create();
+
+    builder.Services.AddDataProtection()
+        .SetApplicationName("IBS-Web")
+        .AddKeyManagementOptions(options =>
+        {
+            options.XmlRepository = new GcsXmlRepository(
+                storageClient,
+                bucketName,
+                "dataprotection-keys.xml"
+            );
+        });
+}
 
 var app = builder.Build();
 
