@@ -5,85 +5,87 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddSignalR();
-
-//// Load configuration based on the environment
+// Load configuration
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-//New added middleware
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// MVC
+builder.Services.AddControllersWithViews();
 
-// Configure session services
+// Database
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Session + Cookies
 builder.Services.AddDistributedMemoryCache();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     options.SlidingExpiration = true;
-    options.LoginPath = $"/Identity/Account/Login";
-    options.LogoutPath = $"/Identity/Account/Logout";
-    options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
 
-//DI
+// DI
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<UserRepo>();
 builder.Services.AddScoped<ReportRepo>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
 
-// if (builder.Environment.IsProduction())
-// {
-//     builder.WebHost.ConfigureKestrel(options =>
-//     {
-//         options.ListenAnyIP(8080);
-//     });
-// }
-
 var app = builder.Build();
 
+
+// Health check (Cloud Run)
+app.MapGet("/health", () => Results.Ok("Healthy"));
+
+// HSTS ONLY in browser environment
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-app.MapGet("/health", () => Results.Ok("Healthy"));
-
+// PostgreSQL compatibility switch
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-app.UseMiddleware<MaintenanceMiddleware>();
-
+// Static files FIRST (same as your working project)
 app.UseStaticFiles();
 
+// Maintenance middleware
+app.UseMiddleware<MaintenanceMiddleware>();
+
+// Routing
 app.UseRouting();
 
+// Session (same order as your working project)
 app.UseSession();
 
+// Authentication (if you add identity later)
+app.UseAuthentication();
+
+// Authorization
 app.UseAuthorization();
 
+// Default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
-// Additional routes for your DMS controller
+// DMS routes
 app.MapControllerRoute(
     name: "dmsRoutes",
     pattern: "Dms/{action=Index}/{id?}",
     defaults: new { controller = "Dms" });
 
-// Route for file downloads
 app.MapControllerRoute(
     name: "fileDownload",
     pattern: "Dms/Download/{*filepath}",
     defaults: new { controller = "Dms", action = "Download" });
 
-// Route for displaying files with complex parameters
 app.MapControllerRoute(
     name: "displayFiles",
     pattern: "Dms/DisplayFiles/{companyFolderName}/{yearFolderName}/{departmentFolderName}/{documentTypeFolderName}/{subCategoryFolder?}",

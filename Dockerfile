@@ -1,4 +1,5 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 
@@ -18,7 +19,5 @@ RUN dotnet publish "./DocumentManagement.csproj" -c $BUILD_CONFIGURATION -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-USER app
 
 ENTRYPOINT ["dotnet", "DocumentManagement.dll"]
