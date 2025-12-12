@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v4.1.3] - 2025-12-12
+### Added
+- Added new field for box number.
+
+---
+
 ## [v4.1.2] - 2025-10-29
 ### Added
 - Added health check endpoint.
