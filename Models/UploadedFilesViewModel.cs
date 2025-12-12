@@ -13,5 +13,11 @@
         public string UploadedBy { get; set; } = string.Empty;
 
         public DateTime DateUploaded { get; set; }
+
+        public string BoxNumber { get; set; } = string.Empty;
+
+        public string SubmittedBy { get; set; } = string.Empty;
+
+        public DateOnly DateSubmitted { get; set; }
     }
 }

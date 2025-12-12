@@ -1,6 +1,4 @@
-﻿@using System.ComponentModel.DataAnnotations;
-@using Document_Management.Utility.Constants
-@model Document_Management.Models.FileDocument;
+﻿@model Document_Management.Models.FileDocument;
 
 @{
     ViewData["Title"] = "Upload";
@@ -30,6 +28,12 @@
         <div class="mb-3">
             <label class="form-label">File Name:</label>
             <span id="selectedFileName" class="text-muted">No file selected</span>
+        </div>
+        
+        <div class="mb-3">
+            <label asp-for="BoxNumber" class="form-label"></label>
+            <input asp-for="BoxNumber" class="form-control" placeholder="ex. 001" required/>
+            <span asp-validation-for="BoxNumber" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
@@ -87,6 +91,19 @@
             <input asp-for="NumberOfPages" class="form-control" required min="1" step="1"/>
             <span asp-validation-for="NumberOfPages" class="text-danger"></span>
         </div>
+        
+        <div class="mb-3">
+            <label asp-for="SubmittedBy" class="form-label"></label>
+            <input asp-for="SubmittedBy" class="form-control" placeholder="ex. Juan" required/>
+            <span asp-validation-for="SubmittedBy" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DateSubmitted" class="form-label"></label>
+            <input asp-for="DateSubmitted" class="form-control" type="date" value="@DateTime.Today.ToString("yyyy-MM-dd")" required/>
+            <span asp-validation-for="DateSubmitted" class="text-danger"></span>
+        </div>
+
 
         <div class="mb-3">
             <label class="form-label">Description (Tags)</label>

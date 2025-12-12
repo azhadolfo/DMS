@@ -20,11 +20,29 @@
                 <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or keywords that will help us find the file later."></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="BoxNumber" class="control-label"></label>
+                <input asp-for="BoxNumber" placeholder="ex. 001" class="form-control" />
+                <span asp-validation-for="BoxNumber" class="text-danger"></span>
+            </div>
 
             <div class="form-group mb-3">
                 <label asp-for="NumberOfPages" class="control-label"></label>
                 <input asp-for="NumberOfPages" class="form-control" />
                 <span asp-validation-for="NumberOfPages" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="SubmittedBy" class="control-label"></label>
+                <input asp-for="SubmittedBy" placeholder="ex. Juan" class="form-control" />
+                <span asp-validation-for="SubmittedBy" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="DateSubmitted" class="control-label"></label>
+                <input asp-for="DateSubmitted" type="date" class="form-control" />
+                <span asp-validation-for="DateSubmitted" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">

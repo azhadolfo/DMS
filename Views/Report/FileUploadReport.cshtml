@@ -22,6 +22,7 @@
         <table class="table table-bordered table-striped w-100">
             <thead>
                 <tr>
+                    <th>Box Number</th>
                     <th>Company</th>
                     <th>Year</th>
                     <th>Department</th>
@@ -29,12 +30,15 @@
                     <th>Sub Category</th>
                     <th>User</th>
                     <th>File Count</th>
+                    <th>Submitted By</th>
+                    <th>Date Submitted</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var fileGroup in Model.UploadedFiles)
                 {
                     <tr>
+                        <td>@fileGroup.BoxNumber</td>
                         <td>@fileGroup.Company</td>
                         <td>@fileGroup.Year</td>
                         <td>@fileGroup.Department</td>
@@ -42,6 +46,8 @@
                         <td>@fileGroup.SubCategory</td>
                         <td>@fileGroup.Username</td>
                         <td>@fileGroup.FileCount</td>
+                        <td>@fileGroup.SubmittedBy</td>
+                        <td>@fileGroup.DateSubmitted.ToString("MMM dd, yyyy")</td>
                     </tr>
                 }
             </tbody>

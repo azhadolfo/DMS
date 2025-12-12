@@ -19,5 +19,8 @@
         public string SubCategory { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public int FileCount { get; set; }
+        public string BoxNumber { get; set; } = string.Empty;
+        public string SubmittedBy { get; set; } = string.Empty;
+        public DateOnly DateSubmitted { get; set; }
     }
 }
