@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Activity Report";
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
 <h2><b>FILE UPLOAD REPORT FORM</b></h2>
@@ -13,12 +14,12 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="mb-3 col-6">
                 <label asp-for="DateFrom" class="form-label">Date From</label>
-                <input asp-for="DateFrom" type="date" class="form-control" id="dateFrom" value="" />
+                <input asp-for="DateFrom" type="date" class="form-control" id="dateFrom" value="@today" />
                 <span asp-validation-for="DateFrom" class="text-danger"></span>
             </div>
             <div class="mb-3 col-6">
                 <label asp-for="DateTo" class="form-label">Date To</label>
-                <input asp-for="DateTo" type="date" class="form-control" id="dateTo" value="" />
+                <input asp-for="DateTo" type="date" class="form-control" id="dateTo" value="@today" />
                 <span asp-validation-for="DateTo" class="text-danger"></span>
             </div>
             <div class="mb-3">

@@ -8,6 +8,7 @@ The format is based on Semantic Versioning.
 ## [v4.1.4] - 2025-12-13
 ### Changed
 - Removed the default value for DateSubmitted.
+- Redesigned the output of activity report.
 
 ---
 
