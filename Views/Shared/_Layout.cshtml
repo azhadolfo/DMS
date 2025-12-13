@@ -1,11 +1,11 @@
-﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+﻿@inject IHttpContextAccessor HttpContextAccessor
 @{
     var userModuleAccess = Context.Session.GetString("usermoduleaccess");
     var userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
 
     var userrole = Context.Session.GetString("userrole")?.ToLower();
     
-    ViewBag.AppVersion = "4.1.3";
+    ViewBag.AppVersion = "4.1.4";
 
 }
 

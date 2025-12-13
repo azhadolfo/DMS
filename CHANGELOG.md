@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v4.1.4] - 2025-12-13
+### Changed
+- Removed the default value for DateSubmitted.
+
+---
+
 ## [v4.1.3] - 2025-12-12
 ### Added
 - Added new field for box number.

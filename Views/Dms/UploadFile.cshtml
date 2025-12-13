@@ -100,7 +100,7 @@
 
         <div class="mb-3">
             <label asp-for="DateSubmitted" class="form-label"></label>
-            <input asp-for="DateSubmitted" class="form-control" type="date" value="@DateTime.Today.ToString("yyyy-MM-dd")" required/>
+            <input asp-for="DateSubmitted" class="form-control" type="date" required/>
             <span asp-validation-for="DateSubmitted" class="text-danger"></span>
         </div>
 
