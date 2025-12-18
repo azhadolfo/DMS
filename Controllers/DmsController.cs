@@ -637,7 +637,7 @@ namespace Document_Management.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult GeneralSearch(string search, int page = 1, int pageSize = 10)
+        public IActionResult GeneralSearch(string search, int page = 1, int pageSize = 10, string sortBy = "DateUploaded", string sortOrder = "desc")
         {
             var accessCheckResult = CheckAccess();
             if (accessCheckResult != null)
@@ -651,14 +651,34 @@ namespace Document_Management.Controllers
             }
 
             var keywords = search.Split(' ');
-
-            // Get all results
+            
             var allResults = _userRepo.SearchFile(keywords);
-    
+            
+            // Apply sorting
+            allResults = sortBy switch
+            {
+                "BoxNumber" => sortOrder == "asc" 
+                    ? allResults.OrderBy(f => f.BoxNumber).ToList()
+                    : allResults.OrderByDescending(f => f.BoxNumber).ToList(),
+                "OriginalFilename" => sortOrder == "asc"
+                    ? allResults.OrderBy(f => f.OriginalFilename).ToList()
+                    : allResults.OrderByDescending(f => f.OriginalFilename).ToList(),
+                "Description" => sortOrder == "asc"
+                    ? allResults.OrderBy(f => f.Description).ToList()
+                    : allResults.OrderByDescending(f => f.Description).ToList(),
+                "Username" => sortOrder == "asc"
+                    ? allResults.OrderBy(f => f.Username).ToList()
+                    : allResults.OrderByDescending(f => f.Username).ToList(),
+                "DateUploaded" => sortOrder == "asc"
+                    ? allResults.OrderBy(f => f.DateUploaded).ToList()
+                    : allResults.OrderByDescending(f => f.DateUploaded).ToList(),
+                _ => allResults.OrderByDescending(f => f.DateUploaded).ToList()
+            };
+            
             // Calculate pagination
             var totalRecords = allResults.Count;
             var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
-    
+            
             // Get paginated results
             var paginatedResults = allResults
                 .Skip((page - 1) * pageSize)
@@ -671,6 +691,8 @@ namespace Document_Management.Controllers
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageSize = pageSize;
             ViewBag.SearchTerm = search;
+            ViewBag.SortBy = sortBy;
+            ViewBag.SortOrder = sortOrder;
 
             return View(paginatedResults);
         }

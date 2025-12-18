@@ -6,6 +6,20 @@
     var totalRecords = ViewBag.TotalRecords ?? 0;
     var pageSize = ViewBag.PageSize ?? 10;
     var searchTerm = ViewBag.SearchTerm ?? "";
+    var sortBy = ViewBag.SortBy ?? "DateUploaded";
+    var sortOrder = ViewBag.SortOrder ?? "desc";
+    
+    string GetSortIcon(string columnName)
+    {
+        if (sortBy != columnName) return "↕";
+        return sortOrder == "asc" ? "↑" : "↓";
+    }
+    
+    string GetNextSortOrder(string columnName)
+    {
+        if (sortBy != columnName) return "asc";
+        return sortOrder == "asc" ? "desc" : "asc";
+    }
 }
 
 <h1>File Search Results</h1>
@@ -22,11 +36,36 @@
             <thead>
             <tr class="text-nowrap">
                 <th scope="col">Location Folder</th>
-                <th scope="col">Box Number</th>
-                <th scope="col">File Name</th>
-                <th scope="col">Description</th>
-                <th scope="col">Uploaded By</th>
-                <th scope="col">Date Uploaded</th>
+                <th scope="col">
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "BoxNumber", sortOrder = GetNextSortOrder("BoxNumber") })" 
+                       class="text-decoration-none text-dark">
+                        Box Number @GetSortIcon("BoxNumber")
+                    </a>
+                </th>
+                <th scope="col">
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "OriginalFilename", sortOrder = GetNextSortOrder("OriginalFilename") })" 
+                       class="text-decoration-none text-dark">
+                        File Name @GetSortIcon("OriginalFilename")
+                    </a>
+                </th>
+                <th scope="col">
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "Description", sortOrder = GetNextSortOrder("Description") })" 
+                       class="text-decoration-none text-dark">
+                        Description @GetSortIcon("Description")
+                    </a>
+                </th>
+                <th scope="col">
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "Username", sortOrder = GetNextSortOrder("Username") })" 
+                       class="text-decoration-none text-dark">
+                        Uploaded By @GetSortIcon("Username")
+                    </a>
+                </th>
+                <th scope="col">
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "DateUploaded", sortOrder = GetNextSortOrder("DateUploaded") })" 
+                       class="text-decoration-none text-dark">
+                        Date Uploaded @GetSortIcon("DateUploaded")
+                    </a>
+                </th>
             </tr>
             </thead>
             <tbody>
@@ -59,14 +98,14 @@
             <ul class="pagination justify-content-center">
                 <!-- First Page -->
                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize })">
+                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                         First
                     </a>
                 </li>
 
                 <!-- Previous Page -->
                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = currentPage - 1, pageSize = pageSize })">
+                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = currentPage - 1, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                         Previous
                     </a>
                 </li>
@@ -79,7 +118,7 @@
                 @for (var i = startPage; i <= endPage; i++)
                 {
                     <li class="page-item @(i == currentPage ? "active" : "")">
-                        <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = i, pageSize = pageSize })">
+                        <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = i, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                             @i
                         </a>
                     </li>
@@ -87,14 +126,14 @@
 
                 <!-- Next Page -->
                 <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = currentPage + 1, pageSize = pageSize })">
+                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = currentPage + 1, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                         Next
                     </a>
                 </li>
 
                 <!-- Last Page -->
                 <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = totalPages, pageSize = pageSize })">
+                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = totalPages, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                         Last
                     </a>
                 </li>
@@ -121,6 +160,8 @@ else
 <script>
 function changePageSize(newPageSize) {
     var searchTerm = '@searchTerm';
-    window.location.href = '@Url.Action("GeneralSearch")?search=' + encodeURIComponent(searchTerm) + '&page=1&pageSize=' + newPageSize;
+    var sortBy = '@sortBy';
+    var sortOrder = '@sortOrder';
+    window.location.href = '@Url.Action("GeneralSearch")?search=' + encodeURIComponent(searchTerm) + '&page=1&pageSize=' + newPageSize + '&sortBy=' + sortBy + '&sortOrder=' + sortOrder;
 }
 </script>
