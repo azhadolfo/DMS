@@ -14,7 +14,7 @@
 @if (totalRecords > 0)
 {
     <p class="text-muted mb-3">
-        Showing @((currentPage - 1) * pageSize + 1) to @Math.Min(currentPage * pageSize, totalRecords) of @totalRecords results
+        Showing @((currentPage - 1) * pageSize + 1) to @Math.Min(currentPage * pageSize, totalRecords) of @totalRecords.ToString("N0") results
     </p>
 
     <div class="table-responsive">
