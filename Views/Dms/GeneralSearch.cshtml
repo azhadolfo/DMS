@@ -1,17 +1,28 @@
 ﻿@model List<FileDocument>
 @{
     ViewData["Title"] = "General Search";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var totalRecords = ViewBag.TotalRecords ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var searchTerm = ViewBag.SearchTerm ?? "";
 }
 
 <h1>File Search Results</h1>
 <hr />
-@if (Model.Any())
+
+@if (totalRecords > 0)
 {
+    <p class="text-muted mb-3">
+        Showing @((currentPage - 1) * pageSize + 1) to @Math.Min(currentPage * pageSize, totalRecords) of @totalRecords results
+    </p>
+
     <div class="table-responsive">
-        <table class="table table-hover" id="myTable">
+        <table class="table table-hover">
             <thead>
             <tr class="text-nowrap">
                 <th scope="col">Location Folder</th>
+                <th scope="col">Box Number</th>
                 <th scope="col">File Name</th>
                 <th scope="col">Description</th>
                 <th scope="col">Uploaded By</th>
@@ -25,13 +36,12 @@
                     <td>
                         <a title="@file.Company/@file.Year/@file.Department/@file.Category"
                            target="_blank"
-                           href="@Url.Action("Download", "Dms", new {
-    documentId = file.Id,
-                                     originalFilename = file.OriginalFilename
-                                 })">
+                           href="@Url.Action("Download", "Dms",
+                                new { documentId = file.Id, originalFilename = file.OriginalFilename })">
                             Click to download file
                         </a>
                     </td>
+                    <td>@file.BoxNumber</td>
                     <td>@file.OriginalFilename</td>
                     <td>@file.Description</td>
                     <td>@file.Username</td>
@@ -41,8 +51,76 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination Controls -->
+    @if (totalPages > 1)
+    {
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <!-- First Page -->
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize })">
+                        First
+                    </a>
+                </li>
+
+                <!-- Previous Page -->
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = currentPage - 1, pageSize = pageSize })">
+                        Previous
+                    </a>
+                </li>
+
+                @{
+                    var startPage = Math.Max(1, currentPage - 2);
+                    var endPage = Math.Min(totalPages, currentPage + 2);
+                }
+
+                @for (var i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = i, pageSize = pageSize })">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                <!-- Next Page -->
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = currentPage + 1, pageSize = pageSize })">
+                        Next
+                    </a>
+                </li>
+
+                <!-- Last Page -->
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = totalPages, pageSize = pageSize })">
+                        Last
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Size Selector -->
+        <div class="text-center mt-3">
+            <label for="pageSize">Items per page:</label>
+            <select id="pageSize" class="form-select d-inline-block w-auto" onchange="changePageSize(this.value)">
+                <option value="10" selected="@(pageSize == 10)">10</option>
+                <option value="25" selected="@(pageSize == 25)">25</option>
+                <option value="50" selected="@(pageSize == 50)">50</option>
+                <option value="100" selected="@(pageSize == 100)">100</option>
+            </select>
+        </div>
+    }
 }
 else
 {
-    <p><i>No file found for this keywords.</i></p>
+    <p><i>No file found for these keywords.</i></p>
 }
+
+<script>
+function changePageSize(newPageSize) {
+    var searchTerm = '@searchTerm';
+    window.location.href = '@Url.Action("GeneralSearch")?search=' + encodeURIComponent(searchTerm) + '&page=1&pageSize=' + newPageSize;
+}
+</script>

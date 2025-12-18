@@ -47,8 +47,13 @@ namespace Document_Management.Repository
         public List<FileDocument> SearchFile(string[] keywords)
         {
             return dbContext.FileDocuments
-                .AsEnumerable() // Switch to client-side evaluation
-                .Where(f => !f.IsDeleted && keywords.All(k => f.Description.Contains(k, StringComparison.CurrentCultureIgnoreCase)))
+                .Where(f => !f.IsDeleted)
+                .AsEnumerable()
+                .Where(f => keywords.All(k => 
+                    f.Description.Contains(k, StringComparison.CurrentCultureIgnoreCase) ||
+                    f.OriginalFilename.Contains(k, StringComparison.CurrentCultureIgnoreCase) ||
+                    f.BoxNumber.Contains(k, StringComparison.CurrentCultureIgnoreCase)
+                ))
                 .ToList();
         }
         

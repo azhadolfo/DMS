@@ -5,6 +5,13 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v4.1.5] - 2025-12-18
+### Changed
+- Converted the General Search in to server side pagination.
+- Added the file name and box number for searching the keyword.
+
+---
+
 ## [v4.1.4] - 2025-12-13
 ### Changed
 - Removed the default value for DateSubmitted.

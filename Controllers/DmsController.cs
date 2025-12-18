@@ -637,7 +637,7 @@ namespace Document_Management.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult GeneralSearch(string search)
+        public IActionResult GeneralSearch(string search, int page = 1, int pageSize = 10)
         {
             var accessCheckResult = CheckAccess();
             if (accessCheckResult != null)
@@ -652,9 +652,27 @@ namespace Document_Management.Controllers
 
             var keywords = search.Split(' ');
 
-            var result = _userRepo.SearchFile(keywords);
+            // Get all results
+            var allResults = _userRepo.SearchFile(keywords);
+    
+            // Calculate pagination
+            var totalRecords = allResults.Count;
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+    
+            // Get paginated results
+            var paginatedResults = allResults
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-            return View(result);
+            // Pass pagination data to view
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageSize = pageSize;
+            ViewBag.SearchTerm = search;
+
+            return View(paginatedResults);
         }
 
         public async Task<IActionResult> PermanentDelete(int id, CancellationToken cancellationToken)
