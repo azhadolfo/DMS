@@ -292,7 +292,7 @@ namespace Document_Management.Controllers
                 .Distinct()
                 .OrderBy(d => d)
                 .ToList();
-
+            
             return View(departments);
         }
 
