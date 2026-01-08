@@ -6,6 +6,7 @@ using Document_Management.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
+using Document_Management.Dtos;
 using Document_Management.Service;
 using Document_Management.Utility.Helper;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -319,7 +320,11 @@ namespace Document_Management.Controllers
                            f.Year == yearFolderName && 
                            f.Department == departmentFolderName &&
                            !string.IsNullOrEmpty(f.Category))
-                .Select(f => f.Category)
+                .Select(f => new CategoryDto
+                {
+                    Category = f.Category,
+                    SubCategory = f.SubCategory,
+                })
                 .Distinct()
                 .OrderBy(c => c)
                 .ToList();
