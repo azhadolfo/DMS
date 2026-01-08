@@ -316,6 +316,7 @@ namespace Document_Management.Controllers
 
             // Get unique categories for the company/year/department from database
             var categories = _dbContext.FileDocuments
+                .AsNoTracking()
                 .Where(f => f.Company == companyFolderName && 
                            f.Year == yearFolderName && 
                            f.Department == departmentFolderName &&
@@ -326,7 +327,7 @@ namespace Document_Management.Controllers
                     SubCategory = f.SubCategory,
                 })
                 .Distinct()
-                .OrderBy(c => c)
+                .OrderBy(c => c.Category)
                 .ToList();
 
             return View(categories);
