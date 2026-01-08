@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v4.1.6] - 2026-01-08
+### Fixed
+- Fixed the sub-category folder not showing on the Download Module
+
+---
+
 ## [v4.1.5] - 2025-12-18
 ### Changed
 - Converted the General Search in to server side pagination.
