@@ -21,6 +21,6 @@
         public int FileCount { get; set; }
         public string BoxNumber { get; set; } = string.Empty;
         public string SubmittedBy { get; set; } = string.Empty;
-        public DateOnly DateSubmitted { get; set; }
+        public DateOnly? DateSubmitted { get; set; }
     }
 }

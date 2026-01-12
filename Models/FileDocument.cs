@@ -58,7 +58,7 @@ namespace Document_Management.Models
         public string SubmittedBy { get; set; } = string.Empty;
 
         [Display(Name = "Date Submitted")]
-        public DateOnly DateSubmitted { get; set; }
+        public DateOnly? DateSubmitted { get; set; }
 
         #region Select List Properties
 

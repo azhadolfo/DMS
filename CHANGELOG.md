@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v4.1.7] - 2026-01-12
+### Changed
+- Modified the "DateSubmitted" into nullable.
+
+---
+
 ## [v4.1.6] - 2026-01-08
 ### Fixed
 - Fixed the sub-category folder not showing on the Download Module

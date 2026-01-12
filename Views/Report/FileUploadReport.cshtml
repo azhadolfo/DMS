@@ -144,7 +144,7 @@ var userName = Model.CurrentUser;
                 <td>@fileGroup.Username</td>
                 <td class="text-center">@fileGroup.FileCount</td>
                 <td>@fileGroup.SubmittedBy</td>
-                <td style="white-space: nowrap;">@fileGroup.DateSubmitted.ToString("MMM dd, yyyy")</td>
+                <td style="white-space: nowrap;">@fileGroup.DateSubmitted?.ToString("MMM dd, yyyy")</td>
             </tr>
             }
             </tbody>
