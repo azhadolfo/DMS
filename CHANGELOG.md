@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v4.1.8] - 2026-01-27
+### Fixed
+- Modified the edit user to retain the access folder.
+
+---
+
 ## [v4.1.7] - 2026-01-12
 ### Changed
 - Modified the "DateSubmitted" into nullable.
