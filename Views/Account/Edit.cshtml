@@ -43,7 +43,7 @@
                     foreach (var department in Model.Departments)
                     {
                         <div>
-                            <input type="checkbox" name="AccessFolders" value="@department.Value"/> @department.Text
+                            <input type="checkbox" name="AccessFolders" value="@department.Value" @(Model.AccessFolders.Contains(department.Value) ? "checked" : "")/> @department.Text
                         </div>
                     }
                 }
