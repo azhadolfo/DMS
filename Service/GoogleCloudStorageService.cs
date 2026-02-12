@@ -40,12 +40,14 @@ namespace Document_Management.Service
                 {
                     var credentialPath = configuration["GoogleCloudStorage:CredentialPath"];
                     if (string.IsNullOrEmpty(credentialPath) || !File.Exists(credentialPath))
-                    {
-                        throw new FileNotFoundException("Service account credential file not found", credentialPath);
-                    }
-                
-                    _googleCredential = GoogleCredential.FromFile(credentialPath);
-                    _logger.LogInformation("Using service account credentials from file (local dev).");
+                        throw new FileNotFoundException("Service account file not found", credentialPath);
+
+                    using var stream = File.OpenRead(credentialPath);
+
+                    var serviceAccountCredential = CredentialFactory.FromStream<ServiceAccountCredential>(stream);
+
+                    _googleCredential = serviceAccountCredential.ToGoogleCredential();
+                    _logger.LogInformation("Loaded service account credentials from file.");
                 }
 
                 _storageClient = StorageClient.Create(_googleCredential);
