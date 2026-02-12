@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v5.0.0] - 2026-02-12
+### Changed
+- Upgrade version to .NET10.
+
+---
+
 ## [v4.1.8] - 2026-01-27
 ### Fixed
 - Modified the edit user to retain the access folder.
