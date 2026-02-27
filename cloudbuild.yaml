@@ -4,7 +4,7 @@ steps:
       - build
       - '--no-cache'
       - '-t'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$_SERVICE_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+      - '$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$_SERVICE_NAME/$_SERVICE_NAME:$COMMIT_SHA'
       - '-f'
       - 'Dockerfile'
       - .
@@ -12,7 +12,7 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$_SERVICE_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+      - '$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$_SERVICE_NAME/$_SERVICE_NAME:$COMMIT_SHA'
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
@@ -21,7 +21,7 @@ steps:
       - deploy
       - $_SERVICE_NAME
       - '--image'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$_SERVICE_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+      - '$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$_SERVICE_NAME/$_SERVICE_NAME:$COMMIT_SHA'
       - '--region'
       - $_DEPLOY_REGION
       - '--platform'
@@ -31,7 +31,7 @@ steps:
 timeout: 1200s
 
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$_SERVICE_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+  - '$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$_SERVICE_NAME/$_SERVICE_NAME:$COMMIT_SHA'
 
 options:
   logging: CLOUD_LOGGING_ONLY
