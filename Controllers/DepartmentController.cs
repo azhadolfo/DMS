@@ -1,5 +1,6 @@
 using Document_Management.Data;
 using Document_Management.Models;
+using Document_Management.Utility.Extensions;
 using Document_Management.Utility.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -85,7 +86,7 @@ public class DepartmentController : Controller
 
         var department = new Department
         {
-            DepartmentName = viewModel.DepartmentName,
+            DepartmentName = viewModel.DepartmentName.RemoveCommas(),
             CreatedBy = _userName!,
         };
 
@@ -124,7 +125,7 @@ public class DepartmentController : Controller
         var viewModel = new DepartmentViewModel
         {
             Id = department.Id,
-            DepartmentName = department.DepartmentName,
+            DepartmentName = department.DepartmentName.RemoveCommas(),
         };
 
         return View(viewModel);

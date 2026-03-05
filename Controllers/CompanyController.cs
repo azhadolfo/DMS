@@ -1,5 +1,6 @@
 using Document_Management.Data;
 using Document_Management.Models;
+using Document_Management.Utility.Extensions;
 using Document_Management.Utility.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -85,7 +86,7 @@ public class CompanyController : Controller
 
         var company = new Company
         {
-            CompanyName = viewModel.CompanyName,
+            CompanyName = viewModel.CompanyName.RemoveCommas(),
             CreatedBy = _userName!,
         };
 
@@ -124,7 +125,7 @@ public class CompanyController : Controller
         var viewModel = new CompanyViewModel
         {
             Id = company.Id,
-            CompanyName = company.CompanyName,
+            CompanyName = company.CompanyName.RemoveCommas(),
         };
 
         return View(viewModel);
