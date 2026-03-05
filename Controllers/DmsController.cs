@@ -35,19 +35,35 @@ namespace Document_Management.Controllers
             _cloudStorage = cloudStorage;
         }
 
-        public IActionResult? CheckDepartmentAccess(string department)
+        private IActionResult? CheckDepartmentAccess(string department)
         {
-            var userAccessFolders = HttpContext.Session.GetString("userAccessDepartments");
+            var userAccessDepartments = HttpContext.Session.GetString("userAccessDepartments");
             var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
 
-            var userDepartments = userAccessFolders?.Split(',');
+            var userDepartments = userAccessDepartments?.Split(',');
 
-            if (userRole == "admin" || userDepartments == null || userDepartments.Any(dep => dep.Trim() == department))
+            if (userRole == "admin" || userDepartments?.Any(dep => dep.Trim() == department) != false)
             {
                 return null;
             }
 
             TempData["ErrorMessage"] = $"You have no access to {department.Replace("_", " ")}. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
+        }
+
+        private IActionResult? CheckCompanyAccess(string company)
+        {
+            var userAccessCompanies = HttpContext.Session.GetString("userAccessCompanies");
+            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
+
+            var userCompanies = userAccessCompanies?.Split(',');
+
+            if (userRole == "admin" || userCompanies?.Any(dep => dep.Trim() == company) != false)
+            {
+                return null;
+            }
+
+            TempData["ErrorMessage"] = $"You have no access to {company.Replace("_", " ")}. Please contact the MIS Department if you think this is a mistake.";
             return RedirectToAction("Privacy", "Home");
         }
 
@@ -217,6 +233,12 @@ namespace Document_Management.Controllers
         public IActionResult CompanyFolder(string folderName)
         {
             ViewBag.CompanyFolder = folderName;
+
+            var companyAccessResult = CheckCompanyAccess(folderName);
+            if (companyAccessResult != null)
+            {
+                return companyAccessResult;
+            }
 
             // Get unique years for the company from database
             var years = _dbContext.FileDocuments
@@ -840,6 +862,12 @@ namespace Document_Management.Controllers
                     return NotFound();
                 }
 
+                var companyAccessResult = CheckCompanyAccess(document.Company);
+                if (companyAccessResult != null)
+                {
+                    return companyAccessResult;
+                }
+
                 var departmentAccessResult = CheckDepartmentAccess(document.Department!);
                 if (departmentAccessResult != null)
                 {
@@ -875,6 +903,12 @@ namespace Document_Management.Controllers
                 if (document == null)
                 {
                     return NotFound();
+                }
+
+                var companyAccessResult = CheckCompanyAccess(document.Company);
+                if (companyAccessResult != null)
+                {
+                    return companyAccessResult;
                 }
 
                 var departmentAccessResult = CheckDepartmentAccess(document.Department!);
