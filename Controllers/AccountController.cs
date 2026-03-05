@@ -52,34 +52,47 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            if (!string.IsNullOrEmpty(_userName))
+            if (_userRole != "admin")
             {
-                return View(new Account
-                {
-                    Departments = await _dbContext.Departments
-                        .OrderBy(d => d.DepartmentName)
-                        .Select(s => new SelectListItem
-                        {
-                            Text = s.DepartmentName,
-                            Value = s.DepartmentName
-                        })
-                        .ToListAsync()
-                });
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
             }
 
-            if (_userRole == "admin")
+            if (string.IsNullOrEmpty(_userName))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return View(new Account
+            {
+                Departments = await _dbContext.Departments
+                       .OrderBy(d => d.DepartmentName)
+                       .Select(s => new SelectListItem
+                       {
+                           Text = s.DepartmentName,
+                           Value = s.DepartmentName
+                       })
+                       .ToListAsync(),
+                Companies = await _dbContext.Companies
+                       .OrderBy(c => c.CompanyName)
+                       .Select(s => new SelectListItem
+                       {
+                           Text = s.CompanyName,
+                           Value = s.CompanyName
+                       })
+                       .ToListAsync()
+            });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Account user, string[] accessFolders, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create(Account user, string[] accessDepartments, string[] accessCompanies, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(_userName))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(user);
@@ -126,12 +139,19 @@ namespace Document_Management.Controllers
                 })
                 .ToListAsync(cancellationToken);
 
-            if (string.IsNullOrEmpty(_userName))
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            user.Companies = await _dbContext.Companies
+                .OrderBy(c => c.CompanyName)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.CompanyName,
+                    Value = s.CompanyName
+                })
+                .ToListAsync(cancellationToken);
 
-            user.AccessFolders = string.Join(",", accessFolders);
+            user.FirstName = user.FirstName.ToUpper();
+            user.LastName = user.LastName.ToUpper();
+            user.AccessDepartments = string.Join(",", accessDepartments);
+            user.AccessCompanies = string.Join(",", accessCompanies);
 
             user.Password = HashPassword(user.Password);
             await _dbContext.Accounts.AddAsync(user, cancellationToken);
@@ -151,6 +171,7 @@ namespace Document_Management.Controllers
             {
                 return View();
             }
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -169,7 +190,7 @@ namespace Document_Management.Controllers
             {
                 HttpContext.Session.SetString("username", user.Username);
                 HttpContext.Session.SetString("userrole", user.Role);
-                HttpContext.Session.SetString("useraccessfolders", user.AccessFolders);
+                HttpContext.Session.SetString("useraccessfolders", user.AccessDepartments);
                 HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess);
                 HttpContext.Session.SetString("userfirstname", user.FirstName);
 
@@ -207,14 +228,6 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            if (string.IsNullOrEmpty(user.AccessFolders))
-            {
-                return View(user);
-            }
-
-            var selectedDepartments = user.AccessFolders.Split(',').ToList();
-
-            user.AccessFolders = string.Join(",", selectedDepartments);
             user.Departments = await _dbContext.Departments
                 .OrderBy(d => d.DepartmentName)
                 .Select(s => new SelectListItem
@@ -224,13 +237,23 @@ namespace Document_Management.Controllers
                 })
                 .ToListAsync(cancellationToken);
 
+            user.Companies = await _dbContext.Companies
+                .OrderBy(c => c.CompanyName)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.CompanyName,
+                    Value = s.CompanyName
+                })
+                .ToListAsync(cancellationToken);
+
             return View(user);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Account model,
-            string[] accessFolders,
+            string[] accessDepartments,
+            string[] accessCompanies,
             string newPassword,
             string newConfirmPassword,
             CancellationToken cancellationToken)
@@ -263,6 +286,15 @@ namespace Document_Management.Controllers
                 })
                 .ToListAsync(cancellationToken);
 
+            user.Companies = await _dbContext.Companies
+                .OrderBy(c => c.CompanyName)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.CompanyName,
+                    Value = s.CompanyName
+                })
+                .ToListAsync(cancellationToken);
+
             var dataChanged = user.EmployeeNumber != model.EmployeeNumber ||
                               user.FirstName != model.FirstName ||
                               user.LastName != model.LastName ||
@@ -270,7 +302,8 @@ namespace Document_Management.Controllers
                               user.Username != model.Username ||
                               user.Role != model.Role ||
                               (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword)) ||
-                              !user.AccessFolders.Split(',').SequenceEqual(accessFolders);
+                              !user.AccessDepartments.Split(',').SequenceEqual(accessDepartments) ||
+                              !user.AccessCompanies.Split(',').SequenceEqual(accessCompanies);
 
             if (!dataChanged)
             {
@@ -278,8 +311,8 @@ namespace Document_Management.Controllers
             }
 
             user.EmployeeNumber = model.EmployeeNumber;
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
+            user.FirstName = model.FirstName.ToUpper();
+            user.LastName = model.LastName.ToUpper();
             user.Department = model.Department;
             user.Username = model.Username;
             user.Role = model.Role;
@@ -297,7 +330,8 @@ namespace Document_Management.Controllers
                 }
             }
 
-            user.AccessFolders = accessFolders.Length > 0 ? string.Join(",", accessFolders) : string.Empty;
+            user.AccessDepartments = accessDepartments.Length > 0 ? string.Join(",", accessDepartments) : string.Empty;
+            user.AccessCompanies = accessCompanies.Length > 0 ? string.Join(",", accessCompanies) : string.Empty;
 
             LogsModel logs = new(_userName, $"Update user: {user.Username}");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);

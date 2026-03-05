@@ -51,14 +51,19 @@ namespace Document_Management.Models
         [Required(ErrorMessage = "Department is required.")]
         public string Department { get; set; } = null!;
 
-        public string AccessFolders { get; set; } = null!;
+        public string AccessDepartments { get; set; } = null!;
 
         public string ModuleAccess { get; set; } = "DMS";
+
+        public string AccessCompanies { get; set; } = null!;
 
         #region Select List Properties
 
         [NotMapped]
         public List<SelectListItem>? Departments { get; set; }
+
+        [NotMapped]
+        public List<SelectListItem>? Companies { get; set; }
 
         #endregion Select List Properties
     }
