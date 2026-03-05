@@ -18,7 +18,7 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> Index()
         {
             // Check if user is admin (add your authorization logic here)
-            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
             if (userRole != "admin")
             {
                 TempData["ErrorMessage"] = "Only administrators can access the migration tool.";
@@ -27,7 +27,7 @@ namespace Document_Management.Controllers
 
             var pendingCount = await _migrationService.GetPendingMigrationCountAsync();
             ViewBag.PendingMigrationCount = pendingCount;
-            
+
             return View();
         }
 
@@ -36,7 +36,7 @@ namespace Document_Management.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> StartMigration()
         {
-            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
             if (userRole != "admin")
             {
                 return Json(new { success = false, message = "Unauthorized access." });
@@ -45,7 +45,7 @@ namespace Document_Management.Controllers
             try
             {
                 var result = await _migrationService.MigrateAllFilesToCloudAsync();
-                
+
                 if (result.IsSuccess)
                 {
                     return Json(new
@@ -83,7 +83,7 @@ namespace Document_Management.Controllers
         // GET: Migration/Status
         public async Task<IActionResult> GetStatus()
         {
-            var userRole = HttpContext.Session.GetString("userrole")?.ToLower();
+            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
             if (userRole != "admin")
             {
                 return Json(new { success = false, message = "Unauthorized access." });

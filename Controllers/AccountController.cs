@@ -20,7 +20,7 @@ namespace Document_Management.Controllers
 
             if (httpContextAccessor.HttpContext != null)
             {
-                _userRole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
+                _userRole = httpContextAccessor.HttpContext.Session.GetString("userRole")?.ToLower();
                 _userName = httpContextAccessor.HttpContext.Session.GetString("username");
             }
             else
@@ -189,10 +189,10 @@ namespace Document_Management.Controllers
             if (user != null && user.Password == HashPassword(password))
             {
                 HttpContext.Session.SetString("username", user.Username);
-                HttpContext.Session.SetString("userrole", user.Role);
-                HttpContext.Session.SetString("useraccessfolders", user.AccessDepartments);
-                HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess);
-                HttpContext.Session.SetString("userfirstname", user.FirstName);
+                HttpContext.Session.SetString("userRole", user.Role);
+                HttpContext.Session.SetString("userAccessDepartments", user.AccessDepartments);
+                HttpContext.Session.SetString("userAccessCompanies", user.AccessCompanies);
+                HttpContext.Session.SetString("userFirstName", user.FirstName);
 
                 LogsModel logs = new(user.Username, $"Login Successfully");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);

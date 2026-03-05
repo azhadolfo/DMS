@@ -1,9 +1,6 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 @{
-    var userModuleAccess = Context.Session.GetString("usermoduleaccess");
-    var userAccess = !string.IsNullOrEmpty(userModuleAccess) ? userModuleAccess.Split(',') : new string[0];
-
-    var userrole = Context.Session.GetString("userrole")?.ToLower();
+    var userRole = Context.Session.GetString("userRole")?.ToLower();
     
     ViewBag.AppVersion = "5.0.0";
 
@@ -43,7 +40,7 @@
                                 <span class="visually-hidden">(current)</span>
                             </a>
                         </li>
-                        @if (userrole == "admin")
+                        @if (userRole == "admin")
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Master</a>
@@ -56,7 +53,7 @@
                                 </div>
                             </li>
                         }
-                        @if (userrole == "admin" || userAccess.Any(module => module.Trim() == "DMS"))
+                        @if (!string.IsNullOrEmpty(userRole))
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Document Management</a>
@@ -73,17 +70,16 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Report" asp-action="ActivityReportForm">Activity Report</a>
                             </li>
-
                         }
-                        
-                        @if (userrole == "admin")
+
+                        @if (userRole == "admin")
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Logs" asp-action="Index">Logs</a>
                             </li>
                         }
                     </ul>
-                    @if (!string.IsNullOrEmpty(userrole))
+                    @if (!string.IsNullOrEmpty(userRole))
                     {
                         <form class="d-flex" asp-controller="Dms" asp-action="GeneralSearch">
                             <input name="search" class="form-control me-sm-2" type="search" placeholder="Search">

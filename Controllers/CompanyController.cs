@@ -15,10 +15,10 @@ public class CompanyController : Controller
     public CompanyController(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor)
     {
         _dbContext = dbContext;
-            
+
         if (httpContextAccessor.HttpContext != null)
         {
-            _userRole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
+            _userRole = httpContextAccessor.HttpContext.Session.GetString("userRole")?.ToLower();
             _userName = httpContextAccessor.HttpContext.Session.GetString("username");
         }
         else
@@ -26,14 +26,14 @@ public class CompanyController : Controller
             _userRole = null;
         }
     }
-    
+
     public async Task<IActionResult> Index()
     {
         if (string.IsNullOrEmpty(_userName))
         {
             return RedirectToAction("Login", "Account");
         }
-            
+
         if (_userRole != "admin")
         {
             TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
@@ -46,7 +46,7 @@ public class CompanyController : Controller
 
         return View(companies);
     }
-    
+
     [HttpGet]
     public IActionResult Create()
     {
@@ -60,9 +60,8 @@ public class CompanyController : Controller
             TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
             return RedirectToAction("Privacy", "Home");
         }
-            
+
         return View();
-        
     }
 
     [HttpPost]
@@ -73,9 +72,9 @@ public class CompanyController : Controller
             TempData["ErrorMessage"] = "The information you submitted is not valid.";
             return View(viewModel);
         }
-        
+
         var companyAlreadyExist = await _dbContext.Companies
-            .AnyAsync(u => u.CompanyName == viewModel.CompanyName,  cancellationToken);
+            .AnyAsync(u => u.CompanyName == viewModel.CompanyName, cancellationToken);
 
         if (companyAlreadyExist)
         {
@@ -89,17 +88,17 @@ public class CompanyController : Controller
             CompanyName = viewModel.CompanyName,
             CreatedBy = _userName!,
         };
-        
-        await _dbContext.Companies.AddAsync(company,  cancellationToken);
-        
+
+        await _dbContext.Companies.AddAsync(company, cancellationToken);
+
         LogsModel logs = new(_userName!, $"Add new company: {viewModel.CompanyName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
-        
+
         await _dbContext.SaveChangesAsync(cancellationToken);
         TempData["success"] = "Company created successfully";
         return RedirectToAction("Index");
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
@@ -110,10 +109,10 @@ public class CompanyController : Controller
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home");
             }
-            
+
             return RedirectToAction("Login", "Account");
         }
-            
+
         var company = await _dbContext.Companies
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
@@ -130,7 +129,7 @@ public class CompanyController : Controller
 
         return View(viewModel);
     }
-    
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(CompanyViewModel viewModel, CancellationToken cancellationToken)
@@ -141,17 +140,17 @@ public class CompanyController : Controller
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
             return RedirectToAction("Privacy", "Home");
         }
-        
+
         if (!ModelState.IsValid)
         {
             TempData["ErrorMessage"] = "The information you submitted is not valid.";
             return View(viewModel);
         }
-        
+
         var existingCompany = await _dbContext.Companies
             .FirstOrDefaultAsync(x => x.Id == viewModel.Id, cancellationToken);
 
@@ -159,9 +158,9 @@ public class CompanyController : Controller
         {
             return NotFound();
         }
-        
+
         var companyAlreadyExist = await _dbContext.Companies
-            .AnyAsync(u => u.CompanyName == viewModel.CompanyName,  cancellationToken);
+            .AnyAsync(u => u.CompanyName == viewModel.CompanyName, cancellationToken);
 
         if (companyAlreadyExist)
         {
@@ -169,18 +168,17 @@ public class CompanyController : Controller
             TempData["ErrorMessage"] = "The company with the same name already exists.";
             return RedirectToAction("Edit");
         }
-        
+
         var existingName = existingCompany.CompanyName;
         existingCompany.CompanyName = viewModel.CompanyName;
         existingCompany.EditedBy = _userName;
         existingCompany.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
-        
+
         LogsModel logs = new(_userName, $"Update company from {existingName} to {viewModel.CompanyName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         TempData["success"] = "Company updated successfully";
         return RedirectToAction("Index");
-
     }
 }
