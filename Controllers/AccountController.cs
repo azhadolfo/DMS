@@ -1,10 +1,10 @@
 ﻿using Document_Management.Data;
 using Document_Management.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Document_Management.Controllers
 {
@@ -13,11 +13,11 @@ namespace Document_Management.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly string? _userRole;
         private readonly string? _userName;
-        
+
         public AccountController(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = context;
-            
+
             if (httpContextAccessor.HttpContext != null)
             {
                 _userRole = httpContextAccessor.HttpContext.Session.GetString("userrole")?.ToLower();
@@ -28,34 +28,33 @@ namespace Document_Management.Controllers
                 _userRole = null;
             }
         }
-        
+
         public async Task<IActionResult> Index()
         {
             if (string.IsNullOrEmpty(_userName))
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             if (_userRole != "admin")
             {
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home");
             }
 
-            var users = await _dbContext.Account
+            var users = await _dbContext.Accounts
                 .OrderBy(u => u.EmployeeNumber)
                 .ToListAsync();
 
             return View(users);
-
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> Create()
         {
             if (!string.IsNullOrEmpty(_userName))
             {
-                return View(new Register
+                return View(new Account
                 {
                     Departments = await _dbContext.Departments
                         .OrderBy(d => d.DepartmentName)
@@ -72,25 +71,24 @@ namespace Document_Management.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
             return RedirectToAction("Privacy", "Home");
-
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Register user, string[] accessFolders, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create(Account user, string[] accessFolders, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
                 return View(user);
             }
-            
-            var usernameExists = await _dbContext.Account
+
+            var usernameExists = await _dbContext.Accounts
                 .AnyAsync(u => u.Username == user.Username, cancellationToken);
 
-            var employeeNumberExists = await _dbContext.Account
+            var employeeNumberExists = await _dbContext.Accounts
                 .AnyAsync(u => u.EmployeeNumber == user.EmployeeNumber, cancellationToken);
 
             switch (usernameExists)
@@ -98,18 +96,20 @@ namespace Document_Management.Controllers
                 case true when employeeNumberExists:
                     ModelState.AddModelError("", "Both Username and Employee Number are already in use by other users.");
                     break;
+
                 case true:
                     ModelState.AddModelError("", "Username is already in use by another user.");
                     break;
-                default:
-                {
-                    if (employeeNumberExists)
-                    {
-                        ModelState.AddModelError("", "Employee Number is already in use by another user.");
-                    }
 
-                    break;
-                }
+                default:
+                    {
+                        if (employeeNumberExists)
+                        {
+                            ModelState.AddModelError("", "Employee Number is already in use by another user.");
+                        }
+
+                        break;
+                    }
             }
 
             if (usernameExists || employeeNumberExists)
@@ -130,21 +130,20 @@ namespace Document_Management.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
-            
+
             user.AccessFolders = string.Join(",", accessFolders);
 
             user.Password = HashPassword(user.Password);
-            await _dbContext.Account.AddAsync(user, cancellationToken);
-            
+            await _dbContext.Accounts.AddAsync(user, cancellationToken);
+
             LogsModel logs = new(_userName, $"Add new user: {user.Username}");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
             TempData["success"] = "User created successfully";
             return RedirectToAction("Index", "Account");
-
         }
-        
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -154,7 +153,7 @@ namespace Document_Management.Controllers
             }
             return RedirectToAction("Index", "Home");
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> Login(string userName, string password, CancellationToken cancellationToken)
         {
@@ -162,8 +161,8 @@ namespace Document_Management.Controllers
             {
                 return View();
             }
-            
-            var user = await _dbContext.Account
+
+            var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(u => u.Username == userName, cancellationToken);
 
             if (user != null && user.Password == HashPassword(password))
@@ -173,10 +172,10 @@ namespace Document_Management.Controllers
                 HttpContext.Session.SetString("useraccessfolders", user.AccessFolders);
                 HttpContext.Session.SetString("usermoduleaccess", user.ModuleAccess);
                 HttpContext.Session.SetString("userfirstname", user.FirstName);
-                
+
                 LogsModel logs = new(user.Username, $"Login Successfully");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
-                await  _dbContext.SaveChangesAsync(cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
 
                 return RedirectToAction("Index", "Home");
             }
@@ -185,7 +184,7 @@ namespace Document_Management.Controllers
 
             return View();
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
@@ -195,26 +194,26 @@ namespace Document_Management.Controllers
                 {
                     return RedirectToAction("Login", "Account");
                 }
-                
+
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home");
             }
-            
-            var user = await _dbContext.Account
+
+            var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
             if (user == null)
             {
                 return NotFound();
             }
-            
+
             if (string.IsNullOrEmpty(user.AccessFolders))
             {
                 return View(user);
             }
-            
+
             var selectedDepartments = user.AccessFolders.Split(',').ToList();
-            
+
             user.AccessFolders = string.Join(",", selectedDepartments);
             user.Departments = await _dbContext.Departments
                 .OrderBy(d => d.DepartmentName)
@@ -227,16 +226,16 @@ namespace Document_Management.Controllers
 
             return View(user);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Register model,
+        public async Task<IActionResult> Edit(Account model,
             string[] accessFolders,
             string newPassword,
             string newConfirmPassword,
             CancellationToken cancellationToken)
         {
-            var user = await _dbContext.Account
+            var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
 
             if (string.IsNullOrEmpty(_userName))
@@ -245,7 +244,7 @@ namespace Document_Management.Controllers
                 {
                     return RedirectToAction("Login", "Account");
                 }
-                
+
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home");
             }
@@ -254,7 +253,7 @@ namespace Document_Management.Controllers
             {
                 return NotFound();
             }
-            
+
             user.Departments = await _dbContext.Departments
                 .OrderBy(d => d.DepartmentName)
                 .Select(s => new SelectListItem
@@ -263,7 +262,7 @@ namespace Document_Management.Controllers
                     Value = s.DepartmentName
                 })
                 .ToListAsync(cancellationToken);
-            
+
             var dataChanged = user.EmployeeNumber != model.EmployeeNumber ||
                               user.FirstName != model.FirstName ||
                               user.LastName != model.LastName ||
@@ -277,14 +276,14 @@ namespace Document_Management.Controllers
             {
                 return RedirectToAction("Edit");
             }
-            
+
             user.EmployeeNumber = model.EmployeeNumber;
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
             user.Department = model.Department;
             user.Username = model.Username;
             user.Role = model.Role;
-            
+
             if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
             {
                 if (newPassword == newConfirmPassword)
@@ -299,16 +298,15 @@ namespace Document_Management.Controllers
             }
 
             user.AccessFolders = accessFolders.Length > 0 ? string.Join(",", accessFolders) : string.Empty;
-            
+
             LogsModel logs = new(_userName, $"Update user: {user.Username}");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
             TempData["success"] = "User updated successfully";
             return RedirectToAction("Index");
-
         }
-        
+
         public async Task<IActionResult> Delete(int? id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(_userName))
@@ -317,7 +315,7 @@ namespace Document_Management.Controllers
                 {
                     return RedirectToAction("Login", "Account");
                 }
-                
+
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home");
             }
@@ -327,9 +325,9 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            var employee = await _dbContext.Account
+            var employee = await _dbContext.Accounts
                 .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
-            
+
             if (employee == null)
             {
                 return NotFound();
@@ -337,7 +335,7 @@ namespace Document_Management.Controllers
 
             return View(employee);
         }
-        
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
@@ -348,19 +346,18 @@ namespace Document_Management.Controllers
                 {
                     return RedirectToAction("Login", "Account");
                 }
-                
+
                 TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
                 return RedirectToAction("Privacy", "Home");
-
             }
 
-            var employee = await _dbContext.Account
+            var employee = await _dbContext.Accounts
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
             if (employee != null)
             {
-                _dbContext.Account.Remove(employee);
-                
+                _dbContext.Accounts.Remove(employee);
+
                 LogsModel logs = new(_userName, $"Delete user: {employee.Username}");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
@@ -380,9 +377,9 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangePassword(Register model, CancellationToken cancellationToken)
+        public async Task<IActionResult> ChangePassword(Account model, CancellationToken cancellationToken)
         {
-            var user = await _dbContext.Account
+            var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(x => x.Username == _userName, cancellationToken);
 
             if (user == null)
@@ -401,18 +398,18 @@ namespace Document_Management.Controllers
             TempData["success"] = "Change password successfully";
             return View();
         }
-        
+
         public async Task<IActionResult> Logout(CancellationToken cancellationToken)
         {
             LogsModel logs = new(_userName!, $"Logout Successfully");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);
-            await  _dbContext.SaveChangesAsync(cancellationToken);
-            
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
             HttpContext.Session.Clear();
 
             return RedirectToAction("Index", "Home");
         }
-        
+
         private static string HashPassword(string password)
         {
             var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));

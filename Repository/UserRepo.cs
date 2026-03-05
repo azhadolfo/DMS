@@ -13,9 +13,9 @@ namespace Document_Management.Repository
             this.dbContext = dbContext;
         }
 
-        public async Task<Register?> GetUserDetails(string username, string password, CancellationToken cancellationToken = default)
+        public async Task<Account?> GetUserDetails(string username, string password, CancellationToken cancellationToken = default)
         {
-            return await dbContext.Account.FirstOrDefaultAsync(user => user.Username == username && user.Password == password, cancellationToken);
+            return await dbContext.Accounts.FirstOrDefaultAsync(user => user.Username == username && user.Password == password, cancellationToken);
         }
 
         public async Task<bool> CheckIfFileExists(string originalfile, CancellationToken cancellationToken = default)

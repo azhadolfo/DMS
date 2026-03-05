@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Document_Management.Models
 {
-    public class Register
+    public class Account
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -60,6 +60,6 @@ namespace Document_Management.Models
         [NotMapped]
         public List<SelectListItem>? Departments { get; set; }
 
-        #endregion
+        #endregion Select List Properties
     }
 }
