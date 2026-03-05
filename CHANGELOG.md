@@ -5,6 +5,17 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v5.1.0] - 2026-03-05
+### Added
+- Added new field to store company access.
+- Added new extenstion for removing commas in string.
+
+## Changed
+- Modified the edit user to retain the company access.
+- Redesign the user interface for the user management module.
+
+---
+
 ## [v5.0.0] - 2026-02-12
 ### Changed
 - Upgrade version to .NET10.
