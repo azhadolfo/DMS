@@ -186,24 +186,29 @@ namespace Document_Management.Controllers
             var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(u => u.Username == userName, cancellationToken);
 
-            if (user != null && user.Password == HashPassword(password))
+            if (user == null && user!.Password != HashPassword(password))
             {
-                HttpContext.Session.SetString("username", user.Username);
-                HttpContext.Session.SetString("userRole", user.Role);
-                HttpContext.Session.SetString("userAccessDepartments", user.AccessDepartments);
-                HttpContext.Session.SetString("userAccessCompanies", user.AccessCompanies);
-                HttpContext.Session.SetString("userFirstName", user.FirstName);
-
-                LogsModel logs = new(user.Username, $"Login Successfully");
-                await _dbContext.Logs.AddAsync(logs, cancellationToken);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-
-                return RedirectToAction("Index", "Home");
+                ModelState.AddModelError("", "Invalid username or password");
+                return View();
             }
 
-            ModelState.AddModelError("", "Invalid username or password");
+            if (!user.IsActive)
+            {
+                ModelState.AddModelError("", "Your account is inactive. Please contact the MIS Department for assistance.");
+                return View();
+            }
 
-            return View();
+            HttpContext.Session.SetString("username", user.Username);
+            HttpContext.Session.SetString("userRole", user.Role);
+            HttpContext.Session.SetString("userAccessDepartments", user.AccessDepartments);
+            HttpContext.Session.SetString("userAccessCompanies", user.AccessCompanies);
+            HttpContext.Session.SetString("userFirstName", user.FirstName);
+
+            LogsModel logs = new(user.Username, $"Login Successfully");
+            await _dbContext.Logs.AddAsync(logs, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
@@ -301,6 +306,7 @@ namespace Document_Management.Controllers
                               user.Department != model.Department ||
                               user.Username != model.Username ||
                               user.Role != model.Role ||
+                              user.IsActive != model.IsActive ||
                               (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword)) ||
                               !user.AccessDepartments.Split(',').SequenceEqual(accessDepartments) ||
                               !user.AccessCompanies.Split(',').SequenceEqual(accessCompanies);
@@ -316,6 +322,7 @@ namespace Document_Management.Controllers
             user.Department = model.Department;
             user.Username = model.Username;
             user.Role = model.Role;
+            user.IsActive = model.IsActive;
 
             if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
             {

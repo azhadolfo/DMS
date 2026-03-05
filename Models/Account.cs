@@ -57,6 +57,8 @@ namespace Document_Management.Models
 
         public string AccessCompanies { get; set; } = null!;
 
+        public bool IsActive { get; set; }
+
         #region Select List Properties
 
         [NotMapped]
