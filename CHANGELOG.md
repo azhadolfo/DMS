@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v5.1.1] - 2026-03-05
+### Added
+- Added new feature to tag if the user is active or not.
+
+---
+
 ## [v5.1.0] - 2026-03-05
 ### Added
 - Added new feature to check the company access.
