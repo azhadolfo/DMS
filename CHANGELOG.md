@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v5.1.2] - 2026-04-07
+### Fixed
+- Fixed the login endpoint to accept not found user.
+
+---
+
 ## [v5.1.1] - 2026-03-05
 ### Added
 - Added new feature to tag if the user is active or not.

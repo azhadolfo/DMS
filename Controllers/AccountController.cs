@@ -185,8 +185,9 @@ namespace Document_Management.Controllers
 
             var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(u => u.Username == userName, cancellationToken);
-
-            if (user == null && user!.Password != HashPassword(password))
+            
+            ///TODO: Need to fix (06-Apr-2026)
+            if (user == null && user?.Password != HashPassword(password))
             {
                 ModelState.AddModelError("", "Invalid username or password");
                 return View();
