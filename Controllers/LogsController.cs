@@ -37,7 +37,7 @@ namespace Document_Management.Controllers
                 var logs = await _dbContext.Logs
                     .OrderByDescending(u => u.Date)
                     .ToListAsync(cancellationToken);
-                
+
                 if (!string.IsNullOrEmpty(parameters.Search?.Value))
                 {
                     var searchValue = parameters.Search.Value.ToLower();
@@ -50,7 +50,7 @@ namespace Document_Management.Controllers
                         )
                         .ToList();
                 }
-                
+
                 // Sorting
                 if (parameters.Order.Count > 0)
                 {
@@ -63,7 +63,7 @@ namespace Document_Management.Controllers
                         .OrderBy($"{columnName} {sortDirection}")
                         .ToList();
                 }
-                
+
                 var totalRecords = logs.Count;
 
                 var pagedData = logs
