@@ -15,34 +15,34 @@ namespace Document_Management.Controllers
 {
     public class DmsController : Controller
     {
-        private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly UserRepo _userRepo;
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<DmsController> _logger;
         private readonly ApplicationDbContext _dbContext;
         private readonly ICloudStorageService _cloudStorage;
+        private readonly IDmsAccessService _accessService;
 
         public DmsController(
-            IWebHostEnvironment hostingEnvironment,
             ApplicationDbContext context,
             UserRepo userRepo,
-            ILogger<HomeController> logger,
-            ICloudStorageService cloudStorage)
+            ILogger<DmsController> logger,
+            ICloudStorageService cloudStorage,
+            IDmsAccessService accessService)
         {
-            _hostingEnvironment = hostingEnvironment;
             _dbContext = context;
             _userRepo = userRepo;
             _logger = logger;
             _cloudStorage = cloudStorage;
+            _accessService = accessService;
         }
 
         private IActionResult? CheckDepartmentAccess(string department)
         {
-            var userAccessDepartments = HttpContext.Session.GetString("userAccessDepartments");
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
+            if (string.IsNullOrWhiteSpace(_accessService.Username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-            var userDepartments = userAccessDepartments?.Split(',');
-
-            if (userRole == "admin" || userDepartments?.Any(dep => dep.Trim() == department) != false)
+            if (_accessService.CanAccessDepartment(department))
             {
                 return null;
             }
@@ -53,12 +53,12 @@ namespace Document_Management.Controllers
 
         private IActionResult? CheckCompanyAccess(string company)
         {
-            var userAccessCompanies = HttpContext.Session.GetString("userAccessCompanies");
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
+            if (string.IsNullOrWhiteSpace(_accessService.Username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-            var userCompanies = userAccessCompanies?.Split(',');
-
-            if (userRole == "admin" || userCompanies?.Any(dep => dep.Trim() == company) != false)
+            if (_accessService.CanAccessCompany(company))
             {
                 return null;
             }
@@ -69,15 +69,12 @@ namespace Document_Management.Controllers
 
         private IActionResult? EnsureUploadAccess()
         {
-            var username = HttpContext.Session.GetString("username");
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrWhiteSpace(_accessService.Username))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            if (userRole == "admin" || userRole == "uploader")
+            if (_accessService.CanUpload())
             {
                 return null;
             }
@@ -88,15 +85,12 @@ namespace Document_Management.Controllers
 
         private IActionResult? EnsureDocumentMutationAccess(FileDocument fileDocument)
         {
-            var username = HttpContext.Session.GetString("username");
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrWhiteSpace(_accessService.Username))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            if (userRole == "admin" || userRole == "uploader" || fileDocument.Username == username)
+            if (_accessService.CanMutate(fileDocument))
             {
                 return null;
             }
@@ -261,12 +255,19 @@ namespace Document_Management.Controllers
 
         public IActionResult DownloadFile()
         {
+            if (!_accessService.IsAuthenticated())
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             // Get unique companies from database instead of file system
             var companies = _dbContext.FileDocuments
                 .Where(f => !string.IsNullOrEmpty(f.Company))
                 .Select(f => f.Company)
                 .Distinct()
                 .OrderBy(c => c)
+                .ToList()
+                .Where(company => _accessService.CanAccessCompany(company!))
                 .ToList();
 
             return View(companies);
@@ -298,6 +299,12 @@ namespace Document_Management.Controllers
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
 
+            var companyAccessResult = CheckCompanyAccess(companyFolderName);
+            if (companyAccessResult != null)
+            {
+                return companyAccessResult;
+            }
+
             // Get unique departments for the company/year from database
             var departments = _dbContext.FileDocuments
                 .Where(f => f.Company == companyFolderName &&
@@ -306,6 +313,8 @@ namespace Document_Management.Controllers
                 .Select(f => f.Department)
                 .Distinct()
                 .OrderBy(d => d)
+                .ToList()
+                .Where(department => _accessService.CanAccessDepartment(department!))
                 .ToList();
 
             return View(departments);
@@ -349,6 +358,18 @@ namespace Document_Management.Controllers
             ViewBag.DepartmentFolder = departmentFolderName;
             ViewBag.DocumentTypeFolder = documentTypeFolderName;
 
+            var companyAccessResult = CheckCompanyAccess(companyFolderName);
+            if (companyAccessResult != null)
+            {
+                return companyAccessResult;
+            }
+
+            var departmentAccessResult = CheckDepartmentAccess(departmentFolderName);
+            if (departmentAccessResult != null)
+            {
+                return departmentAccessResult;
+            }
+
             // Get unique subcategories for the specified path from database
             var subCategories = _dbContext.FileDocuments
                 .Where(f => f.Company == companyFolderName &&
@@ -379,6 +400,18 @@ namespace Document_Management.Controllers
             ViewBag.DocumentTypeFolder = documentTypeFolderName;
             ViewBag.SubCategoryFolder = subCategoryFolder;
             ViewBag.CurrentFolder = subCategoryFolder ?? documentTypeFolderName;
+
+            var companyAccessResult = CheckCompanyAccess(companyFolderName);
+            if (companyAccessResult != null)
+            {
+                return companyAccessResult;
+            }
+
+            var departmentAccessResult = CheckDepartmentAccess(departmentFolderName);
+            if (departmentAccessResult != null)
+            {
+                return departmentAccessResult;
+            }
 
             // Query from database instead of file system
             var query = _dbContext.FileDocuments
@@ -1070,9 +1103,12 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Trash()
         {
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
+            if (string.IsNullOrWhiteSpace(_accessService.Username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-            if (userRole == "admin" || userRole == "uploader")
+            if (_accessService.CanAccessTrash())
             {
                 return View();
             }

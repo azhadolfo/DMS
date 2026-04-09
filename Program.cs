@@ -45,6 +45,7 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<UserRepo>();
 builder.Services.AddScoped<ReportRepo>();
+builder.Services.AddScoped<IDmsAccessService, DmsAccessService>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
 
