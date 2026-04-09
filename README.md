@@ -25,7 +25,7 @@ For full version history, see the [CHANGELOG](CHANGELOG.md).
 
 ## 🏗️ Tech Stack
 
-- **ASP.NET Core (.NET 8)**
+- **ASP.NET Core (.NET 10)**
 - **C#**
 - **Entity Framework Core**
 - **PostgreSQL**
