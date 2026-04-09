@@ -20,19 +20,22 @@ namespace Document_Management.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly ICloudStorageService _cloudStorage;
         private readonly IDmsAccessService _accessService;
+        private readonly IDocumentStorageWorkflowService _documentStorageWorkflowService;
 
         public DmsController(
             ApplicationDbContext context,
             UserRepo userRepo,
             ILogger<DmsController> logger,
             ICloudStorageService cloudStorage,
-            IDmsAccessService accessService)
+            IDmsAccessService accessService,
+            IDocumentStorageWorkflowService documentStorageWorkflowService)
         {
             _dbContext = context;
             _userRepo = userRepo;
             _logger = logger;
             _cloudStorage = cloudStorage;
             _accessService = accessService;
+            _documentStorageWorkflowService = documentStorageWorkflowService;
         }
 
         private IActionResult? CheckDepartmentAccess(string department)
@@ -193,30 +196,12 @@ namespace Document_Management.Controllers
                 }
 
                 var username = HttpContext.Session.GetString("username");
-                var filename = Path.GetFileName(file.FileName);
-                var uniquePart = $"{fileDocument.Department}_{DateTimeHelper.GetCurrentPhilippineTime():yyyyMMddHHmmssfff}";
-                filename = filename.Replace("#", "");
-                filename = $"{uniquePart}_{filename}";
+                var uploadResult = await _documentStorageWorkflowService.UploadAsync(fileDocument, file, cancellationToken);
 
-                // ✅ Sanitize every part before building cloud storage path
-                var company = SanitizePathPart(fileDocument.Company);
-                var year = SanitizePathPart(fileDocument.Year);
-                var department = SanitizePathPart(fileDocument.Department);
-                var category = SanitizePathPart(fileDocument.Category);
-                var subCategory = SanitizePathPart(fileDocument.SubCategory);
-
-                // Build cloud storage path safely
-                var cloudStoragePath = fileDocument.SubCategory == "N/A"
-                    ? $"Files/{company}/{year}/{department}/{category}/{filename}"
-                    : $"Files/{company}/{year}/{department}/{category}/{subCategory}/{filename}";
-
-                // Upload to Cloud Storage
-                var objectName = await _cloudStorage.UploadFileAsync(file, cloudStoragePath);
-
-                fileDocument.DateUploaded = DateTimeHelper.GetCurrentPhilippineTime();
-                fileDocument.Name = filename;
-                fileDocument.Location = objectName;
-                fileDocument.FileSize = file.Length;
+                fileDocument.DateUploaded = uploadResult.UploadedAt;
+                fileDocument.Name = uploadResult.StoredFileName;
+                fileDocument.Location = uploadResult.ObjectName;
+                fileDocument.FileSize = uploadResult.FileSize;
                 fileDocument.Username = username!;
                 fileDocument.OriginalFilename = file.FileName;
                 fileDocument.IsInCloudStorage = true;
@@ -227,13 +212,9 @@ namespace Document_Management.Controllers
                 var duration = stopwatch.Elapsed;
                 var fileSizeInMb = (file.Length / (1024.0 * 1024.0));
 
-                var departmentSubdirectory = fileDocument.SubCategory == "N/A"
-                    ? $"{company}/{year}/{department}/{category}"
-                    : $"{company}/{year}/{department}/{category}/{subCategory}";
-
                 var logs = new LogsModel(
                     username!,
-                    $"Upload {file.FileName} to Cloud Storage in {departmentSubdirectory} {fileDocument.NumberOfPages} page(s). " +
+                    $"Upload {file.FileName} to Cloud Storage in {uploadResult.FolderPath} {fileDocument.NumberOfPages} page(s). " +
                     $"Size: {fileSizeInMb:F2} MB. Duration: {duration.TotalSeconds:F2} seconds."
                 );
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
@@ -605,41 +586,12 @@ namespace Document_Management.Controllers
                     return RedirectToAction("Edit", new { id = model.Id });
                 }
 
-                // Delete the old file from Cloud Storage
-                try
-                {
-                    await _cloudStorage.DeleteFileAsync(file.Location!);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Could not delete old file from cloud storage: {file.Location}");
-                    // Continue with upload even if delete fails
-                }
+                var replaceResult = await _documentStorageWorkflowService.ReplaceFileAsync(file, newFile, cancellationToken);
 
-                var filename = Path.GetFileName(newFile.FileName);
-                var uniquePart = $"{file.Department}_{DateTimeHelper.GetCurrentPhilippineTime():yyyyMMddHHmmssfff}";
-                filename = filename.Replace("#", "");
-                filename = $"{uniquePart}_{filename}";
-
-                var company = SanitizePathPart(file.Company);
-                var year = SanitizePathPart(file.Year);
-                var department = SanitizePathPart(file.Department);
-                var category = SanitizePathPart(file.Category);
-                var subCategory = SanitizePathPart(file.SubCategory);
-
-                // Create new cloud storage path
-                var cloudStoragePath = file.SubCategory == "N/A"
-                    ? $"Files/{company}/{year}/{department}/{category}/{filename}"
-                    : $"Files/{company}/{year}/{department}/{category}/{subCategory}/{filename}";
-
-                // Upload new file to Cloud Storage
-                var objectName = await _cloudStorage.UploadFileAsync(newFile, cloudStoragePath);
-
-                // Update file information
-                file.Name = filename;
-                file.Location = objectName;
-                file.FileSize = newFile.Length;
-                file.OriginalFilename = newFile.FileName;
+                file.Name = replaceResult.StoredFileName;
+                file.Location = replaceResult.ObjectName;
+                file.FileSize = replaceResult.FileSize;
+                file.OriginalFilename = replaceResult.OriginalFileName;
                 fileChanged = true;
             }
 
@@ -914,44 +866,7 @@ namespace Document_Management.Controllers
 
             try
             {
-                // For Cloud Storage, we need to copy the file to new location and delete old one
-                var oldLocation = existingModel.Location;
-
-                // Download the file from current location
-                var fileStream = await _cloudStorage.DownloadFileStreamAsync(oldLocation!);
-
-                // Create new filename and path
-                var filename = existingModel.OriginalFilename;
-                var uniquePart = $"{model.Department}_{existingModel.DateUploaded:yyyyMMddHHmmssfff}";
-                filename = $"{uniquePart}_{filename}";
-
-                var company = SanitizePathPart(model.Company);
-                var year = SanitizePathPart(model.Year);
-                var department = SanitizePathPart(model.Department);
-                var category = SanitizePathPart(model.Category);
-                var subCategory = SanitizePathPart(model.SubCategory);
-
-                var newCloudStoragePath = model.SubCategory == "N/A"
-                    ? $"Files/{company}/{year}/{department}/{category}/{filename}"
-                    : $"Files/{company}/{year}/{department}/{category}/{subCategory}/{filename}";
-
-                // Convert stream to IFormFile for upload
-                using var memoryStream = new MemoryStream();
-                await fileStream.CopyToAsync(memoryStream, cancellationToken);
-                var fileBytes = memoryStream.ToArray();
-
-                using var newStream = new MemoryStream(fileBytes);
-                var formFile = new FormFile(newStream, 0, fileBytes.Length, "file", filename)
-                {
-                    Headers = new HeaderDictionary(),
-                    ContentType = "application/pdf"
-                };
-
-                // Upload to new location
-                var newObjectName = await _cloudStorage.UploadFileAsync(formFile, newCloudStoragePath);
-
-                // Delete from old location
-                await _cloudStorage.DeleteFileAsync(oldLocation!);
+                var transferResult = await _documentStorageWorkflowService.TransferAsync(existingModel, model, cancellationToken);
 
                 // Update model
                 existingModel.Company = model.Company;
@@ -959,10 +874,10 @@ namespace Document_Management.Controllers
                 existingModel.Department = model.Department;
                 existingModel.Category = model.Category;
                 existingModel.SubCategory = model.SubCategory;
-                existingModel.Name = filename;
-                existingModel.Location = newObjectName;
+                existingModel.Name = transferResult.StoredFileName;
+                existingModel.Location = transferResult.NewLocation;
 
-                LogsModel logs = new(username!, $"Transfer the file in Cloud Storage: {existingModel.OriginalFilename} from {oldLocation} to {newObjectName}.");
+                LogsModel logs = new(username!, $"Transfer the file in Cloud Storage: {existingModel.OriginalFilename} from {transferResult.OldLocation} to {transferResult.NewLocation}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -1061,21 +976,6 @@ namespace Document_Management.Controllers
                 _logger.LogError(ex, "Error downloading file directly from Cloud Storage: {FileName}", originalFilename);
                 return BadRequest("Error downloading file from Cloud Storage");
             }
-        }
-
-        private static string SanitizePathPart(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-                return "N_A";
-
-            // Replace problematic characters with underscore
-            var invalidChars = new[] { "/", "\\", " ", "#", "?", "%", "&", "+", ":", ";", "=", "|", "\"", "<", ">", "*" };
-            foreach (var ch in invalidChars)
-            {
-                input = input.Replace(ch, "_");
-            }
-
-            return input.Trim('_'); // prevent accidental trailing underscores
         }
 
         [HttpGet]
