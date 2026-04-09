@@ -733,6 +733,8 @@ namespace Document_Management.Controllers
             return View(paginatedResults);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> PermanentDelete(int id, CancellationToken cancellationToken)
         {
             if (id == 0)
@@ -779,6 +781,8 @@ namespace Document_Management.Controllers
             return RedirectToAction(nameof(Trash));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             if (id == 0)
@@ -822,6 +826,8 @@ namespace Document_Management.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         {
             if (id == 0)
