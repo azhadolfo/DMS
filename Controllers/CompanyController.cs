@@ -30,15 +30,10 @@ public class CompanyController : Controller
 
     public async Task<IActionResult> Index()
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            return RedirectToAction("Login", "Account");
-        }
-
-        if (_userRole != "admin")
-        {
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return adminAccessResult;
         }
 
         var companies = await _dbContext.Companies
@@ -51,23 +46,25 @@ public class CompanyController : Controller
     [HttpGet]
     public IActionResult Create()
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            return RedirectToAction("Login", "Account");
-        }
-
-        if (_userRole != "admin")
-        {
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return adminAccessResult;
         }
 
         return View();
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CompanyViewModel viewModel, CancellationToken cancellationToken)
     {
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
+        {
+            return adminAccessResult;
+        }
+
         if (!ModelState.IsValid)
         {
             TempData["ErrorMessage"] = "The information you submitted is not valid.";
@@ -103,15 +100,10 @@ public class CompanyController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            if (_userRole != "admin")
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
-            }
-
-            return RedirectToAction("Login", "Account");
+            return adminAccessResult;
         }
 
         var company = await _dbContext.Companies
@@ -135,15 +127,10 @@ public class CompanyController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(CompanyViewModel viewModel, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            if (_userRole == "admin")
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return adminAccessResult;
         }
 
         if (!ModelState.IsValid)
@@ -175,11 +162,27 @@ public class CompanyController : Controller
         existingCompany.EditedBy = _userName;
         existingCompany.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
 
-        LogsModel logs = new(_userName, $"Update company from {existingName} to {viewModel.CompanyName}");
+        LogsModel logs = new(_userName!, $"Update company from {existingName} to {viewModel.CompanyName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         TempData["success"] = "Company updated successfully";
         return RedirectToAction("Index");
+    }
+
+    private IActionResult? EnsureAdminAccess()
+    {
+        if (string.IsNullOrEmpty(_userName))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (_userRole != "admin")
+        {
+            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
+        }
+
+        return null;
     }
 }

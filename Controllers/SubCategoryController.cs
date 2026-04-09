@@ -30,15 +30,10 @@ public class SubCategoryController : Controller
 
     public async Task<IActionResult> Index()
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            return RedirectToAction("Login", "Account");
-        }
-
-        if (_userRole != "admin")
-        {
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return adminAccessResult;
         }
 
         var subCategory = await _dbContext.SubCategories
@@ -52,15 +47,10 @@ public class SubCategoryController : Controller
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            return RedirectToAction("Login", "Account");
-        }
-
-        if (_userRole != "admin")
-        {
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return adminAccessResult;
         }
 
         var viewModel = new SubCategoryViewModel
@@ -81,6 +71,12 @@ public class SubCategoryController : Controller
     [HttpPost]
     public async Task<IActionResult> Create(SubCategoryViewModel viewModel, CancellationToken cancellationToken)
     {
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
+        {
+            return adminAccessResult;
+        }
+
         viewModel.Categories = await _dbContext.Categories
             .OrderBy(u => u.CategoryName)
             .Select(c => new SelectListItem
@@ -127,15 +123,10 @@ public class SubCategoryController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            if (_userRole != "admin")
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
-            }
-
-            return RedirectToAction("Login", "Account");
+            return adminAccessResult;
         }
 
         var subCategory = await _dbContext.SubCategories
@@ -168,6 +159,12 @@ public class SubCategoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(SubCategoryViewModel viewModel, CancellationToken cancellationToken)
     {
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
+        {
+            return adminAccessResult;
+        }
+
         viewModel.Categories = await _dbContext.Categories
             .OrderBy(u => u.CategoryName)
             .Select(c => new SelectListItem
@@ -176,17 +173,6 @@ public class SubCategoryController : Controller
                 Value = c.Id.ToString()
             })
             .ToListAsync(cancellationToken);
-
-        if (string.IsNullOrEmpty(_userName))
-        {
-            if (_userRole != "admin")
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
-        }
 
         if (!ModelState.IsValid)
         {
@@ -218,11 +204,27 @@ public class SubCategoryController : Controller
         existingSubCategory.EditedBy = _userName;
         existingSubCategory.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
 
-        LogsModel logs = new(_userName, $"Update sub-category from {existingName} to {viewModel.SubCategoryName}");
+        LogsModel logs = new(_userName!, $"Update sub-category from {existingName} to {viewModel.SubCategoryName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         TempData["success"] = "Sub-Category updated successfully";
         return RedirectToAction("Index");
+    }
+
+    private IActionResult? EnsureAdminAccess()
+    {
+        if (string.IsNullOrEmpty(_userName))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (_userRole != "admin")
+        {
+            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
+        }
+
+        return null;
     }
 }

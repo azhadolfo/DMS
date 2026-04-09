@@ -1,5 +1,6 @@
-﻿using Document_Management.Data;
+using Document_Management.Data;
 using Document_Management.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace Document_Management.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly string? _userRole;
         private readonly string? _userName;
+        private static readonly PasswordHasher<Account> AccountPasswordHasher = new();
 
         public AccountController(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
@@ -31,15 +33,10 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> Index()
         {
-            if (string.IsNullOrEmpty(_userName))
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
             {
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (_userRole != "admin")
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
+                return adminAccessResult;
             }
 
             var users = await _dbContext.Accounts
@@ -52,15 +49,10 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            if (_userRole != "admin")
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
             {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
-            }
-
-            if (string.IsNullOrEmpty(_userName))
-            {
-                return RedirectToAction("Login", "Account");
+                return adminAccessResult;
             }
 
             return View(new Account
@@ -88,9 +80,10 @@ namespace Document_Management.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Account user, string[] accessDepartments, string[] accessCompanies, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(_userName))
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
             {
-                return RedirectToAction("Login", "Account");
+                return adminAccessResult;
             }
 
             if (!ModelState.IsValid)
@@ -115,14 +108,11 @@ namespace Document_Management.Controllers
                     break;
 
                 default:
+                    if (employeeNumberExists)
                     {
-                        if (employeeNumberExists)
-                        {
-                            ModelState.AddModelError("", "Employee Number is already in use by another user.");
-                        }
-
-                        break;
+                        ModelState.AddModelError("", "Employee Number is already in use by another user.");
                     }
+                    break;
             }
 
             if (usernameExists || employeeNumberExists)
@@ -153,10 +143,10 @@ namespace Document_Management.Controllers
             user.AccessDepartments = string.Join(",", accessDepartments);
             user.AccessCompanies = string.Join(",", accessCompanies);
 
-            user.Password = HashPassword(user.Password);
+            user.Password = HashPassword(user, user.Password);
             await _dbContext.Accounts.AddAsync(user, cancellationToken);
 
-            LogsModel logs = new(_userName, $"Add new user: {user.Username}");
+            LogsModel logs = new(_userName!, $"Add new user: {user.Username}");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -185,8 +175,15 @@ namespace Document_Management.Controllers
 
             var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(u => u.Username == userName, cancellationToken);
-            
-            if (user == null && user?.Password != HashPassword(password))
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Invalid username or password");
+                return View();
+            }
+
+            var passwordVerification = VerifyPassword(user, password);
+            if (!passwordVerification.IsValid)
             {
                 ModelState.AddModelError("", "Invalid username or password");
                 return View();
@@ -206,6 +203,12 @@ namespace Document_Management.Controllers
 
             LogsModel logs = new(user.Username, $"Login Successfully");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+            if (passwordVerification.NeedsUpgrade)
+            {
+                user.Password = HashPassword(user, password);
+            }
+
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return RedirectToAction("Index", "Home");
@@ -214,15 +217,10 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(_userName))
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
             {
-                if (_userRole == "admin")
-                {
-                    return RedirectToAction("Login", "Account");
-                }
-
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
+                return adminAccessResult;
             }
 
             var user = await _dbContext.Accounts
@@ -263,19 +261,14 @@ namespace Document_Management.Controllers
             string newConfirmPassword,
             CancellationToken cancellationToken)
         {
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
+            {
+                return adminAccessResult;
+            }
+
             var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
-
-            if (string.IsNullOrEmpty(_userName))
-            {
-                if (_userRole == "admin")
-                {
-                    return RedirectToAction("Login", "Account");
-                }
-
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
-            }
 
             if (user == null)
             {
@@ -328,7 +321,7 @@ namespace Document_Management.Controllers
             {
                 if (newPassword == newConfirmPassword)
                 {
-                    user.Password = HashPassword(newPassword);
+                    user.Password = HashPassword(user, newPassword);
                 }
                 else
                 {
@@ -340,7 +333,7 @@ namespace Document_Management.Controllers
             user.AccessDepartments = accessDepartments.Length > 0 ? string.Join(",", accessDepartments) : string.Empty;
             user.AccessCompanies = accessCompanies.Length > 0 ? string.Join(",", accessCompanies) : string.Empty;
 
-            LogsModel logs = new(_userName, $"Update user: {user.Username}");
+            LogsModel logs = new(_userName!, $"Update user: {user.Username}");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -350,15 +343,10 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> Delete(int? id, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(_userName))
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
             {
-                if (_userRole == "admin")
-                {
-                    return RedirectToAction("Login", "Account");
-                }
-
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
+                return adminAccessResult;
             }
 
             if (id == null)
@@ -381,15 +369,10 @@ namespace Document_Management.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(_userName))
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
             {
-                if (_userRole == "admin")
-                {
-                    return RedirectToAction("Login", "Account");
-                }
-
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
+                return adminAccessResult;
             }
 
             var employee = await _dbContext.Accounts
@@ -399,7 +382,7 @@ namespace Document_Management.Controllers
             {
                 _dbContext.Accounts.Remove(employee);
 
-                LogsModel logs = new(_userName, $"Delete user: {employee.Username}");
+                LogsModel logs = new(_userName!, $"Delete user: {employee.Username}");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -414,12 +397,22 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult ChangePassword()
         {
+            if (string.IsNullOrEmpty(_userName))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> ChangePassword(Account model, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(_userName))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var user = await _dbContext.Accounts
                 .FirstOrDefaultAsync(x => x.Username == _userName, cancellationToken);
 
@@ -428,12 +421,19 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            if (user.Password == HashPassword(model.Password))
+            if (string.IsNullOrWhiteSpace(model.Password))
             {
-                TempData["error"] = "New password must not the same with the previous.";
+                TempData["error"] = "Password is required.";
+                return View();
             }
 
-            user.Password = HashPassword(model.Password);
+            if (VerifyPassword(user, model.Password).IsValid)
+            {
+                TempData["error"] = "New password must not the same with the previous.";
+                return View();
+            }
+
+            user.Password = HashPassword(user, model.Password);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             TempData["success"] = "Change password successfully";
@@ -442,6 +442,12 @@ namespace Document_Management.Controllers
 
         public async Task<IActionResult> Logout(CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(_userName))
+            {
+                HttpContext.Session.Clear();
+                return RedirectToAction("Index", "Home");
+            }
+
             LogsModel logs = new(_userName!, $"Logout Successfully");
             await _dbContext.Logs.AddAsync(logs, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -451,10 +457,43 @@ namespace Document_Management.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        private static string HashPassword(string password)
+        private IActionResult? EnsureAdminAccess()
         {
-            var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
+            if (string.IsNullOrEmpty(_userName))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (_userRole != "admin")
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
+            }
+
+            return null;
+        }
+
+        private static string HashPassword(Account user, string password)
+        {
+            return AccountPasswordHasher.HashPassword(user, password);
+        }
+
+        private static (bool IsValid, bool NeedsUpgrade) VerifyPassword(Account user, string password)
+        {
+            var verificationResult = AccountPasswordHasher.VerifyHashedPassword(user, user.Password, password);
+            if (verificationResult == PasswordVerificationResult.Success)
+            {
+                return (true, false);
+            }
+
+            if (verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                return (true, true);
+            }
+
+            var legacyHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(password)));
+            var legacyMatch = legacyHash == user.Password;
+            return (legacyMatch, legacyMatch);
         }
     }
 }

@@ -67,6 +67,8 @@ if (builder.Environment.IsProduction())
 
 var app = builder.Build();
 
+await ApplicationDbSeeder.SeedAsync(app.Services);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
