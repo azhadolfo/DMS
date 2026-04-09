@@ -1,20 +1,20 @@
-﻿@model List<FileDocument>
+@model GeneralSearchViewModel
 @{
     ViewData["Title"] = "General Search";
-    var currentPage = ViewBag.CurrentPage ?? 1;
-    var totalPages = ViewBag.TotalPages ?? 1;
-    var totalRecords = ViewBag.TotalRecords ?? 0;
-    var pageSize = ViewBag.PageSize ?? 10;
-    var searchTerm = ViewBag.SearchTerm ?? "";
-    var sortBy = ViewBag.SortBy ?? "DateUploaded";
-    var sortOrder = ViewBag.SortOrder ?? "desc";
-    
+    var currentPage = Model.CurrentPage;
+    var totalPages = Model.TotalPages;
+    var totalRecords = Model.TotalRecords;
+    var pageSize = Model.PageSize;
+    var searchTerm = Model.SearchTerm;
+    var sortBy = Model.SortBy;
+    var sortOrder = Model.SortOrder;
+
     string GetSortIcon(string columnName)
     {
         if (sortBy != columnName) return "↕";
         return sortOrder == "asc" ? "↑" : "↓";
     }
-    
+
     string GetNextSortOrder(string columnName)
     {
         if (sortBy != columnName) return "asc";
@@ -37,31 +37,31 @@
             <tr class="text-nowrap">
                 <th scope="col">Location Folder</th>
                 <th scope="col">
-                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "BoxNumber", sortOrder = GetNextSortOrder("BoxNumber") })" 
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "BoxNumber", sortOrder = GetNextSortOrder("BoxNumber") })"
                        class="text-decoration-none text-dark">
                         Box Number @GetSortIcon("BoxNumber")
                     </a>
                 </th>
                 <th scope="col">
-                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "OriginalFilename", sortOrder = GetNextSortOrder("OriginalFilename") })" 
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "OriginalFilename", sortOrder = GetNextSortOrder("OriginalFilename") })"
                        class="text-decoration-none text-dark">
                         File Name @GetSortIcon("OriginalFilename")
                     </a>
                 </th>
                 <th scope="col">
-                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "Description", sortOrder = GetNextSortOrder("Description") })" 
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "Description", sortOrder = GetNextSortOrder("Description") })"
                        class="text-decoration-none text-dark">
                         Description @GetSortIcon("Description")
                     </a>
                 </th>
                 <th scope="col">
-                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "Username", sortOrder = GetNextSortOrder("Username") })" 
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "Username", sortOrder = GetNextSortOrder("Username") })"
                        class="text-decoration-none text-dark">
                         Uploaded By @GetSortIcon("Username")
                     </a>
                 </th>
                 <th scope="col">
-                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "DateUploaded", sortOrder = GetNextSortOrder("DateUploaded") })" 
+                    <a href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = "DateUploaded", sortOrder = GetNextSortOrder("DateUploaded") })"
                        class="text-decoration-none text-dark">
                         Date Uploaded @GetSortIcon("DateUploaded")
                     </a>
@@ -69,14 +69,13 @@
             </tr>
             </thead>
             <tbody>
-            @foreach (var file in Model)
+            @foreach (var file in Model.Results)
             {
                 <tr class="align-items-center">
                     <td>
                         <a title="@file.Company/@file.Year/@file.Department/@file.Category"
                            target="_blank"
-                           href="@Url.Action("Download", "Dms",
-                                new { documentId = file.Id, originalFilename = file.OriginalFilename })">
+                           href="@Url.Action("Download", "Dms", new { documentId = file.Id, originalFilename = file.OriginalFilename })">
                             Click to download file
                         </a>
                     </td>
@@ -91,19 +90,16 @@
         </table>
     </div>
 
-    <!-- Pagination Controls -->
     @if (totalPages > 1)
     {
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-                <!-- First Page -->
                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
                     <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = 1, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                         First
                     </a>
                 </li>
 
-                <!-- Previous Page -->
                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
                     <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = currentPage - 1, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                         Previous
@@ -124,14 +120,12 @@
                     </li>
                 }
 
-                <!-- Next Page -->
                 <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
                     <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = currentPage + 1, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                         Next
                     </a>
                 </li>
 
-                <!-- Last Page -->
                 <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
                     <a class="page-link" href="@Url.Action("GeneralSearch", new { search = searchTerm, page = totalPages, pageSize = pageSize, sortBy = sortBy, sortOrder = sortOrder })">
                         Last
@@ -140,7 +134,6 @@
             </ul>
         </nav>
 
-        <!-- Page Size Selector -->
         <div class="text-center mt-3">
             <label for="pageSize">Items per page:</label>
             <select id="pageSize" class="form-select d-inline-block w-auto" onchange="changePageSize(this.value)">

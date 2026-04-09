@@ -13,11 +13,6 @@ namespace Document_Management.Repository
             this.dbContext = dbContext;
         }
 
-        public async Task<Account?> GetUserDetails(string username, string password, CancellationToken cancellationToken = default)
-        {
-            return await dbContext.Accounts.FirstOrDefaultAsync(user => user.Username == username && user.Password == password, cancellationToken);
-        }
-
         public async Task<bool> CheckIfFileExists(string originalfile, CancellationToken cancellationToken = default)
         {
             return await dbContext
@@ -25,50 +20,9 @@ namespace Document_Management.Repository
                 .AnyAsync(f => f.OriginalFilename == originalfile, cancellationToken);
         }
 
-        public async Task<List<FileDocument>> DisplayAllUploadedFiles(CancellationToken cancellationToken = default)
-        {
-            return await dbContext.FileDocuments
-                .Where(f => !f.IsDeleted)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<List<FileDocument>> DisplayUploadedFiles(string username, CancellationToken cancellationToken = default)
-        {
-            return await dbContext.FileDocuments
-                .Where(file => file.Username == username && !file.IsDeleted)
-                .ToListAsync(cancellationToken);
-        }
-
         public async Task<FileDocument?> GetUploadedFiles(int id, CancellationToken cancellationToken = default)
         {
             return await dbContext.FileDocuments.FindAsync(id, cancellationToken);
-        }
-
-        public List<FileDocument> SearchFile(string[] keywords)
-        {
-            return dbContext.FileDocuments
-                .Where(f => !f.IsDeleted)
-                .AsEnumerable()
-                .Where(f => keywords.All(k => 
-                    f.Description.Contains(k, StringComparison.CurrentCultureIgnoreCase) ||
-                    f.OriginalFilename.Contains(k, StringComparison.CurrentCultureIgnoreCase) ||
-                    f.BoxNumber.Contains(k, StringComparison.CurrentCultureIgnoreCase)
-                ))
-                .ToList();
-        }
-        
-        public async Task<List<FileDocument>> DisplayAllDeletedFiles(CancellationToken cancellationToken = default)
-        {
-            return await dbContext.FileDocuments
-                .Where(f => f.IsDeleted)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<List<FileDocument>> DisplayAllDeletedFiles(string username, CancellationToken cancellationToken = default)
-        {
-            return await dbContext.FileDocuments
-                .Where(file => file.Username == username && file.IsDeleted)
-                .ToListAsync(cancellationToken);
         }
     }
 }

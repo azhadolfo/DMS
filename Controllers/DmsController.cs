@@ -19,6 +19,7 @@ namespace Document_Management.Controllers
         private readonly IDmsAccessService _accessService;
         private readonly IDocumentStorageWorkflowService _documentStorageWorkflowService;
         private readonly IDmsQueryService _dmsQueryService;
+        private readonly IDmsSearchService _dmsSearchService;
 
         public DmsController(
             ApplicationDbContext context,
@@ -27,7 +28,8 @@ namespace Document_Management.Controllers
             ICloudStorageService cloudStorage,
             IDmsAccessService accessService,
             IDocumentStorageWorkflowService documentStorageWorkflowService,
-            IDmsQueryService dmsQueryService)
+            IDmsQueryService dmsQueryService,
+            IDmsSearchService dmsSearchService)
         {
             _dbContext = context;
             _userRepo = userRepo;
@@ -36,6 +38,7 @@ namespace Document_Management.Controllers
             _accessService = accessService;
             _documentStorageWorkflowService = documentStorageWorkflowService;
             _dmsQueryService = dmsQueryService;
+            _dmsSearchService = dmsSearchService;
         }
 
         private IActionResult? CheckDepartmentAccess(string department)
@@ -492,58 +495,22 @@ namespace Document_Management.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult GeneralSearch(string search, int page = 1, int pageSize = 10, string sortBy = "DateUploaded", string sortOrder = "desc")
+        public async Task<IActionResult> GeneralSearch(
+            string search,
+            int page = 1,
+            int pageSize = 10,
+            string sortBy = "DateUploaded",
+            string sortOrder = "desc",
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(search))
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            var keywords = search.Split(' ');
+            var model = await _dmsSearchService.SearchAsync(search, page, pageSize, sortBy, sortOrder, cancellationToken);
 
-            var allResults = _userRepo.SearchFile(keywords);
-
-            // Apply sorting
-            allResults = sortBy switch
-            {
-                "BoxNumber" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.BoxNumber).ToList()
-                    : allResults.OrderByDescending(f => f.BoxNumber).ToList(),
-                "OriginalFilename" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.OriginalFilename).ToList()
-                    : allResults.OrderByDescending(f => f.OriginalFilename).ToList(),
-                "Description" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.Description).ToList()
-                    : allResults.OrderByDescending(f => f.Description).ToList(),
-                "Username" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.Username).ToList()
-                    : allResults.OrderByDescending(f => f.Username).ToList(),
-                "DateUploaded" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.DateUploaded).ToList()
-                    : allResults.OrderByDescending(f => f.DateUploaded).ToList(),
-                _ => allResults.OrderByDescending(f => f.DateUploaded).ToList()
-            };
-
-            // Calculate pagination
-            var totalRecords = allResults.Count;
-            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
-
-            // Get paginated results
-            var paginatedResults = allResults
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            // Pass pagination data to view
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-            ViewBag.TotalRecords = totalRecords;
-            ViewBag.PageSize = pageSize;
-            ViewBag.SearchTerm = search;
-            ViewBag.SortBy = sortBy;
-            ViewBag.SortOrder = sortOrder;
-
-            return View(paginatedResults);
+            return View(model);
         }
 
         [HttpPost]
