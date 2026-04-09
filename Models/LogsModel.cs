@@ -14,13 +14,14 @@ namespace Document_Management.Models
 
         public string Activity { get; set; }
 
+        [Column(TypeName = "timestamp without time zone")]
         public DateTime Date { get; set; }
 
         public LogsModel(string username, string activity)
         {
             Username = username;
             Activity = activity;
-            Date = DateTimeHelper.GetCurrentPhilippineTime();
+            Date = DateTime.UtcNow;
         }
     }
 }

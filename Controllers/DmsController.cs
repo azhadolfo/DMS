@@ -1,4 +1,4 @@
-﻿using Document_Management.Data;
+﻿﻿using Document_Management.Data;
 using Document_Management.Dtos;
 using Document_Management.Models;
 using Document_Management.Repository;
@@ -67,6 +67,44 @@ namespace Document_Management.Controllers
             return RedirectToAction("Privacy", "Home");
         }
 
+        private IActionResult? EnsureUploadAccess()
+        {
+            var username = HttpContext.Session.GetString("username");
+            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (userRole == "admin" || userRole == "uploader")
+            {
+                return null;
+            }
+
+            TempData["ErrorMessage"] = "You have no access to upload a file. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
+        }
+
+        private IActionResult? EnsureDocumentMutationAccess(FileDocument fileDocument)
+        {
+            var username = HttpContext.Session.GetString("username");
+            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (userRole == "admin" || userRole == "uploader" || fileDocument.Username == username)
+            {
+                return null;
+            }
+
+            TempData["ErrorMessage"] = "You have no access to modify this file. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
+        }
+
         private async Task<FileDocument> GetModelSelectList(FileDocument model, CancellationToken cancellationToken)
         {
             model.Companies = await _dbContext
@@ -108,23 +146,27 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> UploadFile(CancellationToken cancellationToken)
         {
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-            if (userRole == "admin" || userRole == "uploader")
+            var uploadAccessResult = EnsureUploadAccess();
+            if (uploadAccessResult == null)
             {
                 var model = await GetModelSelectList(new FileDocument(), cancellationToken);
 
                 return View(model);
             }
 
-            TempData["ErrorMessage"] = "You have no access to upload a file. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return uploadAccessResult;
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile? file, CancellationToken cancellationToken)
         {
+            var uploadAccessResult = EnsureUploadAccess();
+            if (uploadAccessResult != null)
+            {
+                return uploadAccessResult;
+            }
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -471,6 +513,17 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
             var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
+            if (files == null)
+            {
+                return NotFound();
+            }
+
+            var documentAccessResult = EnsureDocumentMutationAccess(files);
+            if (documentAccessResult != null)
+            {
+                return documentAccessResult;
+            }
+
             return View(files);
         }
 
@@ -485,6 +538,12 @@ namespace Document_Management.Controllers
             if (file == null)
             {
                 return NotFound();
+            }
+
+            var documentAccessResult = EnsureDocumentMutationAccess(file);
+            if (documentAccessResult != null)
+            {
+                return documentAccessResult;
             }
 
             var detailsChanged = false;
@@ -659,6 +718,12 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
+            var documentAccessResult = EnsureDocumentMutationAccess(model);
+            if (documentAccessResult != null)
+            {
+                return documentAccessResult;
+            }
+
             try
             {
                 // Delete from Cloud Storage
@@ -699,6 +764,12 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
+            var documentAccessResult = EnsureDocumentMutationAccess(model);
+            if (documentAccessResult != null)
+            {
+                return documentAccessResult;
+            }
+
             try
             {
                 model.IsDeleted = true;
@@ -736,6 +807,12 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
+            var documentAccessResult = EnsureDocumentMutationAccess(model);
+            if (documentAccessResult != null)
+            {
+                return documentAccessResult;
+            }
+
             try
             {
                 model.IsDeleted = false;
@@ -759,10 +836,18 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> Transfer(int id, CancellationToken cancellationToken)
         {
             var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
+            if (files == null)
+            {
+                return NotFound();
+            }
 
-            return files == null
-                ? NotFound()
-                : View(await GetModelSelectList(files, cancellationToken));
+            var documentAccessResult = EnsureDocumentMutationAccess(files);
+            if (documentAccessResult != null)
+            {
+                return documentAccessResult;
+            }
+
+            return View(await GetModelSelectList(files, cancellationToken));
         }
 
         [HttpPost]
@@ -778,6 +863,12 @@ namespace Document_Management.Controllers
             if (existingModel == null)
             {
                 return NotFound();
+            }
+
+            var documentAccessResult = EnsureDocumentMutationAccess(existingModel);
+            if (documentAccessResult != null)
+            {
+                return documentAccessResult;
             }
 
             model = await GetModelSelectList(model, cancellationToken);

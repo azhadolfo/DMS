@@ -11,7 +11,9 @@ public static class DateTimeHelper
 
     public static string GetCurrentPhilippineTimeFormatted(DateTime dateTime = default, string format = "MM/dd/yyyy hh:mm tt")
     {
-        var philippineTime = dateTime != default ? dateTime : GetCurrentPhilippineTime();
+        var philippineTime = dateTime != default
+            ? dateTime
+            : GetCurrentPhilippineTime();
         return philippineTime.ToString(format);
     }
 }

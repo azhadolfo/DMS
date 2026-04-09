@@ -29,15 +29,10 @@ public class CategoryController : Controller
 
     public async Task<IActionResult> Index()
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            return RedirectToAction("Login", "Account");
-        }
-
-        if (_userRole != "admin")
-        {
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return adminAccessResult;
         }
 
         var category = await _dbContext.Categories
@@ -50,15 +45,10 @@ public class CategoryController : Controller
     [HttpGet]
     public IActionResult Create()
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            return RedirectToAction("Login", "Account");
-        }
-
-        if (_userRole != "admin")
-        {
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return adminAccessResult;
         }
 
         return View();
@@ -67,6 +57,12 @@ public class CategoryController : Controller
     [HttpPost]
     public async Task<IActionResult> Create(CategoryViewModel viewModel, CancellationToken cancellationToken)
     {
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
+        {
+            return adminAccessResult;
+        }
+
         if (!ModelState.IsValid)
         {
             TempData["ErrorMessage"] = "The information you submitted is not valid.";
@@ -102,15 +98,10 @@ public class CategoryController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            if (_userRole != "admin")
-            {
-                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-                return RedirectToAction("Privacy", "Home");
-            }
-
-            return RedirectToAction("Login", "Account");
+            return adminAccessResult;
         }
 
         var category = await _dbContext.Categories
@@ -134,15 +125,10 @@ public class CategoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(CategoryViewModel viewModel, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_userName))
+        var adminAccessResult = EnsureAdminAccess();
+        if (adminAccessResult != null)
         {
-            if (_userRole != "admin")
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            return adminAccessResult;
         }
 
         if (!ModelState.IsValid)
@@ -174,11 +160,27 @@ public class CategoryController : Controller
         existingCategory.EditedBy = _userName;
         existingCategory.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
 
-        LogsModel logs = new(_userName, $"Update category from {existingName} to {viewModel.CategoryName}");
+        LogsModel logs = new(_userName!, $"Update category from {existingName} to {viewModel.CategoryName}");
         await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         TempData["success"] = "Category updated successfully";
         return RedirectToAction("Index");
+    }
+
+    private IActionResult? EnsureAdminAccess()
+    {
+        if (string.IsNullOrEmpty(_userName))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (_userRole != "admin")
+        {
+            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+            return RedirectToAction("Privacy", "Home");
+        }
+
+        return null;
     }
 }
