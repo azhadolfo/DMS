@@ -56,6 +56,7 @@ public class CompanyController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CompanyViewModel viewModel, CancellationToken cancellationToken)
     {
         var adminAccessResult = EnsureAdminAccess();
