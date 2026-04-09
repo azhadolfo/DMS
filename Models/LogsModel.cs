@@ -21,7 +21,7 @@ namespace Document_Management.Models
         {
             Username = username;
             Activity = activity;
-            Date = DateTime.UtcNow;
+            Date = DateTimeHelper.GetCurrentPhilippineTime();
         }
     }
 }
