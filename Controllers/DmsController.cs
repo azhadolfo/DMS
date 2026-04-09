@@ -1,5 +1,4 @@
 ﻿﻿using Document_Management.Data;
-using Document_Management.Dtos;
 using Document_Management.Models;
 using Document_Management.Repository;
 using Document_Management.Service;
@@ -8,8 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq.Dynamic.Core;
 
 namespace Document_Management.Controllers
 {
@@ -21,6 +18,7 @@ namespace Document_Management.Controllers
         private readonly ICloudStorageService _cloudStorage;
         private readonly IDmsAccessService _accessService;
         private readonly IDocumentStorageWorkflowService _documentStorageWorkflowService;
+        private readonly IDmsQueryService _dmsQueryService;
 
         public DmsController(
             ApplicationDbContext context,
@@ -28,7 +26,8 @@ namespace Document_Management.Controllers
             ILogger<DmsController> logger,
             ICloudStorageService cloudStorage,
             IDmsAccessService accessService,
-            IDocumentStorageWorkflowService documentStorageWorkflowService)
+            IDocumentStorageWorkflowService documentStorageWorkflowService,
+            IDmsQueryService dmsQueryService)
         {
             _dbContext = context;
             _userRepo = userRepo;
@@ -36,6 +35,7 @@ namespace Document_Management.Controllers
             _cloudStorage = cloudStorage;
             _accessService = accessService;
             _documentStorageWorkflowService = documentStorageWorkflowService;
+            _dmsQueryService = dmsQueryService;
         }
 
         private IActionResult? CheckDepartmentAccess(string department)
@@ -234,27 +234,19 @@ namespace Document_Management.Controllers
             return View(fileDocument);
         }
 
-        public IActionResult DownloadFile()
+        public async Task<IActionResult> DownloadFile(CancellationToken cancellationToken)
         {
             if (!_accessService.IsAuthenticated())
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            // Get unique companies from database instead of file system
-            var companies = _dbContext.FileDocuments
-                .Where(f => !string.IsNullOrEmpty(f.Company))
-                .Select(f => f.Company)
-                .Distinct()
-                .OrderBy(c => c)
-                .ToList()
-                .Where(company => _accessService.CanAccessCompany(company!))
-                .ToList();
+            var companies = await _dmsQueryService.GetAccessibleCompaniesAsync(cancellationToken);
 
             return View(companies);
         }
 
-        public IActionResult CompanyFolder(string folderName)
+        public async Task<IActionResult> CompanyFolder(string folderName, CancellationToken cancellationToken)
         {
             ViewBag.CompanyFolder = folderName;
 
@@ -264,18 +256,12 @@ namespace Document_Management.Controllers
                 return companyAccessResult;
             }
 
-            // Get unique years for the company from database
-            var years = _dbContext.FileDocuments
-                .Where(f => f.Company == folderName && !string.IsNullOrEmpty(f.Year))
-                .Select(f => f.Year)
-                .Distinct()
-                .OrderByDescending(y => y)
-                .ToList();
+            var years = await _dmsQueryService.GetYearsAsync(folderName, cancellationToken);
 
             return View(years);
         }
 
-        public IActionResult YearFolder(string companyFolderName, string yearFolderName)
+        public async Task<IActionResult> YearFolder(string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
         {
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
@@ -286,22 +272,12 @@ namespace Document_Management.Controllers
                 return companyAccessResult;
             }
 
-            // Get unique departments for the company/year from database
-            var departments = _dbContext.FileDocuments
-                .Where(f => f.Company == companyFolderName &&
-                           f.Year == yearFolderName &&
-                           !string.IsNullOrEmpty(f.Department))
-                .Select(f => f.Department)
-                .Distinct()
-                .OrderBy(d => d)
-                .ToList()
-                .Where(department => _accessService.CanAccessDepartment(department!))
-                .ToList();
+            var departments = await _dmsQueryService.GetAccessibleDepartmentsAsync(companyFolderName, yearFolderName, cancellationToken);
 
             return View(departments);
         }
 
-        public IActionResult DepartmentFolder(string departmentFolderName, string companyFolderName, string yearFolderName)
+        public async Task<IActionResult> DepartmentFolder(string departmentFolderName, string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
         {
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
@@ -313,26 +289,12 @@ namespace Document_Management.Controllers
                 return departmentAccessResult;
             }
 
-            // Get unique categories for the company/year/department from database
-            var categories = _dbContext.FileDocuments
-                .AsNoTracking()
-                .Where(f => f.Company == companyFolderName &&
-                           f.Year == yearFolderName &&
-                           f.Department == departmentFolderName &&
-                           !string.IsNullOrEmpty(f.Category))
-                .Select(f => new CategoryDto
-                {
-                    Category = f.Category,
-                    SubCategory = f.SubCategory,
-                })
-                .Distinct()
-                .OrderBy(c => c.Category)
-                .ToList();
+            var categories = await _dmsQueryService.GetCategoriesAsync(companyFolderName, yearFolderName, departmentFolderName, cancellationToken);
 
             return View(categories);
         }
 
-        public IActionResult SubCategoryFolder(string documentTypeFolderName, string departmentFolderName, string companyFolderName, string yearFolderName)
+        public async Task<IActionResult> SubCategoryFolder(string documentTypeFolderName, string departmentFolderName, string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
         {
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
@@ -351,18 +313,7 @@ namespace Document_Management.Controllers
                 return departmentAccessResult;
             }
 
-            // Get unique subcategories for the specified path from database
-            var subCategories = _dbContext.FileDocuments
-                .Where(f => f.Company == companyFolderName &&
-                           f.Year == yearFolderName &&
-                           f.Department == departmentFolderName &&
-                           f.Category == documentTypeFolderName &&
-                           !string.IsNullOrEmpty(f.SubCategory) &&
-                           f.SubCategory != "N/A")
-                .Select(f => f.SubCategory)
-                .Distinct()
-                .OrderBy(s => s)
-                .ToList();
+            var subCategories = await _dmsQueryService.GetSubCategoriesAsync(companyFolderName, yearFolderName, departmentFolderName, documentTypeFolderName, cancellationToken);
 
             return View(subCategories);
         }
@@ -394,50 +345,14 @@ namespace Document_Management.Controllers
                 return departmentAccessResult;
             }
 
-            // Query from database instead of file system
-            var query = _dbContext.FileDocuments
-                .Where(file => file.Company == companyFolderName
-                               && file.Year == yearFolderName
-                               && file.Department == departmentFolderName
-                               && file.Category == documentTypeFolderName
-                               && !file.IsDeleted);
-
-            // Add subcategory filter
-            if (!string.IsNullOrEmpty(subCategoryFolder))
-            {
-                query = query.Where(file => file.SubCategory == subCategoryFolder);
-            }
-            else
-            {
-                query = query.Where(file => file.SubCategory == "N/A" || string.IsNullOrEmpty(file.SubCategory));
-            }
-
-            // Add filename filter if specified
-            if (!string.IsNullOrEmpty(fileName))
-            {
-                query = query.Where(file => file.Name == fileName);
-            }
-
-            var fileDocuments = await query
-                .Select(file => new FileDocument
-                {
-                    Id = file.Id,
-                    Name = file.Name,
-                    Location = file.Location,
-                    DateUploaded = file.DateUploaded,
-                    Description = file.Description,
-                    Department = file.Department,
-                    Username = file.Username,
-                    Category = file.Category,
-                    Company = file.Company,
-                    Year = file.Year,
-                    SubCategory = file.SubCategory,
-                    OriginalFilename = file.OriginalFilename,
-                    FileSize = file.FileSize,
-                    NumberOfPages = file.NumberOfPages
-                })
-                .OrderByDescending(u => u.DateUploaded)
-                .ToListAsync(cancellation);
+            var fileDocuments = await _dmsQueryService.GetFilesAsync(
+                companyFolderName,
+                yearFolderName,
+                departmentFolderName,
+                documentTypeFolderName,
+                subCategoryFolder,
+                fileName,
+                cancellation);
 
             return View(fileDocuments);
         }
@@ -453,68 +368,14 @@ namespace Document_Management.Controllers
         {
             try
             {
-                var username = HttpContext.Session.GetString("username");
-                var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-                IEnumerable<FileDocument> files;
-
-                if (userRole == "admin")
-                {
-                    files = await _userRepo.DisplayAllUploadedFiles(cancellationToken);
-                }
-                else
-                {
-                    files = await _userRepo.DisplayUploadedFiles(username!, cancellationToken);
-                }
-
-                // Search filter
-                if (!string.IsNullOrEmpty(parameters.Search.Value))
-                {
-                    var searchValue = parameters.Search.Value.ToLower();
-                    files = files.Where(f =>
-                        f.Name!.ToLower().Contains(searchValue) ||
-                        f.Description!.ToLower().Contains(searchValue) ||
-                        f.DateUploaded.ToString(CultureInfo.InvariantCulture).Contains(searchValue)
-                    ).ToList();
-                }
-
-                // Map to ViewModel
-                var viewModel = files.Select(f => new UploadedFilesViewModel
-                {
-                    Id = f.Id,
-                    Name = f.Name!,
-                    Description = f.Description!,
-                    LocationFolder = f.SubCategory == "N/A" ?
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={null}&fileName={f.Name}" :
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={f.SubCategory}&fileName={f.Name}",
-                    UploadedBy = f.Username!,
-                    DateUploaded = f.DateUploaded
-                }).ToList();
-
-                // Sorting
-                if (parameters.Order.Count > 0)
-                {
-                    var orderColumn = parameters.Order[0];
-                    var columnName = parameters.Columns[orderColumn.Column].Data;
-                    var sortDirection = orderColumn.Dir.Equals("asc", StringComparison.CurrentCultureIgnoreCase) ? "ascending" : "descending";
-
-                    viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
-                }
-
-                var totalRecords = viewModel.Count;
-
-                // Apply pagination
-                var pagedData = viewModel
-                    .Skip(parameters.Start)
-                    .Take(parameters.Length)
-                    .ToList();
+                var result = await _dmsQueryService.GetUploadedFilesAsync(parameters, cancellationToken);
 
                 return Json(new
                 {
-                    draw = parameters.Draw,
-                    recordsTotal = totalRecords,
-                    recordsFiltered = totalRecords,
-                    data = pagedData
+                    draw = result.Draw,
+                    recordsTotal = result.RecordsTotal,
+                    recordsFiltered = result.RecordsFiltered,
+                    data = result.Data
                 });
             }
             catch (Exception ex)
@@ -1028,68 +889,14 @@ namespace Document_Management.Controllers
         {
             try
             {
-                var username = HttpContext.Session.GetString("username");
-                var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-                IEnumerable<FileDocument> files;
-
-                if (userRole == "admin")
-                {
-                    files = await _userRepo.DisplayAllDeletedFiles(cancellationToken);
-                }
-                else
-                {
-                    files = await _userRepo.DisplayAllDeletedFiles(username!, cancellationToken);
-                }
-
-                // Search filter
-                if (!string.IsNullOrEmpty(parameters.Search.Value))
-                {
-                    var searchValue = parameters.Search.Value.ToLower();
-                    files = files.Where(f =>
-                        f.Name!.ToLower().Contains(searchValue) ||
-                        f.Description!.ToLower().Contains(searchValue) ||
-                        f.DateUploaded.ToString(CultureInfo.InvariantCulture).Contains(searchValue)
-                    ).ToList();
-                }
-
-                // Map to ViewModel
-                var viewModel = files.Select(f => new UploadedFilesViewModel
-                {
-                    Id = f.Id,
-                    Name = f.Name!,
-                    Description = f.Description!,
-                    LocationFolder = f.SubCategory == "N/A" ?
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={null}&fileName={f.Name}" :
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={f.SubCategory}&fileName={f.Name}",
-                    UploadedBy = f.Username!,
-                    DateUploaded = f.DateUploaded
-                }).ToList();
-
-                // Sorting
-                if (parameters.Order.Count > 0)
-                {
-                    var orderColumn = parameters.Order[0];
-                    var columnName = parameters.Columns[orderColumn.Column].Data;
-                    var sortDirection = orderColumn.Dir.Equals("asc", StringComparison.CurrentCultureIgnoreCase) ? "ascending" : "descending";
-
-                    viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
-                }
-
-                var totalRecords = viewModel.Count;
-
-                // Apply pagination
-                var pagedData = viewModel
-                    .Skip(parameters.Start)
-                    .Take(parameters.Length)
-                    .ToList();
+                var result = await _dmsQueryService.GetDeletedFilesAsync(parameters, cancellationToken);
 
                 return Json(new
                 {
-                    draw = parameters.Draw,
-                    recordsTotal = totalRecords,
-                    recordsFiltered = totalRecords,
-                    data = pagedData
+                    draw = result.Draw,
+                    recordsTotal = result.RecordsTotal,
+                    recordsFiltered = result.RecordsFiltered,
+                    data = result.Data
                 });
             }
             catch (Exception ex)

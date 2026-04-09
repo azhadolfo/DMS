@@ -6,6 +6,7 @@ namespace Document_Management.Service
     {
         string? Username { get; }
         bool IsAuthenticated();
+        bool IsAdmin();
         bool CanAccessCompany(string company);
         bool CanAccessDepartment(string department);
         bool CanUpload();
@@ -31,6 +32,11 @@ namespace Document_Management.Service
             return !string.IsNullOrWhiteSpace(Username);
         }
 
+        public bool IsAdmin()
+        {
+            return UserRole == "admin";
+        }
+
         public bool CanAccessCompany(string company)
         {
             if (!IsAuthenticated())
@@ -38,7 +44,7 @@ namespace Document_Management.Service
                 return false;
             }
 
-            if (UserRole == "admin")
+            if (IsAdmin())
             {
                 return true;
             }
@@ -53,7 +59,7 @@ namespace Document_Management.Service
                 return false;
             }
 
-            if (UserRole == "admin")
+            if (IsAdmin())
             {
                 return true;
             }
@@ -63,12 +69,12 @@ namespace Document_Management.Service
 
         public bool CanUpload()
         {
-            return IsAuthenticated() && (UserRole == "admin" || UserRole == "uploader");
+            return IsAuthenticated() && (IsAdmin() || UserRole == "uploader");
         }
 
         public bool CanAccessTrash()
         {
-            return IsAuthenticated() && (UserRole == "admin" || UserRole == "uploader");
+            return IsAuthenticated() && (IsAdmin() || UserRole == "uploader");
         }
 
         public bool CanMutate(FileDocument fileDocument)
@@ -78,7 +84,7 @@ namespace Document_Management.Service
                 return false;
             }
 
-            return UserRole == "admin"
+            return IsAdmin()
                 || UserRole == "uploader"
                 || string.Equals(fileDocument.Username, Username, StringComparison.OrdinalIgnoreCase);
         }
