@@ -147,13 +147,15 @@ namespace Document_Management.Controllers
             }
 
             var categoryAlreadyExist = await _dbContext.Categories
-                .AnyAsync(u => u.CategoryName == viewModel.CategoryName, cancellationToken);
+                .AnyAsync(u =>
+                    u.Id != viewModel.Id &&
+                    u.CategoryName == viewModel.CategoryName, cancellationToken);
 
             if (categoryAlreadyExist)
             {
                 ModelState.AddModelError("CategoryName", "The category with the same name already exists.");
                 TempData["ErrorMessage"] = "The category with the same name already exists.";
-                return RedirectToAction("Edit");
+                return View(viewModel);
             }
 
             var existingName = existingCategory.CategoryName;

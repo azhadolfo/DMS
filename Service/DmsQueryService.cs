@@ -180,6 +180,7 @@ namespace Document_Management.Service
                 .Select(MapUploadedFile)
                 .ToList();
 
+            var totalRecordsBeforeSearch = files.Count;
             if (!string.IsNullOrWhiteSpace(parameters.Search.Value))
             {
                 var searchValue = parameters.Search.Value.ToLowerInvariant();
@@ -193,21 +194,25 @@ namespace Document_Management.Service
             if (parameters.Order.Count > 0)
             {
                 var orderColumn = parameters.Order[0];
-                var columnName = parameters.Columns[orderColumn.Column].Data;
-                var sortDirection = orderColumn.Dir.Equals("asc", StringComparison.CurrentCultureIgnoreCase)
-                    ? "ascending"
-                    : "descending";
 
-                viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
+                if (orderColumn.Column >= 0 && orderColumn.Column < parameters.Columns.Count)
+                {
+                    var columnName = parameters.Columns[orderColumn.Column].Data;
+                    var sortDirection = orderColumn.Dir.Equals("asc", StringComparison.CurrentCultureIgnoreCase)
+                        ? "ascending"
+                        : "descending";
+
+                    viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
+                }
             }
 
-            var totalRecords = viewModel.Count;
+            var recordsFiltered = viewModel.Count;
             var pagedData = viewModel
                 .Skip(parameters.Start)
                 .Take(parameters.Length)
                 .ToList();
 
-            return new DataTableResult<UploadedFilesViewModel>(parameters.Draw, totalRecords, totalRecords, pagedData);
+            return new DataTableResult<UploadedFilesViewModel>(parameters.Draw, totalRecordsBeforeSearch, recordsFiltered, pagedData);
         }
 
         private static UploadedFilesViewModel MapUploadedFile(FileDocument file)

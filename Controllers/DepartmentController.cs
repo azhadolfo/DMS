@@ -148,13 +148,15 @@ namespace Document_Management.Controllers
             }
 
             var departmentAlreadyExist = await _dbContext.Departments
-                .AnyAsync(u => u.DepartmentName == viewModel.DepartmentName, cancellationToken);
+                .AnyAsync(u =>
+                    u.Id != viewModel.Id &&
+                    u.DepartmentName == viewModel.DepartmentName, cancellationToken);
 
             if (departmentAlreadyExist)
             {
                 ModelState.AddModelError("DepartmentName", "The department with the same name already exists.");
                 TempData["ErrorMessage"] = "The department with the same name already exists.";
-                return RedirectToAction("Edit");
+                return View(viewModel);
             }
 
             var existingName = existingDepartment.DepartmentName;

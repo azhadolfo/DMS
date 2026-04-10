@@ -14,7 +14,7 @@ namespace Document_Management.Service
         bool CanMutate(FileDocument fileDocument);
     }
 
-    public class DmsAccessService : IDmsAccessService
+    public sealed class DmsAccessService : IDmsAccessService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 

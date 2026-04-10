@@ -148,13 +148,15 @@ namespace Document_Management.Controllers
             }
 
             var companyAlreadyExist = await _dbContext.Companies
-                .AnyAsync(u => u.CompanyName == viewModel.CompanyName, cancellationToken);
+                .AnyAsync(u =>
+                    u.Id != viewModel.Id &&
+                    u.CompanyName == viewModel.CompanyName, cancellationToken);
 
             if (companyAlreadyExist)
             {
                 ModelState.AddModelError("CompanyName", "The company with the same name already exists.");
                 TempData["ErrorMessage"] = "The company with the same name already exists.";
-                return RedirectToAction("Edit");
+                return View(viewModel);
             }
 
             var existingName = existingCompany.CompanyName;

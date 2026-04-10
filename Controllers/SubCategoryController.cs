@@ -190,14 +190,16 @@ namespace Document_Management.Controllers
             }
 
             var subCategoryAlreadyExist = await _dbContext.SubCategories
-                .AnyAsync(u => u.CategoryId == viewModel.CategoryId
-                               && u.SubCategoryName == viewModel.SubCategoryName, cancellationToken);
+                .AnyAsync(u =>
+                    u.Id != viewModel.Id &&
+                    u.CategoryId == viewModel.CategoryId &&
+                    u.SubCategoryName == viewModel.SubCategoryName, cancellationToken);
 
             if (subCategoryAlreadyExist)
             {
                 ModelState.AddModelError("SubCategoryName", "The sub-category with the same name already exists.");
                 TempData["ErrorMessage"] = "The sub-category with the same name already exists.";
-                return RedirectToAction("Edit");
+                return View(viewModel);
             }
 
             var existingName = existingSubCategory.SubCategoryName;

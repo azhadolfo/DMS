@@ -8,10 +8,10 @@ namespace Document_Management.Service
 {
     public interface ICloudStorageService
     {
-        Task<string> UploadFileAsync(IFormFile file, string objectName);
-        Task<Stream> DownloadFileStreamAsync(string objectName);
-        Task<bool> DeleteFileAsync(string objectName);
-        Task<string> GetSignedUrlAsync(string objectName, TimeSpan expiry);
+        Task<string> UploadFileAsync(IFormFile file, string objectName, CancellationToken cancellationToken = default);
+        Task<Stream> DownloadFileStreamAsync(string objectName, CancellationToken cancellationToken = default);
+        Task<bool> DeleteFileAsync(string objectName, CancellationToken cancellationToken = default);
+        Task<string> GetSignedUrlAsync(string objectName, TimeSpan expiry, CancellationToken cancellationToken = default);
     }
 
     public class GoogleCloudStorageService : ICloudStorageService
@@ -40,7 +40,9 @@ namespace Document_Management.Service
                 {
                     var credentialPath = configuration["GoogleCloudStorage:CredentialPath"];
                     if (string.IsNullOrEmpty(credentialPath) || !File.Exists(credentialPath))
+                    {
                         throw new FileNotFoundException("Service account file not found", credentialPath);
+                    }
 
                     using var stream = File.OpenRead(credentialPath);
 
@@ -59,14 +61,19 @@ namespace Document_Management.Service
             }
         }
 
-        public async Task<string> UploadFileAsync(IFormFile file, string objectName)
+        public async Task<string> UploadFileAsync(
+            IFormFile file,
+            string objectName,
+            CancellationToken cancellationToken = default)
         {
             if (file == null || file.Length == 0)
+            {
                 throw new ArgumentException("File is empty or null");
+            }
 
             try
             {
-                using var stream = file.OpenReadStream();
+                await using var stream = file.OpenReadStream();
 
                 var googleObject = new Object
                 {
@@ -75,7 +82,7 @@ namespace Document_Management.Service
                     ContentType = file.ContentType
                 };
 
-                await _storageClient.UploadObjectAsync(googleObject, stream);
+                await _storageClient.UploadObjectAsync(googleObject, stream, cancellationToken: cancellationToken);
 
                 _logger.LogInformation("File uploaded successfully to Cloud Storage: {ObjectName}", objectName);
                 return objectName;
@@ -87,12 +94,18 @@ namespace Document_Management.Service
             }
         }
 
-        public async Task<Stream> DownloadFileStreamAsync(string objectName)
+        public async Task<Stream> DownloadFileStreamAsync(
+            string objectName,
+            CancellationToken cancellationToken = default)
         {
             try
             {
                 var memoryStream = new MemoryStream();
-                await _storageClient.DownloadObjectAsync(_bucketName, objectName, memoryStream);
+                await _storageClient.DownloadObjectAsync(
+                    _bucketName,
+                    objectName,
+                    memoryStream,
+                    cancellationToken: cancellationToken);
                 memoryStream.Position = 0;
                 return memoryStream;
             }
@@ -103,11 +116,11 @@ namespace Document_Management.Service
             }
         }
 
-        public async Task<bool> DeleteFileAsync(string objectName)
+        public async Task<bool> DeleteFileAsync(string objectName, CancellationToken cancellationToken = default)
         {
             try
             {
-                await _storageClient.DeleteObjectAsync(_bucketName, objectName);
+                await _storageClient.DeleteObjectAsync(_bucketName, objectName, cancellationToken: cancellationToken);
                 _logger.LogInformation("File deleted successfully from Cloud Storage: {ObjectName}", objectName);
                 return true;
             }
@@ -123,13 +136,19 @@ namespace Document_Management.Service
             }
         }
 
-        public async Task<string> GetSignedUrlAsync(string objectName, TimeSpan expiry)
+        public async Task<string> GetSignedUrlAsync(
+            string objectName,
+            TimeSpan expiry,
+            CancellationToken cancellationToken = default)
         {
             try
             {
                 var urlSigner = UrlSigner.FromCredential(_googleCredential);
 
-                var signedUrl = await urlSigner.SignAsync(_bucketName, objectName, expiry, HttpMethod.Get);
+                var signedUrl = await urlSigner.SignAsync(
+                    _bucketName, objectName,
+                    expiry, HttpMethod.Get,
+                    cancellationToken: cancellationToken);
 
                 _logger.LogInformation("Generated signed URL for: {ObjectName}", objectName);
                 return signedUrl;
