@@ -1,21 +1,16 @@
-﻿using System.Globalization;
-using System.Linq.Dynamic.Core;
-using Document_Management.Data;
 using Document_Management.Models;
+using Document_Management.Service;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Document_Management.Controllers
 {
     public class LogsController : Controller
     {
-        //Database Context
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ILogQueryService _logQueryService;
 
-        //Passing the dbcontext in to another variable
-        public LogsController(ApplicationDbContext context)
+        public LogsController(ILogQueryService logQueryService)
         {
-            _dbContext = context;
+            _logQueryService = logQueryService;
         }
 
         public IActionResult Index()
@@ -29,54 +24,18 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetActivityLogs([FromForm] DataTablesParameters parameters,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> GetActivityLogs([FromForm] DataTablesParameters parameters, CancellationToken cancellationToken)
         {
             try
             {
-                var logs = await _dbContext.Logs
-                    .OrderByDescending(u => u.Date)
-                    .ToListAsync(cancellationToken);
-
-                if (!string.IsNullOrEmpty(parameters.Search?.Value))
-                {
-                    var searchValue = parameters.Search.Value.ToLower();
-
-                    logs = logs
-                        .Where(s =>
-                            s.Username.ToLower().Contains(searchValue) ||
-                            s.Activity.ToLower().Contains(searchValue) ||
-                            s.Date.ToString(CultureInfo.InvariantCulture).Contains(searchValue)
-                        )
-                        .ToList();
-                }
-
-                // Sorting
-                if (parameters.Order.Count > 0)
-                {
-                    var orderColumn = parameters.Order[0];
-                    var columnName = parameters.Columns[orderColumn.Column].Data;
-                    var sortDirection = orderColumn.Dir.ToLower() == "asc" ? "ascending" : "descending";
-
-                    logs = logs
-                        .AsQueryable()
-                        .OrderBy($"{columnName} {sortDirection}")
-                        .ToList();
-                }
-
-                var totalRecords = logs.Count;
-
-                var pagedData = logs
-                    .Skip(parameters.Start)
-                    .Take(parameters.Length)
-                    .ToList();
+                var result = await _logQueryService.GetActivityLogsAsync(parameters, cancellationToken);
 
                 return Json(new
                 {
-                    draw = parameters.Draw,
-                    recordsTotal = totalRecords,
-                    recordsFiltered = totalRecords,
-                    data = pagedData
+                    draw = result.Draw,
+                    recordsTotal = result.RecordsTotal,
+                    recordsFiltered = result.RecordsFiltered,
+                    data = result.Data
                 });
             }
             catch (Exception ex)
