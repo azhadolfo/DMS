@@ -207,14 +207,13 @@ namespace Document_Management.Controllers
                     return View(fileDocument);
                 }
 
-                var username = HttpContext.Session.GetString("username");
                 var uploadResult = await _documentStorageWorkflowService.UploadAsync(fileDocument, file, cancellationToken);
 
                 fileDocument.DateUploaded = uploadResult.UploadedAt;
                 fileDocument.Name = uploadResult.StoredFileName;
                 fileDocument.Location = uploadResult.ObjectName;
                 fileDocument.FileSize = uploadResult.FileSize;
-                fileDocument.Username = username!;
+                fileDocument.Username = _accessService.Username!;
                 fileDocument.OriginalFilename = file.FileName;
                 fileDocument.IsInCloudStorage = true;
 
@@ -225,7 +224,7 @@ namespace Document_Management.Controllers
                 var fileSizeInMb = (file.Length / (1024.0 * 1024.0));
 
                 var logs = new LogsModel(
-                    username!,
+                    _accessService.Username!,
                     $"Upload {file.FileName} to Cloud Storage in {uploadResult.FolderPath} {fileDocument.NumberOfPages} page(s). " +
                     $"Size: {fileSizeInMb:F2} MB. Duration: {duration.TotalSeconds:F2} seconds."
                 );
@@ -488,7 +487,6 @@ namespace Document_Management.Controllers
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                var username = HttpContext.Session.GetString("username");
                 var file = await _dbContext.FileDocuments
                     .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
 
@@ -565,7 +563,7 @@ namespace Document_Management.Controllers
                     }
                 }
 
-                LogsModel logs = new(username!, changeDescription);
+                LogsModel logs = new(_accessService.Username!, changeDescription);
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -617,8 +615,6 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            var username = HttpContext.Session.GetString("username");
-
             var model = await _dbContext
                 .FileDocuments
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -642,7 +638,7 @@ namespace Document_Management.Controllers
 
                 _dbContext.Remove(model);
 
-                LogsModel logs = new(username!, $"Permanently delete the file from Cloud Storage: {model.Name}.");
+                LogsModel logs = new(_accessService.Username!, $"Permanently delete the file from Cloud Storage: {model.Name}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -668,8 +664,6 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            var username = HttpContext.Session.GetString("username");
-
             var model = await _dbContext
                 .FileDocuments
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -690,7 +684,7 @@ namespace Document_Management.Controllers
             {
                 model.IsDeleted = true;
 
-                LogsModel logs = new(username!, $"Delete the file from Cloud Storage: {model.Name}.");
+                LogsModel logs = new(_accessService.Username!, $"Delete the file from Cloud Storage: {model.Name}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -716,8 +710,6 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            var username = HttpContext.Session.GetString("username");
-
             var model = await _dbContext
                 .FileDocuments
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -738,7 +730,7 @@ namespace Document_Management.Controllers
             {
                 model.IsDeleted = false;
 
-                LogsModel logs = new(username!, $"Restore the file from Cloud Storage: {model.Name}.");
+                LogsModel logs = new(_accessService.Username!, $"Restore the file from Cloud Storage: {model.Name}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -786,8 +778,6 @@ namespace Document_Management.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Transfer(FileDocument model, CancellationToken cancellationToken)
         {
-            var username = HttpContext.Session.GetString("username");
-
             var existingModel = await _dbContext
                 .FileDocuments
                 .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
@@ -819,7 +809,7 @@ namespace Document_Management.Controllers
                 existingModel.Name = transferResult.StoredFileName;
                 existingModel.Location = transferResult.NewLocation;
 
-                LogsModel logs = new(username!, $"Transfer the file in Cloud Storage: {existingModel.OriginalFilename} from {transferResult.OldLocation} to {transferResult.NewLocation}.");
+                LogsModel logs = new(_accessService.Username!, $"Transfer the file in Cloud Storage: {existingModel.OriginalFilename} from {transferResult.OldLocation} to {transferResult.NewLocation}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -843,7 +833,6 @@ namespace Document_Management.Controllers
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                var username = HttpContext.Session.GetString("username");
                 var document = await _dbContext.FileDocuments
                     .FirstOrDefaultAsync(x => x.Id == documentId, cancellationToken);
 
@@ -865,7 +854,7 @@ namespace Document_Management.Controllers
                 }
 
                 // Create log entry
-                var logs = new LogsModel(username!, $"Downloaded file from Cloud Storage: {originalFilename} from path: {document.Location}");
+                var logs = new LogsModel(_accessService.Username!, $"Downloaded file from Cloud Storage: {originalFilename} from path: {document.Location}");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
@@ -889,7 +878,6 @@ namespace Document_Management.Controllers
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                var username = HttpContext.Session.GetString("username");
                 var document = await _dbContext.FileDocuments
                     .FirstOrDefaultAsync(x => x.Id == documentId, cancellationToken);
 
@@ -911,7 +899,7 @@ namespace Document_Management.Controllers
                 }
 
                 // Create log entry
-                var logs = new LogsModel(username!, $"Downloaded file directly from Cloud Storage: {originalFilename}");
+                var logs = new LogsModel(_accessService.Username!, $"Downloaded file directly from Cloud Storage: {originalFilename}");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
