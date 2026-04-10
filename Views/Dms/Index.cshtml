@@ -8,6 +8,25 @@
         position: relative;
         overflow: visible !important;
     }
+
+    .table-wrapper {
+        position: relative;
+    }
+
+    .table-loading-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.7);
+        z-index: 10;
+    }
+
+    .table-loading-overlay.d-none {
+        display: none;
+    }
+
     .dropdown-menu {
         z-index: 9999; /* Ensure it's above DataTables or modals */
     }
@@ -27,26 +46,40 @@
         </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover" id="paginatedTable">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>File</th>
-                    <th>Description</th>
-                    <th>Location Folder</th>
-                    <th>Uploaded By</th>
-                    <th>Date Uploaded</th>
-                </tr>
-            </thead>
-        </table>
+    <div class="table-wrapper">
+        <div id="paginatedTableLoading" class="table-loading-overlay">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover" id="paginatedTable">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>File</th>
+                        <th>Description</th>
+                        <th>Location Folder</th>
+                        <th>Uploaded By</th>
+                        <th>Date Uploaded</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
-            $('#paginatedTable').DataTable({
+            const loadingOverlay = $('#paginatedTableLoading');
+            const table = $('#paginatedTable');
+
+            table.on('processing.dt', function (e, settings, processing) {
+                loadingOverlay.toggleClass('d-none', !processing);
+            });
+
+            table.DataTable({
                 processing: true,
                 serverSide: true,
                 language: {
@@ -63,11 +96,8 @@
                         d.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
                     }
                 },
-                preDrawCallback: function(settings) {
-                    $('#paginatedTable').addClass('table-loading');
-                },
                 drawCallback: function(settings) {
-                    $('#paginatedTable').removeClass('table-loading');
+                    loadingOverlay.addClass('d-none');
 
                     // Initialize all tooltips
                     $('[data-bs-toggle="tooltip"]').tooltip();

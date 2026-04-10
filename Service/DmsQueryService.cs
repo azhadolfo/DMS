@@ -1,9 +1,7 @@
-using System.Globalization;
 using Document_Management.Data;
 using Document_Management.Dtos;
 using Document_Management.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 
 namespace Document_Management.Service
 {
@@ -175,21 +173,31 @@ namespace Document_Management.Service
                 filesQuery = filesQuery.Where(file => file.Username == username);
             }
 
-            var files = await filesQuery.ToListAsync(cancellationToken);
-            var viewModel = files
-                .Select(MapUploadedFile)
-                .ToList();
-
-            var totalRecordsBeforeSearch = files.Count;
+            var totalRecordsBeforeSearch = await filesQuery.CountAsync(cancellationToken);
             if (!string.IsNullOrWhiteSpace(parameters.Search.Value))
             {
-                var searchValue = parameters.Search.Value.ToLowerInvariant();
-                viewModel = viewModel.Where(f =>
-                        f.Name.ToLowerInvariant().Contains(searchValue) ||
-                        f.Description.ToLowerInvariant().Contains(searchValue) ||
-                        f.DateUploaded.ToString(CultureInfo.InvariantCulture).Contains(searchValue))
-                    .ToList();
+                var searchValue = parameters.Search.Value.Trim();
+                var hasParsedDate = DateTime.TryParse(searchValue, out var searchDate);
+                var searchDateStart = searchDate.Date;
+                var searchDateEnd = searchDateStart.AddDays(1);
+
+                filesQuery = filesQuery.Where(file =>
+                    EF.Functions.ILike(file.Name, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.Description, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.Username, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.BoxNumber, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.SubmittedBy, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.Company, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.Year, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.Department, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.Category, $"%{searchValue}%") ||
+                    EF.Functions.ILike(file.SubCategory, $"%{searchValue}%") ||
+                    (hasParsedDate &&
+                     file.DateUploaded >= searchDateStart &&
+                     file.DateUploaded < searchDateEnd));
             }
+
+            var recordsFiltered = await filesQuery.CountAsync(cancellationToken);
 
             if (parameters.Order.Count > 0)
             {
@@ -198,38 +206,66 @@ namespace Document_Management.Service
                 if (orderColumn.Column >= 0 && orderColumn.Column < parameters.Columns.Count)
                 {
                     var columnName = parameters.Columns[orderColumn.Column].Data;
-                    var sortDirection = orderColumn.Dir.Equals("asc", StringComparison.CurrentCultureIgnoreCase)
-                        ? "ascending"
-                        : "descending";
+                    var isAscending = orderColumn.Dir.Equals("asc", StringComparison.CurrentCultureIgnoreCase);
 
-                    viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
+                    filesQuery = ApplyUploadedFilesOrdering(filesQuery, columnName, isAscending);
                 }
             }
+            else
+            {
+                filesQuery = filesQuery.OrderByDescending(file => file.DateUploaded);
+            }
 
-            var recordsFiltered = viewModel.Count;
-            var pagedData = viewModel
+            var pagedData = await filesQuery
                 .Skip(parameters.Start)
                 .Take(parameters.Length)
-                .ToList();
+                .Select(file => new UploadedFilesViewModel
+                {
+                    Id = file.Id,
+                    Name = file.Name,
+                    Description = file.Description,
+                    LocationFolder = file.SubCategory == "N/A"
+                        ? $"companyFolderName={file.Company}&yearFolderName={file.Year}&departmentFolderName={file.Department}&documentTypeFolderName={file.Category}&subCategoryFolder={null}&fileName={file.Name}"
+                        : $"companyFolderName={file.Company}&yearFolderName={file.Year}&departmentFolderName={file.Department}&documentTypeFolderName={file.Category}&subCategoryFolder={file.SubCategory}&fileName={file.Name}",
+                    UploadedBy = file.Username,
+                    DateUploaded = file.DateUploaded,
+                    BoxNumber = file.BoxNumber,
+                    SubmittedBy = file.SubmittedBy,
+                    DateSubmitted = file.DateSubmitted ?? default
+                })
+                .ToListAsync(cancellationToken);
 
             return new DataTableResult<UploadedFilesViewModel>(parameters.Draw, totalRecordsBeforeSearch, recordsFiltered, pagedData);
         }
 
-        private static UploadedFilesViewModel MapUploadedFile(FileDocument file)
+        private static IQueryable<FileDocument> ApplyUploadedFilesOrdering(IQueryable<FileDocument> query, string columnName, bool isAscending)
         {
-            return new UploadedFilesViewModel
+            return columnName switch
             {
-                Id = file.Id,
-                Name = file.Name,
-                Description = file.Description,
-                LocationFolder = file.SubCategory == "N/A"
-                    ? $"companyFolderName={file.Company}&yearFolderName={file.Year}&departmentFolderName={file.Department}&documentTypeFolderName={file.Category}&subCategoryFolder={null}&fileName={file.Name}"
-                    : $"companyFolderName={file.Company}&yearFolderName={file.Year}&departmentFolderName={file.Department}&documentTypeFolderName={file.Category}&subCategoryFolder={file.SubCategory}&fileName={file.Name}",
-                UploadedBy = file.Username,
-                DateUploaded = file.DateUploaded,
-                BoxNumber = file.BoxNumber,
-                SubmittedBy = file.SubmittedBy,
-                DateSubmitted = file.DateSubmitted ?? default
+                "name" => isAscending
+                    ? query.OrderBy(file => file.Name)
+                    : query.OrderByDescending(file => file.Name),
+                "description" => isAscending
+                    ? query.OrderBy(file => file.Description)
+                    : query.OrderByDescending(file => file.Description),
+                "uploadedBy" => isAscending
+                    ? query.OrderBy(file => file.Username)
+                    : query.OrderByDescending(file => file.Username),
+                "dateUploaded" => isAscending
+                    ? query.OrderBy(file => file.DateUploaded)
+                    : query.OrderByDescending(file => file.DateUploaded),
+                "boxNumber" => isAscending
+                    ? query.OrderBy(file => file.BoxNumber)
+                    : query.OrderByDescending(file => file.BoxNumber),
+                "submittedBy" => isAscending
+                    ? query.OrderBy(file => file.SubmittedBy)
+                    : query.OrderByDescending(file => file.SubmittedBy),
+                "dateSubmitted" => isAscending
+                    ? query.OrderBy(file => file.DateSubmitted)
+                    : query.OrderByDescending(file => file.DateSubmitted),
+                _ => isAscending
+                    ? query.OrderBy(file => file.DateUploaded)
+                    : query.OrderByDescending(file => file.DateUploaded)
             };
         }
     }
