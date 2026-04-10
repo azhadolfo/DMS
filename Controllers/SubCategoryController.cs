@@ -69,6 +69,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(SubCategoryViewModel viewModel, CancellationToken cancellationToken)
         {
             var adminAccessResult = EnsureAdminAccess();
