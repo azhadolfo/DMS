@@ -43,7 +43,7 @@ namespace Document_Management.Controllers
 
         private IActionResult? CheckDepartmentAccess(string department)
         {
-            if (string.IsNullOrWhiteSpace(_accessService.Username))
+            if (!_accessService.IsAuthenticated())
             {
                 return RedirectToAction("Login", "Account");
             }
@@ -59,7 +59,7 @@ namespace Document_Management.Controllers
 
         private IActionResult? CheckCompanyAccess(string company)
         {
-            if (string.IsNullOrWhiteSpace(_accessService.Username))
+            if (!_accessService.IsAuthenticated())
             {
                 return RedirectToAction("Login", "Account");
             }
@@ -75,7 +75,7 @@ namespace Document_Management.Controllers
 
         private IActionResult? EnsureUploadAccess()
         {
-            if (string.IsNullOrWhiteSpace(_accessService.Username))
+            if (!_accessService.IsAuthenticated())
             {
                 return RedirectToAction("Login", "Account");
             }
@@ -91,7 +91,7 @@ namespace Document_Management.Controllers
 
         private IActionResult? EnsureDocumentMutationAccess(FileDocument fileDocument)
         {
-            if (string.IsNullOrWhiteSpace(_accessService.Username))
+            if (!_accessService.IsAuthenticated())
             {
                 return RedirectToAction("Login", "Account");
             }
@@ -953,7 +953,7 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Trash()
         {
-            if (string.IsNullOrWhiteSpace(_accessService.Username))
+            if (!_accessService.IsAuthenticated())
             {
                 return RedirectToAction("Login", "Account");
             }
