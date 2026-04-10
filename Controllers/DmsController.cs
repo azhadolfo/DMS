@@ -367,6 +367,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetUploadedFiles([FromForm] DataTablesParameters parameters, CancellationToken cancellationToken)
         {
             try
@@ -542,7 +543,7 @@ namespace Document_Management.Controllers
             try
             {
                 // Delete from Cloud Storage
-                await _cloudStorage.DeleteFileAsync(model.Location!);
+                await _cloudStorage.DeleteFileAsync(model.Location, cancellationToken);
 
                 _dbContext.Remove(model);
 
@@ -741,7 +742,7 @@ namespace Document_Management.Controllers
                     return companyAccessResult;
                 }
 
-                var departmentAccessResult = CheckDepartmentAccess(document.Department!);
+                var departmentAccessResult = CheckDepartmentAccess(document.Department);
                 if (departmentAccessResult != null)
                 {
                     return departmentAccessResult;
@@ -753,7 +754,7 @@ namespace Document_Management.Controllers
                 await _dbContext.SaveChangesAsync(cancellationToken);
 
                 // Get signed URL for direct download (better performance)
-                var signedUrl = await _cloudStorage.GetSignedUrlAsync(document.Location!, TimeSpan.FromMinutes(5));
+                var signedUrl = await _cloudStorage.GetSignedUrlAsync(document.Location, TimeSpan.FromMinutes(5), cancellationToken);
                 return Redirect(signedUrl);
             }
             catch (Exception ex)
@@ -784,7 +785,7 @@ namespace Document_Management.Controllers
                     return companyAccessResult;
                 }
 
-                var departmentAccessResult = CheckDepartmentAccess(document.Department!);
+                var departmentAccessResult = CheckDepartmentAccess(document.Department);
                 if (departmentAccessResult != null)
                 {
                     return departmentAccessResult;
@@ -796,7 +797,7 @@ namespace Document_Management.Controllers
                 await _dbContext.SaveChangesAsync(cancellationToken);
 
                 // Download file from Cloud Storage and stream to user
-                var fileStream = await _cloudStorage.DownloadFileStreamAsync(document.Location!);
+                var fileStream = await _cloudStorage.DownloadFileStreamAsync(document.Location, cancellationToken);
                 return File(fileStream, "application/pdf", originalFilename);
             }
             catch (Exception ex)
@@ -852,6 +853,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetDeletedFiles([FromForm] DataTablesParameters parameters, CancellationToken cancellationToken)
         {
             try
