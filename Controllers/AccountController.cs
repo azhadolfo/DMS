@@ -14,7 +14,7 @@ namespace Document_Management.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly string? _userRole;
         private readonly string? _userName;
-        private static readonly PasswordHasher<Account> AccountPasswordHasher = new();
+        private static readonly PasswordHasher<Account> _accountPasswordHasher = new();
 
         public AccountController(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
@@ -475,12 +475,12 @@ namespace Document_Management.Controllers
 
         private static string HashPassword(Account user, string password)
         {
-            return AccountPasswordHasher.HashPassword(user, password);
+            return _accountPasswordHasher.HashPassword(user, password);
         }
 
         private static (bool IsValid, bool NeedsUpgrade) VerifyPassword(Account user, string password)
         {
-            var verificationResult = AccountPasswordHasher.VerifyHashedPassword(user, user.Password, password);
+            var verificationResult = _accountPasswordHasher.VerifyHashedPassword(user, user.Password, password);
             if (verificationResult == PasswordVerificationResult.Success)
             {
                 return (true, false);
