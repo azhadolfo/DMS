@@ -5,6 +5,12 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v5.2.0] - 2026-04-10
+### Changed
+- Modified and refactor the existing code base.
+
+---
+
 ## [v5.1.2] - 2026-04-07
 ### Fixed
 - Fixed the login endpoint to accept not found user.
