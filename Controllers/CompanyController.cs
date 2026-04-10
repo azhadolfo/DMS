@@ -198,7 +198,7 @@ namespace Document_Management.Controllers
                 }
 
                 var existingName = existingCompany.CompanyName;
-                existingCompany.CompanyName = viewModel.CompanyName;
+                existingCompany.CompanyName = viewModel.CompanyName.RemoveCommas();
                 existingCompany.EditedBy = _userName;
                 existingCompany.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
 

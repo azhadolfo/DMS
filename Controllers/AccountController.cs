@@ -112,6 +112,24 @@ namespace Document_Management.Controllers
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                user.Departments = await _dbContext.Departments
+                    .OrderBy(d => d.DepartmentName)
+                    .Select(s => new SelectListItem
+                    {
+                        Text = s.DepartmentName,
+                        Value = s.DepartmentName
+                    })
+                    .ToListAsync(cancellationToken);
+
+                user.Companies = await _dbContext.Companies
+                    .OrderBy(c => c.CompanyName)
+                    .Select(s => new SelectListItem
+                    {
+                        Text = s.CompanyName,
+                        Value = s.CompanyName
+                    })
+                    .ToListAsync(cancellationToken);
+
                 if (!ModelState.IsValid)
                 {
                     return View(user);
@@ -145,24 +163,6 @@ namespace Document_Management.Controllers
                 {
                     return View(user);
                 }
-
-                user.Departments = await _dbContext.Departments
-                    .OrderBy(d => d.DepartmentName)
-                    .Select(s => new SelectListItem
-                    {
-                        Text = s.DepartmentName,
-                        Value = s.DepartmentName
-                    })
-                    .ToListAsync(cancellationToken);
-
-                user.Companies = await _dbContext.Companies
-                    .OrderBy(c => c.CompanyName)
-                    .Select(s => new SelectListItem
-                    {
-                        Text = s.CompanyName,
-                        Value = s.CompanyName
-                    })
-                    .ToListAsync(cancellationToken);
 
                 user.FirstName = user.FirstName.ToUpper();
                 user.LastName = user.LastName.ToUpper();
@@ -234,13 +234,7 @@ namespace Document_Management.Controllers
                     return View();
                 }
 
-                HttpContext.Session.SetString("username", user.Username);
-                HttpContext.Session.SetString("userRole", user.Role);
-                HttpContext.Session.SetString("userAccessDepartments", user.AccessDepartments);
-                HttpContext.Session.SetString("userAccessCompanies", user.AccessCompanies);
-                HttpContext.Session.SetString("userFirstName", user.FirstName);
-
-                LogsModel logs = new(user.Username, $"Login Successfully");
+                LogsModel logs = new(user.Username, "Login Successfully");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 if (passwordVerification.NeedsUpgrade)
@@ -250,6 +244,12 @@ namespace Document_Management.Controllers
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
+
+                HttpContext.Session.SetString("username", user.Username);
+                HttpContext.Session.SetString("userRole", user.Role);
+                HttpContext.Session.SetString("userAccessDepartments", user.AccessDepartments);
+                HttpContext.Session.SetString("userAccessCompanies", user.AccessCompanies);
+                HttpContext.Session.SetString("userFirstName", user.FirstName);
 
                 return RedirectToAction("Index", "Home");
             }
@@ -326,7 +326,7 @@ namespace Document_Management.Controllers
                     return NotFound();
                 }
 
-                user.Departments = await _dbContext.Departments
+                model.Departments = await _dbContext.Departments
                     .OrderBy(d => d.DepartmentName)
                     .Select(s => new SelectListItem
                     {
@@ -335,7 +335,7 @@ namespace Document_Management.Controllers
                     })
                     .ToListAsync(cancellationToken);
 
-                user.Companies = await _dbContext.Companies
+                model.Companies = await _dbContext.Companies
                     .OrderBy(c => c.CompanyName)
                     .Select(s => new SelectListItem
                     {
@@ -357,7 +357,7 @@ namespace Document_Management.Controllers
 
                 if (!dataChanged)
                 {
-                    return RedirectToAction("Edit");
+                    return View(model);
                 }
 
                 user.EmployeeNumber = model.EmployeeNumber;
@@ -395,7 +395,7 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
-                await _dbContext.Database.RollbackTransactionAsync(cancellationToken);
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Failed to update user {UserId}.", model.Id);
                 TempData["error"] = "Failed to update user.";
                 return View(model);
@@ -538,13 +538,11 @@ namespace Document_Management.Controllers
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
+                HttpContext.Session.Clear();
                 LogsModel logs = new(_userName!, $"Logout Successfully");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
-
-                HttpContext.Session.Clear();
-
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)

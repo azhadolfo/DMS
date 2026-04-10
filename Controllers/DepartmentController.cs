@@ -198,7 +198,7 @@ namespace Document_Management.Controllers
                 }
 
                 var existingName = existingDepartment.DepartmentName;
-                existingDepartment.DepartmentName = viewModel.DepartmentName;
+                existingDepartment.DepartmentName = viewModel.DepartmentName.RemoveCommas();
                 existingDepartment.EditedBy = _userName;
                 existingDepartment.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
 

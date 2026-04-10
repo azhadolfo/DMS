@@ -26,6 +26,12 @@ namespace Document_Management.Controllers
         {
             try
             {
+                if (dateFrom > dateTo)
+                {
+                    TempData["error"] = "Date from cannot be greater than Date to date.";
+                    return RedirectToAction(nameof(ActivityReportForm));
+                }
+
                 var uploadedFiles = await _reportRepo.GenerateUploadedFiles(dateFrom, dateTo);
 
                 var model = new ActivityReportViewModel

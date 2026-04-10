@@ -250,6 +250,7 @@ namespace Document_Management.Controllers
                 }
 
                 var existingName = existingSubCategory.SubCategoryName;
+                existingSubCategory.CategoryId = viewModel.CategoryId;
                 existingSubCategory.SubCategoryName = viewModel.SubCategoryName;
                 existingSubCategory.EditedBy = _userName;
                 existingSubCategory.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
