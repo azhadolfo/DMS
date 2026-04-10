@@ -830,7 +830,6 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Download(int documentId, string originalFilename, CancellationToken cancellationToken)
         {
-            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var document = await _dbContext.FileDocuments
@@ -853,11 +852,16 @@ namespace Document_Management.Controllers
                     return departmentAccessResult;
                 }
 
-                // Create log entry
-                var logs = new LogsModel(_accessService.Username!, $"Downloaded file from Cloud Storage: {originalFilename} from path: {document.Location}");
-                await _dbContext.Logs.AddAsync(logs, cancellationToken);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
+                try
+                {
+                    var logs = new LogsModel(_accessService.Username!, $"Downloaded file from Cloud Storage: {originalFilename} from path: {document.Location}");
+                    await _dbContext.Logs.AddAsync(logs, cancellationToken);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to write download audit log for file: {FileName}", originalFilename);
+                }
 
                 // Get signed URL for direct download (better performance)
                 var signedUrl = await _cloudStorage.GetSignedUrlAsync(document.Location, TimeSpan.FromMinutes(5), cancellationToken);
@@ -865,7 +869,6 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error downloading file from Cloud Storage: {FileName}", originalFilename);
                 return BadRequest("Error downloading file from Cloud Storage");
             }
@@ -875,7 +878,6 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> DownloadDirect(int documentId, string originalFilename, CancellationToken cancellationToken)
         {
-            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var document = await _dbContext.FileDocuments
@@ -898,11 +900,16 @@ namespace Document_Management.Controllers
                     return departmentAccessResult;
                 }
 
-                // Create log entry
-                var logs = new LogsModel(_accessService.Username!, $"Downloaded file directly from Cloud Storage: {originalFilename}");
-                await _dbContext.Logs.AddAsync(logs, cancellationToken);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
+                try
+                {
+                    var logs = new LogsModel(_accessService.Username!, $"Downloaded file directly from Cloud Storage: {originalFilename}");
+                    await _dbContext.Logs.AddAsync(logs, cancellationToken);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to write direct download audit log for file: {FileName}", originalFilename);
+                }
 
                 // Download file from Cloud Storage and stream to user
                 var fileStream = await _cloudStorage.DownloadFileStreamAsync(document.Location, cancellationToken);
@@ -910,7 +917,6 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error downloading file directly from Cloud Storage: {FileName}", originalFilename);
                 return BadRequest("Error downloading file from Cloud Storage");
             }
