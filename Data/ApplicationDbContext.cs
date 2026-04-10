@@ -33,12 +33,13 @@ namespace Document_Management.Data
             });
 
             builder.Entity<LogsModel>(l => l.HasIndex(l => l.Date));
-            builder.Entity<Company>(c => c.HasIndex(c => c.CompanyName));
-            builder.Entity<Department>(d => d.HasIndex(d => d.DepartmentName));
-            builder.Entity<Category>(c => c.HasIndex(c => c.CategoryName));
+            builder.Entity<Company>(c => c.HasIndex(c => c.CompanyName).IsUnique());
+            builder.Entity<Department>(d => d.HasIndex(d => d.DepartmentName).IsUnique());
+            builder.Entity<Category>(c => c.HasIndex(c => c.CategoryName).IsUnique());
             builder.Entity<SubCategory>(sc =>
             {
-                sc.HasIndex(sc => sc.SubCategoryName);
+                sc.HasIndex(sc => sc.SubCategoryName)
+                    .IsUnique();
                 sc.HasOne(c => c.Category)
                     .WithMany(c => c.SubCategories)
                     .HasForeignKey(sc => sc.CategoryId)
