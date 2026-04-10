@@ -37,15 +37,23 @@ namespace Document_Management.Controllers
         
         public async Task<IActionResult> Maintenance()
         {
-            if (await _dbContext.AppSettings
-                    .Where(s => s.SettingKey == AppSettingKey.MaintenanceMode)
-                    .Select(s => s.Value == "true")
-                    .FirstOrDefaultAsync())
+            try
             {
-                return View("Maintenance");
-            }
+                if (await _dbContext.AppSettings
+                        .Where(s => s.SettingKey == AppSettingKey.MaintenanceMode)
+                        .Select(s => s.Value == "true")
+                        .FirstOrDefaultAsync())
+                {
+                    return View("Maintenance");
+                }
 
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load maintenance status.");
+                return RedirectToAction(nameof(Index));
+            }
         }
     }
 }

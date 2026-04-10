@@ -147,14 +147,22 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> UploadFile(CancellationToken cancellationToken)
         {
             var uploadAccessResult = EnsureUploadAccess();
-            if (uploadAccessResult == null)
+            if (uploadAccessResult != null)
             {
-                var model = await GetModelSelectList(new FileDocument(), cancellationToken);
-
-                return View(model);
+                return uploadAccessResult;
             }
 
-            return uploadAccessResult;
+            try
+            {
+                var model = await GetModelSelectList(new FileDocument(), cancellationToken);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load upload form.");
+                TempData["error"] = "Failed to load upload form.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]
@@ -172,6 +180,7 @@ namespace Document_Management.Controllers
 
             fileDocument = await GetModelSelectList(fileDocument, cancellationToken);
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 if (!ModelState.IsValid || file == null || file.Length == 0)
@@ -223,6 +232,7 @@ namespace Document_Management.Controllers
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 TempData["success"] = "File uploaded successfully to Cloud Storage";
 
@@ -230,6 +240,7 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file upload to Cloud Storage.");
                 TempData["error"] = "Contact MIS: An error occurred during file upload.";
             }
@@ -244,9 +255,17 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var companies = await _dmsQueryService.GetAccessibleCompaniesAsync(cancellationToken);
-
-            return View(companies);
+            try
+            {
+                var companies = await _dmsQueryService.GetAccessibleCompaniesAsync(cancellationToken);
+                return View(companies);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load accessible companies.");
+                TempData["error"] = "Failed to load file browser.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         public async Task<IActionResult> CompanyFolder(string folderName, CancellationToken cancellationToken)
@@ -259,9 +278,17 @@ namespace Document_Management.Controllers
                 return companyAccessResult;
             }
 
-            var years = await _dmsQueryService.GetYearsAsync(folderName, cancellationToken);
-
-            return View(years);
+            try
+            {
+                var years = await _dmsQueryService.GetYearsAsync(folderName, cancellationToken);
+                return View(years);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load years for company {Company}.", folderName);
+                TempData["error"] = "Failed to load company folder.";
+                return RedirectToAction(nameof(DownloadFile));
+            }
         }
 
         public async Task<IActionResult> YearFolder(string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
@@ -275,9 +302,17 @@ namespace Document_Management.Controllers
                 return companyAccessResult;
             }
 
-            var departments = await _dmsQueryService.GetAccessibleDepartmentsAsync(companyFolderName, yearFolderName, cancellationToken);
-
-            return View(departments);
+            try
+            {
+                var departments = await _dmsQueryService.GetAccessibleDepartmentsAsync(companyFolderName, yearFolderName, cancellationToken);
+                return View(departments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load departments for company {Company} and year {Year}.", companyFolderName, yearFolderName);
+                TempData["error"] = "Failed to load year folder.";
+                return RedirectToAction(nameof(CompanyFolder), new { folderName = companyFolderName });
+            }
         }
 
         public async Task<IActionResult> DepartmentFolder(string departmentFolderName, string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
@@ -292,9 +327,17 @@ namespace Document_Management.Controllers
                 return departmentAccessResult;
             }
 
-            var categories = await _dmsQueryService.GetCategoriesAsync(companyFolderName, yearFolderName, departmentFolderName, cancellationToken);
-
-            return View(categories);
+            try
+            {
+                var categories = await _dmsQueryService.GetCategoriesAsync(companyFolderName, yearFolderName, departmentFolderName, cancellationToken);
+                return View(categories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load categories for department {Department}.", departmentFolderName);
+                TempData["error"] = "Failed to load department folder.";
+                return RedirectToAction(nameof(YearFolder), new { companyFolderName, yearFolderName });
+            }
         }
 
         public async Task<IActionResult> SubCategoryFolder(string documentTypeFolderName, string departmentFolderName, string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
@@ -316,9 +359,17 @@ namespace Document_Management.Controllers
                 return departmentAccessResult;
             }
 
-            var subCategories = await _dmsQueryService.GetSubCategoriesAsync(companyFolderName, yearFolderName, departmentFolderName, documentTypeFolderName, cancellationToken);
-
-            return View(subCategories);
+            try
+            {
+                var subCategories = await _dmsQueryService.GetSubCategoriesAsync(companyFolderName, yearFolderName, departmentFolderName, documentTypeFolderName, cancellationToken);
+                return View(subCategories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load sub-categories for category {Category}.", documentTypeFolderName);
+                TempData["error"] = "Failed to load category folder.";
+                return RedirectToAction(nameof(DepartmentFolder), new { departmentFolderName, companyFolderName, yearFolderName });
+            }
         }
 
         public async Task<IActionResult> DisplayFiles(string departmentFolderName,
@@ -348,16 +399,31 @@ namespace Document_Management.Controllers
                 return departmentAccessResult;
             }
 
-            var fileDocuments = await _dmsQueryService.GetFilesAsync(
-                companyFolderName,
-                yearFolderName,
-                departmentFolderName,
-                documentTypeFolderName,
-                subCategoryFolder,
-                fileName,
-                cancellation);
+            try
+            {
+                var fileDocuments = await _dmsQueryService.GetFilesAsync(
+                    companyFolderName,
+                    yearFolderName,
+                    departmentFolderName,
+                    documentTypeFolderName,
+                    subCategoryFolder,
+                    fileName,
+                    cancellation);
 
-            return View(fileDocuments);
+                return View(fileDocuments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to display files for department {Department}, category {Category}, sub-category {SubCategory}.", departmentFolderName, documentTypeFolderName, subCategoryFolder);
+                TempData["error"] = "Failed to load files.";
+
+                if (!string.IsNullOrWhiteSpace(subCategoryFolder))
+                {
+                    return RedirectToAction(nameof(SubCategoryFolder), new { documentTypeFolderName, departmentFolderName, companyFolderName, yearFolderName });
+                }
+
+                return RedirectToAction(nameof(DepartmentFolder), new { departmentFolderName, companyFolderName, yearFolderName });
+            }
         }
 
         [HttpGet]
@@ -391,94 +457,105 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
-            if (files == null)
+            try
             {
-                return NotFound();
-            }
+                var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
+                if (files == null)
+                {
+                    return NotFound();
+                }
 
-            var documentAccessResult = EnsureDocumentMutationAccess(files);
-            if (documentAccessResult != null)
+                var documentAccessResult = EnsureDocumentMutationAccess(files);
+                if (documentAccessResult != null)
+                {
+                    return documentAccessResult;
+                }
+
+                return View(files);
+            }
+            catch (Exception ex)
             {
-                return documentAccessResult;
+                _logger.LogError(ex, "Failed to load document {DocumentId} for edit.", id);
+                TempData["error"] = "Failed to load file document.";
+                return RedirectToAction(nameof(Index));
             }
-
-            return View(files);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(FileDocument model, IFormFile? newFile, CancellationToken cancellationToken)
         {
-            var username = HttpContext.Session.GetString("username");
-            var file = await _dbContext.FileDocuments
-                .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
-
-            if (file == null)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                return NotFound();
-            }
+                var username = HttpContext.Session.GetString("username");
+                var file = await _dbContext.FileDocuments
+                    .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
 
-            var documentAccessResult = EnsureDocumentMutationAccess(file);
-            if (documentAccessResult != null)
-            {
-                return documentAccessResult;
-            }
-
-            var detailsChanged = false;
-            var fileChanged = false;
-            var oldFileName = file.OriginalFilename;
-
-            // Update file details if changed
-            if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
-            {
-                file.Description = model.Description;
-                file.NumberOfPages = model.NumberOfPages;
-                detailsChanged = true;
-            }
-
-            if (newFile?.Length > 0)
-            {
-                if (newFile.ContentType != "application/pdf")
+                if (file == null)
                 {
-                    TempData["error"] = "Please upload pdf file only!";
+                    return NotFound();
+                }
+
+                var documentAccessResult = EnsureDocumentMutationAccess(file);
+                if (documentAccessResult != null)
+                {
+                    return documentAccessResult;
+                }
+
+                var detailsChanged = false;
+                var fileChanged = false;
+                var oldFileName = file.OriginalFilename;
+
+                if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
+                {
+                    file.Description = model.Description;
+                    file.NumberOfPages = model.NumberOfPages;
+                    detailsChanged = true;
+                }
+
+                if (newFile?.Length > 0)
+                {
+                    if (newFile.ContentType != "application/pdf")
+                    {
+                        TempData["error"] = "Please upload pdf file only!";
+                        return RedirectToAction("Edit", new { id = model.Id });
+                    }
+
+                    if (newFile.Length > 20000000)
+                    {
+                        TempData["error"] = "File is too large 20MB is the maximum size allowed.";
+                        return RedirectToAction("Edit", new { id = model.Id });
+                    }
+
+                    var replaceResult = await _documentStorageWorkflowService.ReplaceFileAsync(file, newFile, cancellationToken);
+
+                    file.Name = replaceResult.StoredFileName;
+                    file.Location = replaceResult.ObjectName;
+                    file.FileSize = replaceResult.FileSize;
+                    file.OriginalFilename = replaceResult.OriginalFileName;
+                    fileChanged = true;
+                }
+
+                if (!detailsChanged && !fileChanged)
+                {
+                    TempData["info"] = "No changes were made.";
                     return RedirectToAction("Edit", new { id = model.Id });
                 }
 
-                if (newFile.Length > 20000000)
+                var changeDescription = "";
+
+                switch (detailsChanged)
                 {
-                    TempData["error"] = "File is too large 20MB is the maximum size allowed.";
-                    return RedirectToAction("Edit", new { id = model.Id });
-                }
+                    case true when fileChanged:
+                        changeDescription = $"Updated details and replaced file in Cloud Storage for document# {file.Id} from {oldFileName} to {file.OriginalFilename}";
+                        break;
 
-                var replaceResult = await _documentStorageWorkflowService.ReplaceFileAsync(file, newFile, cancellationToken);
+                    case true:
+                        changeDescription = $"Updated details for document# {file.Id}";
+                        break;
 
-                file.Name = replaceResult.StoredFileName;
-                file.Location = replaceResult.ObjectName;
-                file.FileSize = replaceResult.FileSize;
-                file.OriginalFilename = replaceResult.OriginalFileName;
-                fileChanged = true;
-            }
-
-            if (!detailsChanged && !fileChanged)
-            {
-                TempData["info"] = "No changes were made.";
-                return RedirectToAction("Edit", new { id = model.Id });
-            }
-
-            var changeDescription = "";
-
-            switch (detailsChanged)
-            {
-                case true when fileChanged:
-                    changeDescription = $"Updated details and replaced file in Cloud Storage for document# {file.Id} from {oldFileName} to {file.OriginalFilename}";
-                    break;
-
-                case true:
-                    changeDescription = $"Updated details for document# {file.Id}";
-                    break;
-
-                default:
+                    default:
                     {
                         if (fileChanged)
                         {
@@ -486,14 +563,23 @@ namespace Document_Management.Controllers
                         }
                         break;
                     }
+                }
+
+                LogsModel logs = new(username!, changeDescription);
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                TempData["success"] = "File document updated successfully";
+                return RedirectToAction("Index");
             }
-
-            LogsModel logs = new(username!, changeDescription);
-            await _dbContext.Logs.AddAsync(logs, cancellationToken);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            TempData["success"] = "File document updated successfully";
-            return RedirectToAction("Index");
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to update document {DocumentId}.", model.Id);
+                TempData["error"] = "Failed to update file document.";
+                return RedirectToAction("Edit", new { id = model.Id });
+            }
         }
 
         public async Task<IActionResult> GeneralSearch(
@@ -509,9 +595,17 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var model = await _dmsSearchService.SearchAsync(search, page, pageSize, sortBy, sortOrder, cancellationToken);
-
-            return View(model);
+            try
+            {
+                var model = await _dmsSearchService.SearchAsync(search, page, pageSize, sortBy, sortOrder, cancellationToken);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed general search for term {Search}.", search);
+                TempData["error"] = "Failed to perform search.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]
@@ -540,6 +634,7 @@ namespace Document_Management.Controllers
                 return documentAccessResult;
             }
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 // Delete from Cloud Storage
@@ -551,10 +646,12 @@ namespace Document_Management.Controllers
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
                 TempData["success"] = "File has been permanently deleted from Cloud Storage.";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file permanently deletion from Cloud Storage.");
                 TempData["error"] = "Failed to permanently delete file from Cloud Storage.";
             }
@@ -588,6 +685,7 @@ namespace Document_Management.Controllers
                 return documentAccessResult;
             }
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 model.IsDeleted = true;
@@ -596,10 +694,12 @@ namespace Document_Management.Controllers
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
                 TempData["success"] = "File has been deleted from Cloud Storage.";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file deletion from Cloud Storage.");
                 TempData["error"] = "Failed to delete file from Cloud Storage.";
             }
@@ -633,6 +733,7 @@ namespace Document_Management.Controllers
                 return documentAccessResult;
             }
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 model.IsDeleted = false;
@@ -641,10 +742,12 @@ namespace Document_Management.Controllers
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
                 TempData["success"] = "File has been restored from Cloud Storage.";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file restoration from Cloud Storage.");
                 TempData["error"] = "Failed to restore file from Cloud Storage.";
             }
@@ -655,19 +758,28 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Transfer(int id, CancellationToken cancellationToken)
         {
-            var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
-            if (files == null)
+            try
             {
-                return NotFound();
-            }
+                var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
+                if (files == null)
+                {
+                    return NotFound();
+                }
 
-            var documentAccessResult = EnsureDocumentMutationAccess(files);
-            if (documentAccessResult != null)
+                var documentAccessResult = EnsureDocumentMutationAccess(files);
+                if (documentAccessResult != null)
+                {
+                    return documentAccessResult;
+                }
+
+                return View(await GetModelSelectList(files, cancellationToken));
+            }
+            catch (Exception ex)
             {
-                return documentAccessResult;
+                _logger.LogError(ex, "Failed to load transfer form for document {DocumentId}.", id);
+                TempData["error"] = "Failed to load transfer form.";
+                return RedirectToAction(nameof(Index));
             }
-
-            return View(await GetModelSelectList(files, cancellationToken));
         }
 
         [HttpPost]
@@ -693,6 +805,7 @@ namespace Document_Management.Controllers
 
             model = await GetModelSelectList(model, cancellationToken);
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var transferResult = await _documentStorageWorkflowService.TransferAsync(existingModel, model, cancellationToken);
@@ -710,11 +823,13 @@ namespace Document_Management.Controllers
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 TempData["success"] = "File successfully transferred in Cloud Storage.";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file transfer in Cloud Storage.");
                 TempData["error"] = "Failed to transfer file in Cloud Storage.";
             }
@@ -725,6 +840,7 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Download(int documentId, string originalFilename, CancellationToken cancellationToken)
         {
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var username = HttpContext.Session.GetString("username");
@@ -752,6 +868,7 @@ namespace Document_Management.Controllers
                 var logs = new LogsModel(username!, $"Downloaded file from Cloud Storage: {originalFilename} from path: {document.Location}");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 // Get signed URL for direct download (better performance)
                 var signedUrl = await _cloudStorage.GetSignedUrlAsync(document.Location, TimeSpan.FromMinutes(5), cancellationToken);
@@ -759,6 +876,7 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error downloading file from Cloud Storage: {FileName}", originalFilename);
                 return BadRequest("Error downloading file from Cloud Storage");
             }
@@ -768,6 +886,7 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> DownloadDirect(int documentId, string originalFilename, CancellationToken cancellationToken)
         {
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 var username = HttpContext.Session.GetString("username");
@@ -795,6 +914,7 @@ namespace Document_Management.Controllers
                 var logs = new LogsModel(username!, $"Downloaded file directly from Cloud Storage: {originalFilename}");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 // Download file from Cloud Storage and stream to user
                 var fileStream = await _cloudStorage.DownloadFileStreamAsync(document.Location, cancellationToken);
@@ -802,6 +922,7 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error downloading file directly from Cloud Storage: {FileName}", originalFilename);
                 return BadRequest("Error downloading file from Cloud Storage");
             }
@@ -843,13 +964,22 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            if (_accessService.CanAccessTrash())
+            try
             {
-                return View();
-            }
+                if (_accessService.CanAccessTrash())
+                {
+                    return View();
+                }
 
-            TempData["ErrorMessage"] = "You have no access to trash. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+                TempData["ErrorMessage"] = "You have no access to trash. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load trash view.");
+                TempData["ErrorMessage"] = "Failed to load trash.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]

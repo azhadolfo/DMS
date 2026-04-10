@@ -25,10 +25,19 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Privacy", "Home");
             }
 
-            var pendingCount = await _migrationService.GetPendingMigrationCountAsync();
-            ViewBag.PendingMigrationCount = pendingCount;
+            try
+            {
+                var pendingCount = await _migrationService.GetPendingMigrationCountAsync();
+                ViewBag.PendingMigrationCount = pendingCount;
 
-            return View();
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load migration dashboard.");
+                TempData["ErrorMessage"] = "Failed to load migration dashboard.";
+                return RedirectToAction("Privacy", "Home");
+            }
         }
 
         // POST: Migration/StartMigration
@@ -100,6 +109,7 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to retrieve migration status.");
                 return Json(new
                 {
                     success = false,

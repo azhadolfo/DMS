@@ -12,13 +12,18 @@ namespace Document_Management.Controllers
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly ILogger<AccountController> _logger;
         private readonly string? _userRole;
         private readonly string? _userName;
         private static readonly PasswordHasher<Account> _accountPasswordHasher = new();
 
-        public AccountController(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public AccountController(
+            ApplicationDbContext context,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<AccountController> logger)
         {
             _dbContext = context;
+            _logger = logger;
 
             if (httpContextAccessor.HttpContext != null)
             {
@@ -39,11 +44,20 @@ namespace Document_Management.Controllers
                 return adminAccessResult;
             }
 
-            var users = await _dbContext.Accounts
-                .OrderBy(u => u.EmployeeNumber)
-                .ToListAsync();
+            try
+            {
+                var users = await _dbContext.Accounts
+                    .OrderBy(u => u.EmployeeNumber)
+                    .ToListAsync();
 
-            return View(users);
+                return View(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load users.");
+                TempData["ErrorMessage"] = "Failed to load users.";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         [HttpGet]
@@ -55,25 +69,34 @@ namespace Document_Management.Controllers
                 return adminAccessResult;
             }
 
-            return View(new Account
+            try
             {
-                Departments = await _dbContext.Departments
-                       .OrderBy(d => d.DepartmentName)
-                       .Select(s => new SelectListItem
-                       {
-                           Text = s.DepartmentName,
-                           Value = s.DepartmentName
-                       })
-                       .ToListAsync(),
-                Companies = await _dbContext.Companies
-                       .OrderBy(c => c.CompanyName)
-                       .Select(s => new SelectListItem
-                       {
-                           Text = s.CompanyName,
-                           Value = s.CompanyName
-                       })
-                       .ToListAsync()
-            });
+                return View(new Account
+                {
+                    Departments = await _dbContext.Departments
+                           .OrderBy(d => d.DepartmentName)
+                           .Select(s => new SelectListItem
+                           {
+                               Text = s.DepartmentName,
+                               Value = s.DepartmentName
+                           })
+                           .ToListAsync(),
+                    Companies = await _dbContext.Companies
+                           .OrderBy(c => c.CompanyName)
+                           .Select(s => new SelectListItem
+                           {
+                               Text = s.CompanyName,
+                               Value = s.CompanyName
+                           })
+                           .ToListAsync()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load user create form.");
+                TempData["ErrorMessage"] = "Failed to load user form.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]
@@ -86,72 +109,85 @@ namespace Document_Management.Controllers
                 return adminAccessResult;
             }
 
-            if (!ModelState.IsValid)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                return View(user);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return View(user);
+                }
 
-            var usernameExists = await _dbContext.Accounts
-                .AnyAsync(u => u.Username == user.Username, cancellationToken);
+                var usernameExists = await _dbContext.Accounts
+                    .AnyAsync(u => u.Username == user.Username, cancellationToken);
 
-            var employeeNumberExists = await _dbContext.Accounts
-                .AnyAsync(u => u.EmployeeNumber == user.EmployeeNumber, cancellationToken);
+                var employeeNumberExists = await _dbContext.Accounts
+                    .AnyAsync(u => u.EmployeeNumber == user.EmployeeNumber, cancellationToken);
 
-            switch (usernameExists)
-            {
-                case true when employeeNumberExists:
-                    ModelState.AddModelError("", "Both Username and Employee Number are already in use by other users.");
-                    break;
+                switch (usernameExists)
+                {
+                    case true when employeeNumberExists:
+                        ModelState.AddModelError("", "Both Username and Employee Number are already in use by other users.");
+                        break;
 
-                case true:
-                    ModelState.AddModelError("", "Username is already in use by another user.");
-                    break;
+                    case true:
+                        ModelState.AddModelError("", "Username is already in use by another user.");
+                        break;
 
-                default:
-                    if (employeeNumberExists)
+                    default:
+                        if (employeeNumberExists)
+                        {
+                            ModelState.AddModelError("", "Employee Number is already in use by another user.");
+                        }
+                        break;
+                }
+
+                if (usernameExists || employeeNumberExists)
+                {
+                    return View(user);
+                }
+
+                user.Departments = await _dbContext.Departments
+                    .OrderBy(d => d.DepartmentName)
+                    .Select(s => new SelectListItem
                     {
-                        ModelState.AddModelError("", "Employee Number is already in use by another user.");
-                    }
-                    break;
-            }
+                        Text = s.DepartmentName,
+                        Value = s.DepartmentName
+                    })
+                    .ToListAsync(cancellationToken);
 
-            if (usernameExists || employeeNumberExists)
+                user.Companies = await _dbContext.Companies
+                    .OrderBy(c => c.CompanyName)
+                    .Select(s => new SelectListItem
+                    {
+                        Text = s.CompanyName,
+                        Value = s.CompanyName
+                    })
+                    .ToListAsync(cancellationToken);
+
+                user.FirstName = user.FirstName.ToUpper();
+                user.LastName = user.LastName.ToUpper();
+                user.AccessDepartments = string.Join(",", accessDepartments);
+                user.AccessCompanies = string.Join(",", accessCompanies);
+
+                user.Password = HashPassword(user, user.Password);
+                await _dbContext.Accounts.AddAsync(user, cancellationToken);
+
+                LogsModel logs = new(_userName!, $"Add new user: {user.Username}");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                TempData["success"] = "User created successfully";
+                return RedirectToAction("Index", "Account");
+            }
+            catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to create user {Username}.", user.Username);
+                TempData["ErrorMessage"] = "Failed to create user.";
                 return View(user);
             }
-
-            user.Departments = await _dbContext.Departments
-                .OrderBy(d => d.DepartmentName)
-                .Select(s => new SelectListItem
-                {
-                    Text = s.DepartmentName,
-                    Value = s.DepartmentName
-                })
-                .ToListAsync(cancellationToken);
-
-            user.Companies = await _dbContext.Companies
-                .OrderBy(c => c.CompanyName)
-                .Select(s => new SelectListItem
-                {
-                    Text = s.CompanyName,
-                    Value = s.CompanyName
-                })
-                .ToListAsync(cancellationToken);
-
-            user.FirstName = user.FirstName.ToUpper();
-            user.LastName = user.LastName.ToUpper();
-            user.AccessDepartments = string.Join(",", accessDepartments);
-            user.AccessCompanies = string.Join(",", accessCompanies);
-
-            user.Password = HashPassword(user, user.Password);
-            await _dbContext.Accounts.AddAsync(user, cancellationToken);
-
-            LogsModel logs = new(_userName!, $"Add new user: {user.Username}");
-            await _dbContext.Logs.AddAsync(logs, cancellationToken);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            TempData["success"] = "User created successfully";
-            return RedirectToAction("Index", "Account");
         }
 
         [HttpGet]
@@ -173,45 +209,57 @@ namespace Document_Management.Controllers
                 return View();
             }
 
-            var user = await _dbContext.Accounts
-                .FirstOrDefaultAsync(u => u.Username == userName, cancellationToken);
-
-            if (user == null)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                ModelState.AddModelError("", "Invalid username or password");
+                var user = await _dbContext.Accounts
+                    .FirstOrDefaultAsync(u => u.Username == userName, cancellationToken);
+
+                if (user == null)
+                {
+                    ModelState.AddModelError("", "Invalid username or password");
+                    return View();
+                }
+
+                var passwordVerification = VerifyPassword(user, password);
+                if (!passwordVerification.IsValid)
+                {
+                    ModelState.AddModelError("", "Invalid username or password");
+                    return View();
+                }
+
+                if (!user.IsActive)
+                {
+                    ModelState.AddModelError("", "Your account is inactive. Please contact the MIS Department for assistance.");
+                    return View();
+                }
+
+                HttpContext.Session.SetString("username", user.Username);
+                HttpContext.Session.SetString("userRole", user.Role);
+                HttpContext.Session.SetString("userAccessDepartments", user.AccessDepartments);
+                HttpContext.Session.SetString("userAccessCompanies", user.AccessCompanies);
+                HttpContext.Session.SetString("userFirstName", user.FirstName);
+
+                LogsModel logs = new(user.Username, $"Login Successfully");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                if (passwordVerification.NeedsUpgrade)
+                {
+                    user.Password = HashPassword(user, password);
+                }
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Login failed for user {Username}.", userName);
+                ModelState.AddModelError("", "An unexpected error occurred during login.");
                 return View();
             }
-
-            var passwordVerification = VerifyPassword(user, password);
-            if (!passwordVerification.IsValid)
-            {
-                ModelState.AddModelError("", "Invalid username or password");
-                return View();
-            }
-
-            if (!user.IsActive)
-            {
-                ModelState.AddModelError("", "Your account is inactive. Please contact the MIS Department for assistance.");
-                return View();
-            }
-
-            HttpContext.Session.SetString("username", user.Username);
-            HttpContext.Session.SetString("userRole", user.Role);
-            HttpContext.Session.SetString("userAccessDepartments", user.AccessDepartments);
-            HttpContext.Session.SetString("userAccessCompanies", user.AccessCompanies);
-            HttpContext.Session.SetString("userFirstName", user.FirstName);
-
-            LogsModel logs = new(user.Username, $"Login Successfully");
-            await _dbContext.Logs.AddAsync(logs, cancellationToken);
-
-            if (passwordVerification.NeedsUpgrade)
-            {
-                user.Password = HashPassword(user, password);
-            }
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
@@ -267,78 +315,91 @@ namespace Document_Management.Controllers
                 return adminAccessResult;
             }
 
-            var user = await _dbContext.Accounts
-                .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
-
-            if (user == null)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                return NotFound();
-            }
+                var user = await _dbContext.Accounts
+                    .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
 
-            user.Departments = await _dbContext.Departments
-                .OrderBy(d => d.DepartmentName)
-                .Select(s => new SelectListItem
+                if (user == null)
                 {
-                    Text = s.DepartmentName,
-                    Value = s.DepartmentName
-                })
-                .ToListAsync(cancellationToken);
-
-            user.Companies = await _dbContext.Companies
-                .OrderBy(c => c.CompanyName)
-                .Select(s => new SelectListItem
-                {
-                    Text = s.CompanyName,
-                    Value = s.CompanyName
-                })
-                .ToListAsync(cancellationToken);
-
-            var dataChanged = user.EmployeeNumber != model.EmployeeNumber ||
-                              user.FirstName != model.FirstName ||
-                              user.LastName != model.LastName ||
-                              user.Department != model.Department ||
-                              user.Username != model.Username ||
-                              user.Role != model.Role ||
-                              user.IsActive != model.IsActive ||
-                              (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword)) ||
-                              !user.AccessDepartments.Split(',').SequenceEqual(accessDepartments) ||
-                              !user.AccessCompanies.Split(',').SequenceEqual(accessCompanies);
-
-            if (!dataChanged)
-            {
-                return RedirectToAction("Edit");
-            }
-
-            user.EmployeeNumber = model.EmployeeNumber;
-            user.FirstName = model.FirstName.ToUpper();
-            user.LastName = model.LastName.ToUpper();
-            user.Department = model.Department;
-            user.Username = model.Username;
-            user.Role = model.Role;
-            user.IsActive = model.IsActive;
-
-            if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
-            {
-                if (newPassword == newConfirmPassword)
-                {
-                    user.Password = HashPassword(user, newPassword);
+                    return NotFound();
                 }
-                else
+
+                user.Departments = await _dbContext.Departments
+                    .OrderBy(d => d.DepartmentName)
+                    .Select(s => new SelectListItem
+                    {
+                        Text = s.DepartmentName,
+                        Value = s.DepartmentName
+                    })
+                    .ToListAsync(cancellationToken);
+
+                user.Companies = await _dbContext.Companies
+                    .OrderBy(c => c.CompanyName)
+                    .Select(s => new SelectListItem
+                    {
+                        Text = s.CompanyName,
+                        Value = s.CompanyName
+                    })
+                    .ToListAsync(cancellationToken);
+
+                var dataChanged = user.EmployeeNumber != model.EmployeeNumber ||
+                                  user.FirstName != model.FirstName ||
+                                  user.LastName != model.LastName ||
+                                  user.Department != model.Department ||
+                                  user.Username != model.Username ||
+                                  user.Role != model.Role ||
+                                  user.IsActive != model.IsActive ||
+                                  (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword)) ||
+                                  !user.AccessDepartments.Split(',').SequenceEqual(accessDepartments) ||
+                                  !user.AccessCompanies.Split(',').SequenceEqual(accessCompanies);
+
+                if (!dataChanged)
                 {
-                    TempData["error"] = "Password is not the same";
-                    return View(model);
+                    return RedirectToAction("Edit");
                 }
+
+                user.EmployeeNumber = model.EmployeeNumber;
+                user.FirstName = model.FirstName.ToUpper();
+                user.LastName = model.LastName.ToUpper();
+                user.Department = model.Department;
+                user.Username = model.Username;
+                user.Role = model.Role;
+                user.IsActive = model.IsActive;
+
+                if (!string.IsNullOrEmpty(newPassword) && !string.IsNullOrEmpty(newConfirmPassword))
+                {
+                    if (newPassword == newConfirmPassword)
+                    {
+                        user.Password = HashPassword(user, newPassword);
+                    }
+                    else
+                    {
+                        TempData["error"] = "Password is not the same";
+                        return View(model);
+                    }
+                }
+
+                user.AccessDepartments = accessDepartments.Length > 0 ? string.Join(",", accessDepartments) : string.Empty;
+                user.AccessCompanies = accessCompanies.Length > 0 ? string.Join(",", accessCompanies) : string.Empty;
+
+                LogsModel logs = new(_userName!, $"Update user: {user.Username}");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                TempData["success"] = "User updated successfully";
+                return RedirectToAction("Index");
             }
-
-            user.AccessDepartments = accessDepartments.Length > 0 ? string.Join(",", accessDepartments) : string.Empty;
-            user.AccessCompanies = accessCompanies.Length > 0 ? string.Join(",", accessCompanies) : string.Empty;
-
-            LogsModel logs = new(_userName!, $"Update user: {user.Username}");
-            await _dbContext.Logs.AddAsync(logs, cancellationToken);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            TempData["success"] = "User updated successfully";
-            return RedirectToAction("Index");
+            catch (Exception ex)
+            {
+                await _dbContext.Database.RollbackTransactionAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to update user {UserId}.", model.Id);
+                TempData["error"] = "Failed to update user.";
+                return View(model);
+            }
         }
 
         public async Task<IActionResult> Delete(int? id, CancellationToken cancellationToken)
@@ -375,23 +436,36 @@ namespace Document_Management.Controllers
                 return adminAccessResult;
             }
 
-            var employee = await _dbContext.Accounts
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-            if (employee != null)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
+                var employee = await _dbContext.Accounts
+                    .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+                if (employee == null)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+
                 _dbContext.Accounts.Remove(employee);
 
                 LogsModel logs = new(_userName!, $"Delete user: {employee.Username}");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 TempData["success"] = "User deleted successfully";
-            }
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to delete user {UserId}.", id);
+                TempData["error"] = "Failed to delete user.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpGet]
@@ -413,31 +487,43 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var user = await _dbContext.Accounts
-                .FirstOrDefaultAsync(x => x.Username == _userName, cancellationToken);
-
-            if (user == null)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                return NotFound();
-            }
+                var user = await _dbContext.Accounts
+                    .FirstOrDefaultAsync(x => x.Username == _userName, cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(model.Password))
-            {
-                TempData["error"] = "Password is required.";
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Password))
+                {
+                    TempData["error"] = "Password is required.";
+                    return View();
+                }
+
+                if (VerifyPassword(user, model.Password).IsValid)
+                {
+                    TempData["error"] = "New password must not the same with the previous.";
+                    return View();
+                }
+
+                user.Password = HashPassword(user, model.Password);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                TempData["success"] = "Change password successfully";
                 return View();
             }
-
-            if (VerifyPassword(user, model.Password).IsValid)
+            catch (Exception ex)
             {
-                TempData["error"] = "New password must not the same with the previous.";
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to change password for user {Username}.", _userName);
+                TempData["error"] = "Failed to change password.";
                 return View();
             }
-
-            user.Password = HashPassword(user, model.Password);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            TempData["success"] = "Change password successfully";
-            return View();
         }
 
         public async Task<IActionResult> Logout(CancellationToken cancellationToken)
@@ -448,13 +534,25 @@ namespace Document_Management.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            LogsModel logs = new(_userName!, $"Logout Successfully");
-            await _dbContext.Logs.AddAsync(logs, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                LogsModel logs = new(_userName!, $"Logout Successfully");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
-            HttpContext.Session.Clear();
+                HttpContext.Session.Clear();
 
-            return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to logout user {Username}.", _userName);
+                TempData["error"] = "Failed to logout.";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         private IActionResult? EnsureAdminAccess()
