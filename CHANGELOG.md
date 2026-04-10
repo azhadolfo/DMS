@@ -5,7 +5,7 @@ The format is based on Semantic Versioning.
 
 ---
 
-## [v5.2.0] - 2026-04-10
+## [v6.0.0] - 2026-04-10
 ### Changed
 - Modified and refactor the existing code base.
 
