@@ -30,8 +30,6 @@ Use the current structure as the default:
 * `Views/` for Razor views
 * `Migrations/` for EF Core migrations
 
-Do not convert the app to Minimal APIs or introduce a new architectural pattern unless the task explicitly requires it.
-
 ## Architectural Rules
 
 * Keep business rules out of Razor views and controllers.
@@ -114,7 +112,6 @@ When making changes, follow this order:
 
 Do not introduce these unless clearly justified by the task:
 
-* Minimal API rewrites
 * Generic repository abstractions over EF Core
 * Marker interfaces
 * Deep inheritance hierarchies
