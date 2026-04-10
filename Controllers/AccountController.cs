@@ -480,6 +480,7 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(Account model, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(_userName))
