@@ -15,6 +15,10 @@
 
 <div class="content">
     <partial name="_Notification" />
+    <form id="delete-file-form" method="post" class="d-none">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="delete-file-id" />
+    </form>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-bold mb-0">Uploaded Files</h2>
@@ -123,9 +127,18 @@
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `/DMS/Delete?id=${id}`;
+                    submitMutationForm('delete-file-form', '@Url.Action("Delete", "Dms")', id, 'delete-file-id');
                 }
             });
+        }
+
+        function submitMutationForm(formId, actionUrl, id, inputId) {
+            const form = document.getElementById(formId);
+            const idInput = document.getElementById(inputId);
+
+            form.action = actionUrl;
+            idInput.value = id;
+            form.submit();
         }
     </script>
 }

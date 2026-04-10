@@ -15,6 +15,14 @@
 
 <div class="content">
     <partial name="_Notification" />
+    <form id="permanent-delete-form" method="post" class="d-none">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="permanent-delete-id" />
+    </form>
+    <form id="restore-file-form" method="post" class="d-none">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="restore-file-id" />
+    </form>
     
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-bold mb-0">Deleted Files</h2>
@@ -113,7 +121,7 @@
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `/DMS/PermanentDelete?id=${id}`;
+                    submitMutationForm('permanent-delete-form', '@Url.Action("PermanentDelete", "Dms")', id, 'permanent-delete-id');
                 }
             });
         }
@@ -130,9 +138,18 @@
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `/DMS/Restore?id=${id}`;
+                    submitMutationForm('restore-file-form', '@Url.Action("Restore", "Dms")', id, 'restore-file-id');
                 }
             });
+        }
+
+        function submitMutationForm(formId, actionUrl, id, inputId) {
+            const form = document.getElementById(formId);
+            const idInput = document.getElementById(inputId);
+
+            form.action = actionUrl;
+            idInput.value = id;
+            form.submit();
         }
     </script>
 }

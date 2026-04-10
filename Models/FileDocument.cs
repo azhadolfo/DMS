@@ -32,6 +32,7 @@ namespace Document_Management.Models
         public string Description { get; set; } = string.Empty;
 
         [Display(Name = "Date Uploaded")]
+        [Column(TypeName = "timestamp without time zone")]
         public DateTime DateUploaded { get; set; }
 
         public string Username { get; set; } = string.Empty;
@@ -46,7 +47,7 @@ namespace Document_Management.Models
         public int NumberOfPages { get; set; }
 
         public long FileSize { get; set; }
-        
+
         public bool IsInCloudStorage { get; set; }
 
         public bool IsDeleted { get; set; }
@@ -64,16 +65,16 @@ namespace Document_Management.Models
 
         [NotMapped]
         public List<SelectListItem>? Companies { get; set; }
-        
+
         [NotMapped]
         public List<SelectListItem>? Years { get; set; }
-        
+
         [NotMapped]
         public List<SelectListItem>? Departments { get; set; }
-        
+
         [NotMapped]
         public List<SelectListItem>? Categories { get; set; }
-        
+
         [NotMapped]
         public List<SelectListItem>? SubCategories { get; set; }
 

@@ -13,10 +13,10 @@ namespace Document_Management.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<List<FileUploadReportViewModel>> GenerateUploadedFiles(DateOnly DateFrom, DateOnly DateTo, CancellationToken cancellation = default)
+        public async Task<List<FileUploadReportViewModel>> GenerateUploadedFiles(DateOnly dateFrom, DateOnly dateTo, CancellationToken cancellation = default)
         {
             return await _dbContext.FileDocuments
-                .Where(f => DateOnly.FromDateTime(f.DateUploaded) >= DateFrom && DateOnly.FromDateTime(f.DateUploaded) <= DateTo)
+                .Where(f => DateOnly.FromDateTime(f.DateUploaded) >= dateFrom && DateOnly.FromDateTime(f.DateUploaded) <= dateTo)
                 .GroupBy(f => new
                 {
                     f.BoxNumber,

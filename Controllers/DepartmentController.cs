@@ -5,183 +5,234 @@ using Document_Management.Utility.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Document_Management.Controllers;
-
-public class DepartmentController : Controller
+namespace Document_Management.Controllers
 {
-    private readonly ApplicationDbContext _dbContext;
-    private readonly string? _userRole;
-    private readonly string? _userName;
-
-    public DepartmentController(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor)
+    public class DepartmentController : Controller
     {
-        _dbContext = dbContext;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ILogger<DepartmentController> _logger;
+        private readonly string? _userRole;
+        private readonly string? _userName;
 
-        if (httpContextAccessor.HttpContext != null)
+        public DepartmentController(
+            ApplicationDbContext dbContext,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<DepartmentController> logger)
         {
-            _userRole = httpContextAccessor.HttpContext.Session.GetString("userRole")?.ToLower();
-            _userName = httpContextAccessor.HttpContext.Session.GetString("username");
-        }
-        else
-        {
-            _userRole = null;
-        }
-    }
+            _dbContext = dbContext;
+            _logger = logger;
 
-    public async Task<IActionResult> Index()
-    {
-        var adminAccessResult = EnsureAdminAccess();
-        if (adminAccessResult != null)
-        {
-            return adminAccessResult;
-        }
-
-        var departments = await _dbContext.Departments
-            .OrderBy(u => u.DepartmentName)
-            .ToListAsync();
-
-        return View(departments);
-    }
-
-    [HttpGet]
-    public IActionResult Create()
-    {
-        var adminAccessResult = EnsureAdminAccess();
-        if (adminAccessResult != null)
-        {
-            return adminAccessResult;
+            if (httpContextAccessor.HttpContext != null)
+            {
+                _userRole = httpContextAccessor.HttpContext.Session.GetString("userRole")?.ToLower();
+                _userName = httpContextAccessor.HttpContext.Session.GetString("username");
+            }
+            else
+            {
+                _userRole = null;
+            }
         }
 
-        return View();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create(DepartmentViewModel viewModel, CancellationToken cancellationToken)
-    {
-        var adminAccessResult = EnsureAdminAccess();
-        if (adminAccessResult != null)
+        public async Task<IActionResult> Index()
         {
-            return adminAccessResult;
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
+            {
+                return adminAccessResult;
+            }
+
+            try
+            {
+                var departments = await _dbContext.Departments
+                    .OrderBy(u => u.DepartmentName)
+                    .ToListAsync();
+
+                return View(departments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load departments.");
+                TempData["ErrorMessage"] = "Failed to load departments.";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
-        if (!ModelState.IsValid)
+        [HttpGet]
+        public IActionResult Create()
         {
-            TempData["ErrorMessage"] = "The information you submitted is not valid.";
-            return View(viewModel);
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
+            {
+                return adminAccessResult;
+            }
+
+            return View();
         }
 
-        var departmentAlreadyExist = await _dbContext.Departments
-            .AnyAsync(u => u.DepartmentName == viewModel.DepartmentName, cancellationToken);
-
-        if (departmentAlreadyExist)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(DepartmentViewModel viewModel, CancellationToken cancellationToken)
         {
-            ModelState.AddModelError("DepartmentName", "The department with the same name already exists.");
-            TempData["ErrorMessage"] = "The department with the same name already exists.";
-            return View(viewModel);
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
+            {
+                return adminAccessResult;
+            }
+
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    TempData["ErrorMessage"] = "The information you submitted is not valid.";
+                    return View(viewModel);
+                }
+
+                var departmentAlreadyExist = await _dbContext.Departments
+                    .AnyAsync(u => u.DepartmentName == viewModel.DepartmentName, cancellationToken);
+
+                if (departmentAlreadyExist)
+                {
+                    ModelState.AddModelError("DepartmentName", "The department with the same name already exists.");
+                    TempData["ErrorMessage"] = "The department with the same name already exists.";
+                    return View(viewModel);
+                }
+
+                var department = new Department
+                {
+                    DepartmentName = viewModel.DepartmentName.RemoveCommas(),
+                    CreatedBy = _userName!,
+                };
+
+                await _dbContext.Departments.AddAsync(department, cancellationToken);
+
+                LogsModel logs = new(_userName!, $"Add new department: {viewModel.DepartmentName}");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                TempData["success"] = "Department created successfully";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to create department {DepartmentName}.", viewModel.DepartmentName);
+                TempData["ErrorMessage"] = "Failed to create department.";
+                return View(viewModel);
+            }
         }
 
-        var department = new Department
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            DepartmentName = viewModel.DepartmentName.RemoveCommas(),
-            CreatedBy = _userName!,
-        };
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
+            {
+                return adminAccessResult;
+            }
 
-        await _dbContext.Departments.AddAsync(department, cancellationToken);
+            try
+            {
+                var department = await _dbContext.Departments
+                    .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
-        LogsModel logs = new(_userName!, $"Add new department: {viewModel.DepartmentName}");
-        await _dbContext.Logs.AddAsync(logs, cancellationToken);
+                if (department == null)
+                {
+                    return NotFound();
+                }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        TempData["success"] = "Department created successfully";
-        return RedirectToAction("Index");
-    }
+                var viewModel = new DepartmentViewModel
+                {
+                    Id = department.Id,
+                    DepartmentName = department.DepartmentName.RemoveCommas(),
+                };
 
-    [HttpGet]
-    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
-    {
-        var adminAccessResult = EnsureAdminAccess();
-        if (adminAccessResult != null)
-        {
-            return adminAccessResult;
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load department {DepartmentId} for edit.", id);
+                TempData["ErrorMessage"] = "Failed to load department.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
-        var department = await _dbContext.Departments
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-        if (department == null)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(DepartmentViewModel viewModel, CancellationToken cancellationToken)
         {
-            return NotFound();
+            var adminAccessResult = EnsureAdminAccess();
+            if (adminAccessResult != null)
+            {
+                return adminAccessResult;
+            }
+
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    TempData["ErrorMessage"] = "The information you submitted is not valid.";
+                    return View(viewModel);
+                }
+
+                var existingDepartment = await _dbContext.Departments
+                    .FirstOrDefaultAsync(x => x.Id == viewModel.Id, cancellationToken);
+
+                if (existingDepartment == null)
+                {
+                    return NotFound();
+                }
+
+                var departmentAlreadyExist = await _dbContext.Departments
+                    .AnyAsync(u =>
+                        u.Id != viewModel.Id &&
+                        u.DepartmentName == viewModel.DepartmentName, cancellationToken);
+
+                if (departmentAlreadyExist)
+                {
+                    ModelState.AddModelError("DepartmentName", "The department with the same name already exists.");
+                    TempData["ErrorMessage"] = "The department with the same name already exists.";
+                    return View(viewModel);
+                }
+
+                var existingName = existingDepartment.DepartmentName;
+                existingDepartment.DepartmentName = viewModel.DepartmentName.RemoveCommas();
+                existingDepartment.EditedBy = _userName;
+                existingDepartment.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
+
+                LogsModel logs = new(_userName!, $"Update department from {existingName} to {viewModel.DepartmentName}");
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                TempData["success"] = "Department updated successfully";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to update department {DepartmentId}.", viewModel.Id);
+                TempData["ErrorMessage"] = "Failed to update department.";
+                return View(viewModel);
+            }
         }
 
-        var viewModel = new DepartmentViewModel
+        private IActionResult? EnsureAdminAccess()
         {
-            Id = department.Id,
-            DepartmentName = department.DepartmentName.RemoveCommas(),
-        };
+            if (string.IsNullOrEmpty(_userName))
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-        return View(viewModel);
-    }
+            if (_userRole != "admin")
+            {
+                TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
+            }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(DepartmentViewModel viewModel, CancellationToken cancellationToken)
-    {
-        var adminAccessResult = EnsureAdminAccess();
-        if (adminAccessResult != null)
-        {
-            return adminAccessResult;
+            return null;
         }
-
-        if (!ModelState.IsValid)
-        {
-            TempData["ErrorMessage"] = "The information you submitted is not valid.";
-            return View(viewModel);
-        }
-
-        var existingDepartment = await _dbContext.Departments
-            .FirstOrDefaultAsync(x => x.Id == viewModel.Id, cancellationToken);
-
-        if (existingDepartment == null)
-        {
-            return NotFound();
-        }
-
-        var departmentAlreadyExist = await _dbContext.Departments
-            .AnyAsync(u => u.DepartmentName == viewModel.DepartmentName, cancellationToken);
-
-        if (departmentAlreadyExist)
-        {
-            ModelState.AddModelError("DepartmentName", "The department with the same name already exists.");
-            TempData["ErrorMessage"] = "The department with the same name already exists.";
-            return RedirectToAction("Edit");
-        }
-
-        var existingName = existingDepartment.DepartmentName;
-        existingDepartment.DepartmentName = viewModel.DepartmentName;
-        existingDepartment.EditedBy = _userName;
-        existingDepartment.EditedDate = DateTimeHelper.GetCurrentPhilippineTime();
-
-        LogsModel logs = new(_userName!, $"Update department from {existingName} to {viewModel.DepartmentName}");
-        await _dbContext.Logs.AddAsync(logs, cancellationToken);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        TempData["success"] = "Department updated successfully";
-        return RedirectToAction("Index");
-    }
-
-    private IActionResult? EnsureAdminAccess()
-    {
-        if (string.IsNullOrEmpty(_userName))
-        {
-            return RedirectToAction("Login", "Account");
-        }
-
-        if (_userRole != "admin")
-        {
-            TempData["ErrorMessage"] = "You have no access to this action. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
-        }
-
-        return null;
     }
 }

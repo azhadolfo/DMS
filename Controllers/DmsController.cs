@@ -1,5 +1,4 @@
-﻿﻿using Document_Management.Data;
-using Document_Management.Dtos;
+﻿using Document_Management.Data;
 using Document_Management.Models;
 using Document_Management.Repository;
 using Document_Management.Service;
@@ -8,41 +7,48 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq.Dynamic.Core;
 
 namespace Document_Management.Controllers
 {
     public class DmsController : Controller
     {
-        private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly UserRepo _userRepo;
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<DmsController> _logger;
         private readonly ApplicationDbContext _dbContext;
         private readonly ICloudStorageService _cloudStorage;
+        private readonly IDmsAccessService _accessService;
+        private readonly IDocumentStorageWorkflowService _documentStorageWorkflowService;
+        private readonly IDmsQueryService _dmsQueryService;
+        private readonly IDmsSearchService _dmsSearchService;
 
         public DmsController(
-            IWebHostEnvironment hostingEnvironment,
             ApplicationDbContext context,
             UserRepo userRepo,
-            ILogger<HomeController> logger,
-            ICloudStorageService cloudStorage)
+            ILogger<DmsController> logger,
+            ICloudStorageService cloudStorage,
+            IDmsAccessService accessService,
+            IDocumentStorageWorkflowService documentStorageWorkflowService,
+            IDmsQueryService dmsQueryService,
+            IDmsSearchService dmsSearchService)
         {
-            _hostingEnvironment = hostingEnvironment;
             _dbContext = context;
             _userRepo = userRepo;
             _logger = logger;
             _cloudStorage = cloudStorage;
+            _accessService = accessService;
+            _documentStorageWorkflowService = documentStorageWorkflowService;
+            _dmsQueryService = dmsQueryService;
+            _dmsSearchService = dmsSearchService;
         }
 
         private IActionResult? CheckDepartmentAccess(string department)
         {
-            var userAccessDepartments = HttpContext.Session.GetString("userAccessDepartments");
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
+            if (!_accessService.IsAuthenticated())
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-            var userDepartments = userAccessDepartments?.Split(',');
-
-            if (userRole == "admin" || userDepartments?.Any(dep => dep.Trim() == department) != false)
+            if (_accessService.CanAccessDepartment(department))
             {
                 return null;
             }
@@ -53,12 +59,12 @@ namespace Document_Management.Controllers
 
         private IActionResult? CheckCompanyAccess(string company)
         {
-            var userAccessCompanies = HttpContext.Session.GetString("userAccessCompanies");
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
+            if (!_accessService.IsAuthenticated())
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-            var userCompanies = userAccessCompanies?.Split(',');
-
-            if (userRole == "admin" || userCompanies?.Any(dep => dep.Trim() == company) != false)
+            if (_accessService.CanAccessCompany(company))
             {
                 return null;
             }
@@ -69,15 +75,12 @@ namespace Document_Management.Controllers
 
         private IActionResult? EnsureUploadAccess()
         {
-            var username = HttpContext.Session.GetString("username");
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-            if (string.IsNullOrEmpty(username))
+            if (!_accessService.IsAuthenticated())
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            if (userRole == "admin" || userRole == "uploader")
+            if (_accessService.CanUpload())
             {
                 return null;
             }
@@ -88,15 +91,12 @@ namespace Document_Management.Controllers
 
         private IActionResult? EnsureDocumentMutationAccess(FileDocument fileDocument)
         {
-            var username = HttpContext.Session.GetString("username");
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-            if (string.IsNullOrEmpty(username))
+            if (!_accessService.IsAuthenticated())
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            if (userRole == "admin" || userRole == "uploader" || fileDocument.Username == username)
+            if (_accessService.CanMutate(fileDocument))
             {
                 return null;
             }
@@ -147,14 +147,22 @@ namespace Document_Management.Controllers
         public async Task<IActionResult> UploadFile(CancellationToken cancellationToken)
         {
             var uploadAccessResult = EnsureUploadAccess();
-            if (uploadAccessResult == null)
+            if (uploadAccessResult != null)
             {
-                var model = await GetModelSelectList(new FileDocument(), cancellationToken);
-
-                return View(model);
+                return uploadAccessResult;
             }
 
-            return uploadAccessResult;
+            try
+            {
+                var model = await GetModelSelectList(new FileDocument(), cancellationToken);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load upload form.");
+                TempData["error"] = "Failed to load upload form.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]
@@ -172,6 +180,7 @@ namespace Document_Management.Controllers
 
             fileDocument = await GetModelSelectList(fileDocument, cancellationToken);
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 if (!ModelState.IsValid || file == null || file.Length == 0)
@@ -198,32 +207,13 @@ namespace Document_Management.Controllers
                     return View(fileDocument);
                 }
 
-                var username = HttpContext.Session.GetString("username");
-                var filename = Path.GetFileName(file.FileName);
-                var uniquePart = $"{fileDocument.Department}_{DateTimeHelper.GetCurrentPhilippineTime():yyyyMMddHHmmssfff}";
-                filename = filename.Replace("#", "");
-                filename = $"{uniquePart}_{filename}";
+                var uploadResult = await _documentStorageWorkflowService.UploadAsync(fileDocument, file, cancellationToken);
 
-                // ✅ Sanitize every part before building cloud storage path
-                var company = SanitizePathPart(fileDocument.Company);
-                var year = SanitizePathPart(fileDocument.Year);
-                var department = SanitizePathPart(fileDocument.Department);
-                var category = SanitizePathPart(fileDocument.Category);
-                var subCategory = SanitizePathPart(fileDocument.SubCategory);
-
-                // Build cloud storage path safely
-                var cloudStoragePath = fileDocument.SubCategory == "N/A"
-                    ? $"Files/{company}/{year}/{department}/{category}/{filename}"
-                    : $"Files/{company}/{year}/{department}/{category}/{subCategory}/{filename}";
-
-                // Upload to Cloud Storage
-                var objectName = await _cloudStorage.UploadFileAsync(file, cloudStoragePath);
-
-                fileDocument.DateUploaded = DateTimeHelper.GetCurrentPhilippineTime();
-                fileDocument.Name = filename;
-                fileDocument.Location = objectName;
-                fileDocument.FileSize = file.Length;
-                fileDocument.Username = username!;
+                fileDocument.DateUploaded = uploadResult.UploadedAt;
+                fileDocument.Name = uploadResult.StoredFileName;
+                fileDocument.Location = uploadResult.ObjectName;
+                fileDocument.FileSize = uploadResult.FileSize;
+                fileDocument.Username = _accessService.Username!;
                 fileDocument.OriginalFilename = file.FileName;
                 fileDocument.IsInCloudStorage = true;
 
@@ -233,18 +223,15 @@ namespace Document_Management.Controllers
                 var duration = stopwatch.Elapsed;
                 var fileSizeInMb = (file.Length / (1024.0 * 1024.0));
 
-                var departmentSubdirectory = fileDocument.SubCategory == "N/A"
-                    ? $"{company}/{year}/{department}/{category}"
-                    : $"{company}/{year}/{department}/{category}/{subCategory}";
-
                 var logs = new LogsModel(
-                    username!,
-                    $"Upload {file.FileName} to Cloud Storage in {departmentSubdirectory} {fileDocument.NumberOfPages} page(s). " +
+                    _accessService.Username!,
+                    $"Upload {file.FileName} to Cloud Storage in {uploadResult.FolderPath} {fileDocument.NumberOfPages} page(s). " +
                     $"Size: {fileSizeInMb:F2} MB. Duration: {duration.TotalSeconds:F2} seconds."
                 );
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 TempData["success"] = "File uploaded successfully to Cloud Storage";
 
@@ -252,6 +239,7 @@ namespace Document_Management.Controllers
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file upload to Cloud Storage.");
                 TempData["error"] = "Contact MIS: An error occurred during file upload.";
             }
@@ -259,20 +247,27 @@ namespace Document_Management.Controllers
             return View(fileDocument);
         }
 
-        public IActionResult DownloadFile()
+        public async Task<IActionResult> DownloadFile(CancellationToken cancellationToken)
         {
-            // Get unique companies from database instead of file system
-            var companies = _dbContext.FileDocuments
-                .Where(f => !string.IsNullOrEmpty(f.Company))
-                .Select(f => f.Company)
-                .Distinct()
-                .OrderBy(c => c)
-                .ToList();
+            if (!_accessService.IsAuthenticated())
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-            return View(companies);
+            try
+            {
+                var companies = await _dmsQueryService.GetAccessibleCompaniesAsync(cancellationToken);
+                return View(companies);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load accessible companies.");
+                TempData["error"] = "Failed to load file browser.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
-        public IActionResult CompanyFolder(string folderName)
+        public async Task<IActionResult> CompanyFolder(string folderName, CancellationToken cancellationToken)
         {
             ViewBag.CompanyFolder = folderName;
 
@@ -282,36 +277,44 @@ namespace Document_Management.Controllers
                 return companyAccessResult;
             }
 
-            // Get unique years for the company from database
-            var years = _dbContext.FileDocuments
-                .Where(f => f.Company == folderName && !string.IsNullOrEmpty(f.Year))
-                .Select(f => f.Year)
-                .Distinct()
-                .OrderByDescending(y => y)
-                .ToList();
-
-            return View(years);
+            try
+            {
+                var years = await _dmsQueryService.GetYearsAsync(folderName, cancellationToken);
+                return View(years);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load years for company {Company}.", folderName);
+                TempData["error"] = "Failed to load company folder.";
+                return RedirectToAction(nameof(DownloadFile));
+            }
         }
 
-        public IActionResult YearFolder(string companyFolderName, string yearFolderName)
+        public async Task<IActionResult> YearFolder(string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
         {
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
 
-            // Get unique departments for the company/year from database
-            var departments = _dbContext.FileDocuments
-                .Where(f => f.Company == companyFolderName &&
-                           f.Year == yearFolderName &&
-                           !string.IsNullOrEmpty(f.Department))
-                .Select(f => f.Department)
-                .Distinct()
-                .OrderBy(d => d)
-                .ToList();
+            var companyAccessResult = CheckCompanyAccess(companyFolderName);
+            if (companyAccessResult != null)
+            {
+                return companyAccessResult;
+            }
 
-            return View(departments);
+            try
+            {
+                var departments = await _dmsQueryService.GetAccessibleDepartmentsAsync(companyFolderName, yearFolderName, cancellationToken);
+                return View(departments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load departments for company {Company} and year {Year}.", companyFolderName, yearFolderName);
+                TempData["error"] = "Failed to load year folder.";
+                return RedirectToAction(nameof(CompanyFolder), new { folderName = companyFolderName });
+            }
         }
 
-        public IActionResult DepartmentFolder(string departmentFolderName, string companyFolderName, string yearFolderName)
+        public async Task<IActionResult> DepartmentFolder(string departmentFolderName, string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
         {
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
@@ -323,46 +326,49 @@ namespace Document_Management.Controllers
                 return departmentAccessResult;
             }
 
-            // Get unique categories for the company/year/department from database
-            var categories = _dbContext.FileDocuments
-                .AsNoTracking()
-                .Where(f => f.Company == companyFolderName &&
-                           f.Year == yearFolderName &&
-                           f.Department == departmentFolderName &&
-                           !string.IsNullOrEmpty(f.Category))
-                .Select(f => new CategoryDto
-                {
-                    Category = f.Category,
-                    SubCategory = f.SubCategory,
-                })
-                .Distinct()
-                .OrderBy(c => c.Category)
-                .ToList();
-
-            return View(categories);
+            try
+            {
+                var categories = await _dmsQueryService.GetCategoriesAsync(companyFolderName, yearFolderName, departmentFolderName, cancellationToken);
+                return View(categories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load categories for department {Department}.", departmentFolderName);
+                TempData["error"] = "Failed to load department folder.";
+                return RedirectToAction(nameof(YearFolder), new { companyFolderName, yearFolderName });
+            }
         }
 
-        public IActionResult SubCategoryFolder(string documentTypeFolderName, string departmentFolderName, string companyFolderName, string yearFolderName)
+        public async Task<IActionResult> SubCategoryFolder(string documentTypeFolderName, string departmentFolderName, string companyFolderName, string yearFolderName, CancellationToken cancellationToken)
         {
             ViewBag.CompanyFolder = companyFolderName;
             ViewBag.YearFolder = yearFolderName;
             ViewBag.DepartmentFolder = departmentFolderName;
             ViewBag.DocumentTypeFolder = documentTypeFolderName;
 
-            // Get unique subcategories for the specified path from database
-            var subCategories = _dbContext.FileDocuments
-                .Where(f => f.Company == companyFolderName &&
-                           f.Year == yearFolderName &&
-                           f.Department == departmentFolderName &&
-                           f.Category == documentTypeFolderName &&
-                           !string.IsNullOrEmpty(f.SubCategory) &&
-                           f.SubCategory != "N/A")
-                .Select(f => f.SubCategory)
-                .Distinct()
-                .OrderBy(s => s)
-                .ToList();
+            var companyAccessResult = CheckCompanyAccess(companyFolderName);
+            if (companyAccessResult != null)
+            {
+                return companyAccessResult;
+            }
 
-            return View(subCategories);
+            var departmentAccessResult = CheckDepartmentAccess(departmentFolderName);
+            if (departmentAccessResult != null)
+            {
+                return departmentAccessResult;
+            }
+
+            try
+            {
+                var subCategories = await _dmsQueryService.GetSubCategoriesAsync(companyFolderName, yearFolderName, departmentFolderName, documentTypeFolderName, cancellationToken);
+                return View(subCategories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load sub-categories for category {Category}.", documentTypeFolderName);
+                TempData["error"] = "Failed to load category folder.";
+                return RedirectToAction(nameof(DepartmentFolder), new { departmentFolderName, companyFolderName, yearFolderName });
+            }
         }
 
         public async Task<IActionResult> DisplayFiles(string departmentFolderName,
@@ -380,52 +386,43 @@ namespace Document_Management.Controllers
             ViewBag.SubCategoryFolder = subCategoryFolder;
             ViewBag.CurrentFolder = subCategoryFolder ?? documentTypeFolderName;
 
-            // Query from database instead of file system
-            var query = _dbContext.FileDocuments
-                .Where(file => file.Company == companyFolderName
-                               && file.Year == yearFolderName
-                               && file.Department == departmentFolderName
-                               && file.Category == documentTypeFolderName
-                               && !file.IsDeleted);
-
-            // Add subcategory filter
-            if (!string.IsNullOrEmpty(subCategoryFolder))
+            var companyAccessResult = CheckCompanyAccess(companyFolderName);
+            if (companyAccessResult != null)
             {
-                query = query.Where(file => file.SubCategory == subCategoryFolder);
-            }
-            else
-            {
-                query = query.Where(file => file.SubCategory == "N/A" || string.IsNullOrEmpty(file.SubCategory));
+                return companyAccessResult;
             }
 
-            // Add filename filter if specified
-            if (!string.IsNullOrEmpty(fileName))
+            var departmentAccessResult = CheckDepartmentAccess(departmentFolderName);
+            if (departmentAccessResult != null)
             {
-                query = query.Where(file => file.Name == fileName);
+                return departmentAccessResult;
             }
 
-            var fileDocuments = await query
-                .Select(file => new FileDocument
+            try
+            {
+                var fileDocuments = await _dmsQueryService.GetFilesAsync(
+                    companyFolderName,
+                    yearFolderName,
+                    departmentFolderName,
+                    documentTypeFolderName,
+                    subCategoryFolder,
+                    fileName,
+                    cancellation);
+
+                return View(fileDocuments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to display files for department {Department}, category {Category}, sub-category {SubCategory}.", departmentFolderName, documentTypeFolderName, subCategoryFolder);
+                TempData["error"] = "Failed to load files.";
+
+                if (!string.IsNullOrWhiteSpace(subCategoryFolder))
                 {
-                    Id = file.Id,
-                    Name = file.Name,
-                    Location = file.Location,
-                    DateUploaded = file.DateUploaded,
-                    Description = file.Description,
-                    Department = file.Department,
-                    Username = file.Username,
-                    Category = file.Category,
-                    Company = file.Company,
-                    Year = file.Year,
-                    SubCategory = file.SubCategory,
-                    OriginalFilename = file.OriginalFilename,
-                    FileSize = file.FileSize,
-                    NumberOfPages = file.NumberOfPages
-                })
-                .OrderByDescending(u => u.DateUploaded)
-                .ToListAsync(cancellation);
+                    return RedirectToAction(nameof(SubCategoryFolder), new { documentTypeFolderName, departmentFolderName, companyFolderName, yearFolderName });
+                }
 
-            return View(fileDocuments);
+                return RedirectToAction(nameof(DepartmentFolder), new { departmentFolderName, companyFolderName, yearFolderName });
+            }
         }
 
         [HttpGet]
@@ -435,72 +432,19 @@ namespace Document_Management.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetUploadedFiles([FromForm] DataTablesParameters parameters, CancellationToken cancellationToken)
         {
             try
             {
-                var username = HttpContext.Session.GetString("username");
-                var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-                IEnumerable<FileDocument> files;
-
-                if (userRole == "admin")
-                {
-                    files = await _userRepo.DisplayAllUploadedFiles(cancellationToken);
-                }
-                else
-                {
-                    files = await _userRepo.DisplayUploadedFiles(username!, cancellationToken);
-                }
-
-                // Search filter
-                if (!string.IsNullOrEmpty(parameters.Search.Value))
-                {
-                    var searchValue = parameters.Search.Value.ToLower();
-                    files = files.Where(f =>
-                        f.Name!.ToLower().Contains(searchValue) ||
-                        f.Description!.ToLower().Contains(searchValue) ||
-                        f.DateUploaded.ToString(CultureInfo.InvariantCulture).Contains(searchValue)
-                    ).ToList();
-                }
-
-                // Map to ViewModel
-                var viewModel = files.Select(f => new UploadedFilesViewModel
-                {
-                    Id = f.Id,
-                    Name = f.Name!,
-                    Description = f.Description!,
-                    LocationFolder = f.SubCategory == "N/A" ?
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={null}&fileName={f.Name}" :
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={f.SubCategory}&fileName={f.Name}",
-                    UploadedBy = f.Username!,
-                    DateUploaded = f.DateUploaded
-                }).ToList();
-
-                // Sorting
-                if (parameters.Order.Count > 0)
-                {
-                    var orderColumn = parameters.Order[0];
-                    var columnName = parameters.Columns[orderColumn.Column].Data;
-                    var sortDirection = orderColumn.Dir.Equals("asc", StringComparison.CurrentCultureIgnoreCase) ? "ascending" : "descending";
-
-                    viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
-                }
-
-                var totalRecords = viewModel.Count;
-
-                // Apply pagination
-                var pagedData = viewModel
-                    .Skip(parameters.Start)
-                    .Take(parameters.Length)
-                    .ToList();
+                var result = await _dmsQueryService.GetUploadedFilesAsync(parameters, cancellationToken);
 
                 return Json(new
                 {
-                    draw = parameters.Draw,
-                    recordsTotal = totalRecords,
-                    recordsFiltered = totalRecords,
-                    data = pagedData
+                    draw = result.Draw,
+                    recordsTotal = result.RecordsTotal,
+                    recordsFiltered = result.RecordsFiltered,
+                    data = result.Data
                 });
             }
             catch (Exception ex)
@@ -512,123 +456,104 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
-            if (files == null)
+            try
             {
-                return NotFound();
-            }
+                var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
+                if (files == null)
+                {
+                    return NotFound();
+                }
 
-            var documentAccessResult = EnsureDocumentMutationAccess(files);
-            if (documentAccessResult != null)
+                var documentAccessResult = EnsureDocumentMutationAccess(files);
+                if (documentAccessResult != null)
+                {
+                    return documentAccessResult;
+                }
+
+                return View(files);
+            }
+            catch (Exception ex)
             {
-                return documentAccessResult;
+                _logger.LogError(ex, "Failed to load document {DocumentId} for edit.", id);
+                TempData["error"] = "Failed to load file document.";
+                return RedirectToAction(nameof(Index));
             }
-
-            return View(files);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(FileDocument model, IFormFile? newFile, CancellationToken cancellationToken)
         {
-            var username = HttpContext.Session.GetString("username");
-            var file = await _dbContext.FileDocuments
-                .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
-
-            if (file == null)
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                return NotFound();
-            }
+                var file = await _dbContext.FileDocuments
+                    .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
 
-            var documentAccessResult = EnsureDocumentMutationAccess(file);
-            if (documentAccessResult != null)
-            {
-                return documentAccessResult;
-            }
-
-            var detailsChanged = false;
-            var fileChanged = false;
-            var oldFileName = file.OriginalFilename;
-
-            // Update file details if changed
-            if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
-            {
-                file.Description = model.Description;
-                file.NumberOfPages = model.NumberOfPages;
-                detailsChanged = true;
-            }
-
-            if (newFile?.Length > 0)
-            {
-                if (newFile.ContentType != "application/pdf")
+                if (file == null)
                 {
-                    TempData["error"] = "Please upload pdf file only!";
+                    return NotFound();
+                }
+
+                var documentAccessResult = EnsureDocumentMutationAccess(file);
+                if (documentAccessResult != null)
+                {
+                    return documentAccessResult;
+                }
+
+                var detailsChanged = false;
+                var fileChanged = false;
+                var oldFileName = file.OriginalFilename;
+
+                if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
+                {
+                    file.Description = model.Description;
+                    file.NumberOfPages = model.NumberOfPages;
+                    detailsChanged = true;
+                }
+
+                if (newFile?.Length > 0)
+                {
+                    if (newFile.ContentType != "application/pdf")
+                    {
+                        TempData["error"] = "Please upload pdf file only!";
+                        return RedirectToAction("Edit", new { id = model.Id });
+                    }
+
+                    if (newFile.Length > 20000000)
+                    {
+                        TempData["error"] = "File is too large 20MB is the maximum size allowed.";
+                        return RedirectToAction("Edit", new { id = model.Id });
+                    }
+
+                    var replaceResult = await _documentStorageWorkflowService.ReplaceFileAsync(file, newFile, cancellationToken);
+
+                    file.Name = replaceResult.StoredFileName;
+                    file.Location = replaceResult.ObjectName;
+                    file.FileSize = replaceResult.FileSize;
+                    file.OriginalFilename = replaceResult.OriginalFileName;
+                    fileChanged = true;
+                }
+
+                if (!detailsChanged && !fileChanged)
+                {
+                    TempData["info"] = "No changes were made.";
                     return RedirectToAction("Edit", new { id = model.Id });
                 }
 
-                if (newFile.Length > 20000000)
+                var changeDescription = "";
+
+                switch (detailsChanged)
                 {
-                    TempData["error"] = "File is too large 20MB is the maximum size allowed.";
-                    return RedirectToAction("Edit", new { id = model.Id });
-                }
+                    case true when fileChanged:
+                        changeDescription = $"Updated details and replaced file in Cloud Storage for document# {file.Id} from {oldFileName} to {file.OriginalFilename}";
+                        break;
 
-                // Delete the old file from Cloud Storage
-                try
-                {
-                    await _cloudStorage.DeleteFileAsync(file.Location!);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Could not delete old file from cloud storage: {file.Location}");
-                    // Continue with upload even if delete fails
-                }
+                    case true:
+                        changeDescription = $"Updated details for document# {file.Id}";
+                        break;
 
-                var filename = Path.GetFileName(newFile.FileName);
-                var uniquePart = $"{file.Department}_{DateTimeHelper.GetCurrentPhilippineTime():yyyyMMddHHmmssfff}";
-                filename = filename.Replace("#", "");
-                filename = $"{uniquePart}_{filename}";
-
-                var company = SanitizePathPart(file.Company);
-                var year = SanitizePathPart(file.Year);
-                var department = SanitizePathPart(file.Department);
-                var category = SanitizePathPart(file.Category);
-                var subCategory = SanitizePathPart(file.SubCategory);
-
-                // Create new cloud storage path
-                var cloudStoragePath = file.SubCategory == "N/A"
-                    ? $"Files/{company}/{year}/{department}/{category}/{filename}"
-                    : $"Files/{company}/{year}/{department}/{category}/{subCategory}/{filename}";
-
-                // Upload new file to Cloud Storage
-                var objectName = await _cloudStorage.UploadFileAsync(newFile, cloudStoragePath);
-
-                // Update file information
-                file.Name = filename;
-                file.Location = objectName;
-                file.FileSize = newFile.Length;
-                file.OriginalFilename = newFile.FileName;
-                fileChanged = true;
-            }
-
-            if (!detailsChanged && !fileChanged)
-            {
-                TempData["info"] = "No changes were made.";
-                return RedirectToAction("Edit", new { id = model.Id });
-            }
-
-            var changeDescription = "";
-
-            switch (detailsChanged)
-            {
-                case true when fileChanged:
-                    changeDescription = $"Updated details and replaced file in Cloud Storage for document# {file.Id} from {oldFileName} to {file.OriginalFilename}";
-                    break;
-
-                case true:
-                    changeDescription = $"Updated details for document# {file.Id}";
-                    break;
-
-                default:
+                    default:
                     {
                         if (fileChanged)
                         {
@@ -636,70 +561,53 @@ namespace Document_Management.Controllers
                         }
                         break;
                     }
+                }
+
+                LogsModel logs = new(_accessService.Username!, changeDescription);
+                await _dbContext.Logs.AddAsync(logs, cancellationToken);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                TempData["success"] = "File document updated successfully";
+                return RedirectToAction("Index");
             }
-
-            LogsModel logs = new(username!, changeDescription);
-            await _dbContext.Logs.AddAsync(logs, cancellationToken);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            TempData["success"] = "File document updated successfully";
-            return RedirectToAction("Index");
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Failed to update document {DocumentId}.", model.Id);
+                TempData["error"] = "Failed to update file document.";
+                return RedirectToAction("Edit", new { id = model.Id });
+            }
         }
 
-        public IActionResult GeneralSearch(string search, int page = 1, int pageSize = 10, string sortBy = "DateUploaded", string sortOrder = "desc")
+        public async Task<IActionResult> GeneralSearch(
+            string search,
+            int page = 1,
+            int pageSize = 10,
+            string sortBy = "DateUploaded",
+            string sortOrder = "desc",
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(search))
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            var keywords = search.Split(' ');
-
-            var allResults = _userRepo.SearchFile(keywords);
-
-            // Apply sorting
-            allResults = sortBy switch
+            try
             {
-                "BoxNumber" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.BoxNumber).ToList()
-                    : allResults.OrderByDescending(f => f.BoxNumber).ToList(),
-                "OriginalFilename" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.OriginalFilename).ToList()
-                    : allResults.OrderByDescending(f => f.OriginalFilename).ToList(),
-                "Description" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.Description).ToList()
-                    : allResults.OrderByDescending(f => f.Description).ToList(),
-                "Username" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.Username).ToList()
-                    : allResults.OrderByDescending(f => f.Username).ToList(),
-                "DateUploaded" => sortOrder == "asc"
-                    ? allResults.OrderBy(f => f.DateUploaded).ToList()
-                    : allResults.OrderByDescending(f => f.DateUploaded).ToList(),
-                _ => allResults.OrderByDescending(f => f.DateUploaded).ToList()
-            };
-
-            // Calculate pagination
-            var totalRecords = allResults.Count;
-            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
-
-            // Get paginated results
-            var paginatedResults = allResults
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            // Pass pagination data to view
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-            ViewBag.TotalRecords = totalRecords;
-            ViewBag.PageSize = pageSize;
-            ViewBag.SearchTerm = search;
-            ViewBag.SortBy = sortBy;
-            ViewBag.SortOrder = sortOrder;
-
-            return View(paginatedResults);
+                var model = await _dmsSearchService.SearchAsync(search, page, pageSize, sortBy, sortOrder, cancellationToken);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed general search for term {Search}.", search);
+                TempData["error"] = "Failed to perform search.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> PermanentDelete(int id, CancellationToken cancellationToken)
         {
             if (id == 0)
@@ -707,8 +615,6 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            var username = HttpContext.Session.GetString("username");
-
             var model = await _dbContext
                 .FileDocuments
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -724,21 +630,24 @@ namespace Document_Management.Controllers
                 return documentAccessResult;
             }
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 // Delete from Cloud Storage
-                await _cloudStorage.DeleteFileAsync(model.Location!);
+                await _cloudStorage.DeleteFileAsync(model.Location, cancellationToken);
 
                 _dbContext.Remove(model);
 
-                LogsModel logs = new(username!, $"Permanently delete the file from Cloud Storage: {model.Name}.");
+                LogsModel logs = new(_accessService.Username!, $"Permanently delete the file from Cloud Storage: {model.Name}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
                 TempData["success"] = "File has been permanently deleted from Cloud Storage.";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file permanently deletion from Cloud Storage.");
                 TempData["error"] = "Failed to permanently delete file from Cloud Storage.";
             }
@@ -746,6 +655,8 @@ namespace Document_Management.Controllers
             return RedirectToAction(nameof(Trash));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             if (id == 0)
@@ -753,8 +664,6 @@ namespace Document_Management.Controllers
                 return NotFound();
             }
 
-            var username = HttpContext.Session.GetString("username");
-
             var model = await _dbContext
                 .FileDocuments
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -770,18 +679,21 @@ namespace Document_Management.Controllers
                 return documentAccessResult;
             }
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 model.IsDeleted = true;
 
-                LogsModel logs = new(username!, $"Delete the file from Cloud Storage: {model.Name}.");
+                LogsModel logs = new(_accessService.Username!, $"Delete the file from Cloud Storage: {model.Name}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
                 TempData["success"] = "File has been deleted from Cloud Storage.";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file deletion from Cloud Storage.");
                 TempData["error"] = "Failed to delete file from Cloud Storage.";
             }
@@ -789,14 +701,14 @@ namespace Document_Management.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         {
             if (id == 0)
             {
                 return NotFound();
             }
-
-            var username = HttpContext.Session.GetString("username");
 
             var model = await _dbContext
                 .FileDocuments
@@ -813,18 +725,21 @@ namespace Document_Management.Controllers
                 return documentAccessResult;
             }
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
                 model.IsDeleted = false;
 
-                LogsModel logs = new(username!, $"Restore the file from Cloud Storage: {model.Name}.");
+                LogsModel logs = new(_accessService.Username!, $"Restore the file from Cloud Storage: {model.Name}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
                 TempData["success"] = "File has been restored from Cloud Storage.";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file restoration from Cloud Storage.");
                 TempData["error"] = "Failed to restore file from Cloud Storage.";
             }
@@ -835,27 +750,34 @@ namespace Document_Management.Controllers
         [HttpGet]
         public async Task<IActionResult> Transfer(int id, CancellationToken cancellationToken)
         {
-            var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
-            if (files == null)
+            try
             {
-                return NotFound();
-            }
+                var files = await _userRepo.GetUploadedFiles(id, cancellationToken);
+                if (files == null)
+                {
+                    return NotFound();
+                }
 
-            var documentAccessResult = EnsureDocumentMutationAccess(files);
-            if (documentAccessResult != null)
+                var documentAccessResult = EnsureDocumentMutationAccess(files);
+                if (documentAccessResult != null)
+                {
+                    return documentAccessResult;
+                }
+
+                return View(await GetModelSelectList(files, cancellationToken));
+            }
+            catch (Exception ex)
             {
-                return documentAccessResult;
+                _logger.LogError(ex, "Failed to load transfer form for document {DocumentId}.", id);
+                TempData["error"] = "Failed to load transfer form.";
+                return RedirectToAction(nameof(Index));
             }
-
-            return View(await GetModelSelectList(files, cancellationToken));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Transfer(FileDocument model, CancellationToken cancellationToken)
         {
-            var username = HttpContext.Session.GetString("username");
-
             var existingModel = await _dbContext
                 .FileDocuments
                 .FirstOrDefaultAsync(x => x.Id == model.Id, cancellationToken);
@@ -873,46 +795,10 @@ namespace Document_Management.Controllers
 
             model = await GetModelSelectList(model, cancellationToken);
 
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                // For Cloud Storage, we need to copy the file to new location and delete old one
-                var oldLocation = existingModel.Location;
-
-                // Download the file from current location
-                var fileStream = await _cloudStorage.DownloadFileStreamAsync(oldLocation!);
-
-                // Create new filename and path
-                var filename = existingModel.OriginalFilename;
-                var uniquePart = $"{model.Department}_{existingModel.DateUploaded:yyyyMMddHHmmssfff}";
-                filename = $"{uniquePart}_{filename}";
-
-                var company = SanitizePathPart(model.Company);
-                var year = SanitizePathPart(model.Year);
-                var department = SanitizePathPart(model.Department);
-                var category = SanitizePathPart(model.Category);
-                var subCategory = SanitizePathPart(model.SubCategory);
-
-                var newCloudStoragePath = model.SubCategory == "N/A"
-                    ? $"Files/{company}/{year}/{department}/{category}/{filename}"
-                    : $"Files/{company}/{year}/{department}/{category}/{subCategory}/{filename}";
-
-                // Convert stream to IFormFile for upload
-                using var memoryStream = new MemoryStream();
-                await fileStream.CopyToAsync(memoryStream, cancellationToken);
-                var fileBytes = memoryStream.ToArray();
-
-                using var newStream = new MemoryStream(fileBytes);
-                var formFile = new FormFile(newStream, 0, fileBytes.Length, "file", filename)
-                {
-                    Headers = new HeaderDictionary(),
-                    ContentType = "application/pdf"
-                };
-
-                // Upload to new location
-                var newObjectName = await _cloudStorage.UploadFileAsync(formFile, newCloudStoragePath);
-
-                // Delete from old location
-                await _cloudStorage.DeleteFileAsync(oldLocation!);
+                var transferResult = await _documentStorageWorkflowService.TransferAsync(existingModel, model, cancellationToken);
 
                 // Update model
                 existingModel.Company = model.Company;
@@ -920,18 +806,20 @@ namespace Document_Management.Controllers
                 existingModel.Department = model.Department;
                 existingModel.Category = model.Category;
                 existingModel.SubCategory = model.SubCategory;
-                existingModel.Name = filename;
-                existingModel.Location = newObjectName;
+                existingModel.Name = transferResult.StoredFileName;
+                existingModel.Location = transferResult.NewLocation;
 
-                LogsModel logs = new(username!, $"Transfer the file in Cloud Storage: {existingModel.OriginalFilename} from {oldLocation} to {newObjectName}.");
+                LogsModel logs = new(_accessService.Username!, $"Transfer the file in Cloud Storage: {existingModel.OriginalFilename} from {transferResult.OldLocation} to {transferResult.NewLocation}.");
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 TempData["success"] = "File successfully transferred in Cloud Storage.";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error occurred during file transfer in Cloud Storage.");
                 TempData["error"] = "Failed to transfer file in Cloud Storage.";
             }
@@ -944,7 +832,6 @@ namespace Document_Management.Controllers
         {
             try
             {
-                var username = HttpContext.Session.GetString("username");
                 var document = await _dbContext.FileDocuments
                     .FirstOrDefaultAsync(x => x.Id == documentId, cancellationToken);
 
@@ -959,19 +846,25 @@ namespace Document_Management.Controllers
                     return companyAccessResult;
                 }
 
-                var departmentAccessResult = CheckDepartmentAccess(document.Department!);
+                var departmentAccessResult = CheckDepartmentAccess(document.Department);
                 if (departmentAccessResult != null)
                 {
                     return departmentAccessResult;
                 }
 
-                // Create log entry
-                var logs = new LogsModel(username!, $"Downloaded file from Cloud Storage: {originalFilename} from path: {document.Location}");
-                await _dbContext.Logs.AddAsync(logs, cancellationToken);
-                await _dbContext.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    var logs = new LogsModel(_accessService.Username!, $"Downloaded file from Cloud Storage: {originalFilename} from path: {document.Location}");
+                    await _dbContext.Logs.AddAsync(logs, cancellationToken);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to write download audit log for file: {FileName}", originalFilename);
+                }
 
                 // Get signed URL for direct download (better performance)
-                var signedUrl = await _cloudStorage.GetSignedUrlAsync(document.Location!, TimeSpan.FromMinutes(5));
+                var signedUrl = await _cloudStorage.GetSignedUrlAsync(document.Location, TimeSpan.FromMinutes(5), cancellationToken);
                 return Redirect(signedUrl);
             }
             catch (Exception ex)
@@ -987,7 +880,6 @@ namespace Document_Management.Controllers
         {
             try
             {
-                var username = HttpContext.Session.GetString("username");
                 var document = await _dbContext.FileDocuments
                     .FirstOrDefaultAsync(x => x.Id == documentId, cancellationToken);
 
@@ -1002,19 +894,25 @@ namespace Document_Management.Controllers
                     return companyAccessResult;
                 }
 
-                var departmentAccessResult = CheckDepartmentAccess(document.Department!);
+                var departmentAccessResult = CheckDepartmentAccess(document.Department);
                 if (departmentAccessResult != null)
                 {
                     return departmentAccessResult;
                 }
 
-                // Create log entry
-                var logs = new LogsModel(username!, $"Downloaded file directly from Cloud Storage: {originalFilename}");
-                await _dbContext.Logs.AddAsync(logs, cancellationToken);
-                await _dbContext.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    var logs = new LogsModel(_accessService.Username!, $"Downloaded file directly from Cloud Storage: {originalFilename}");
+                    await _dbContext.Logs.AddAsync(logs, cancellationToken);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to write direct download audit log for file: {FileName}", originalFilename);
+                }
 
                 // Download file from Cloud Storage and stream to user
-                var fileStream = await _cloudStorage.DownloadFileStreamAsync(document.Location!);
+                var fileStream = await _cloudStorage.DownloadFileStreamAsync(document.Location, cancellationToken);
                 return File(fileStream, "application/pdf", originalFilename);
             }
             catch (Exception ex)
@@ -1022,21 +920,6 @@ namespace Document_Management.Controllers
                 _logger.LogError(ex, "Error downloading file directly from Cloud Storage: {FileName}", originalFilename);
                 return BadRequest("Error downloading file from Cloud Storage");
             }
-        }
-
-        private static string SanitizePathPart(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-                return "N_A";
-
-            // Replace problematic characters with underscore
-            var invalidChars = new[] { "/", "\\", " ", "#", "?", "%", "&", "+", ":", ";", "=", "|", "\"", "<", ">", "*" };
-            foreach (var ch in invalidChars)
-            {
-                input = input.Replace(ch, "_");
-            }
-
-            return input.Trim('_'); // prevent accidental trailing underscores
         }
 
         [HttpGet]
@@ -1070,84 +953,43 @@ namespace Document_Management.Controllers
         [HttpGet]
         public IActionResult Trash()
         {
-            var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-            if (userRole == "admin" || userRole == "uploader")
+            if (!_accessService.IsAuthenticated())
             {
-                return View();
+                return RedirectToAction("Login", "Account");
             }
 
-            TempData["ErrorMessage"] = "You have no access to trash. Please contact the MIS Department if you think this is a mistake.";
-            return RedirectToAction("Privacy", "Home");
+            try
+            {
+                if (_accessService.CanAccessTrash())
+                {
+                    return View();
+                }
+
+                TempData["ErrorMessage"] = "You have no access to trash. Please contact the MIS Department if you think this is a mistake.";
+                return RedirectToAction("Privacy", "Home");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load trash view.");
+                TempData["ErrorMessage"] = "Failed to load trash.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetDeletedFiles([FromForm] DataTablesParameters parameters, CancellationToken cancellationToken)
         {
             try
             {
-                var username = HttpContext.Session.GetString("username");
-                var userRole = HttpContext.Session.GetString("userRole")?.ToLower();
-
-                IEnumerable<FileDocument> files;
-
-                if (userRole == "admin")
-                {
-                    files = await _userRepo.DisplayAllDeletedFiles(cancellationToken);
-                }
-                else
-                {
-                    files = await _userRepo.DisplayAllDeletedFiles(username!, cancellationToken);
-                }
-
-                // Search filter
-                if (!string.IsNullOrEmpty(parameters.Search.Value))
-                {
-                    var searchValue = parameters.Search.Value.ToLower();
-                    files = files.Where(f =>
-                        f.Name!.ToLower().Contains(searchValue) ||
-                        f.Description!.ToLower().Contains(searchValue) ||
-                        f.DateUploaded.ToString(CultureInfo.InvariantCulture).Contains(searchValue)
-                    ).ToList();
-                }
-
-                // Map to ViewModel
-                var viewModel = files.Select(f => new UploadedFilesViewModel
-                {
-                    Id = f.Id,
-                    Name = f.Name!,
-                    Description = f.Description!,
-                    LocationFolder = f.SubCategory == "N/A" ?
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={null}&fileName={f.Name}" :
-                        $"companyFolderName={f.Company}&yearFolderName={f.Year}&departmentFolderName={f.Department}&documentTypeFolderName={f.Category}&subCategoryFolder={f.SubCategory}&fileName={f.Name}",
-                    UploadedBy = f.Username!,
-                    DateUploaded = f.DateUploaded
-                }).ToList();
-
-                // Sorting
-                if (parameters.Order.Count > 0)
-                {
-                    var orderColumn = parameters.Order[0];
-                    var columnName = parameters.Columns[orderColumn.Column].Data;
-                    var sortDirection = orderColumn.Dir.Equals("asc", StringComparison.CurrentCultureIgnoreCase) ? "ascending" : "descending";
-
-                    viewModel = viewModel.AsQueryable().OrderBy($"{columnName} {sortDirection}").ToList();
-                }
-
-                var totalRecords = viewModel.Count;
-
-                // Apply pagination
-                var pagedData = viewModel
-                    .Skip(parameters.Start)
-                    .Take(parameters.Length)
-                    .ToList();
+                var result = await _dmsQueryService.GetDeletedFilesAsync(parameters, cancellationToken);
 
                 return Json(new
                 {
-                    draw = parameters.Draw,
-                    recordsTotal = totalRecords,
-                    recordsFiltered = totalRecords,
-                    data = pagedData
+                    draw = result.Draw,
+                    recordsTotal = result.RecordsTotal,
+                    recordsFiltered = result.RecordsFiltered,
+                    data = result.Data
                 });
             }
             catch (Exception ex)

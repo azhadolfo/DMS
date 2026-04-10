@@ -45,7 +45,12 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<UserRepo>();
 builder.Services.AddScoped<ReportRepo>();
+builder.Services.AddScoped<IDmsAccessService, DmsAccessService>();
+builder.Services.AddScoped<IDmsQueryService, DmsQueryService>();
+builder.Services.AddScoped<ILogQueryService, LogQueryService>();
+builder.Services.AddScoped<IDmsSearchService, DmsSearchService>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
+builder.Services.AddScoped<IDocumentStorageWorkflowService, DocumentStorageWorkflowService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
 
 if (builder.Environment.IsProduction())
