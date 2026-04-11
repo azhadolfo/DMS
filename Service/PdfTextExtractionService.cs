@@ -161,10 +161,15 @@ namespace Document_Management.Service
                     {
                         await Task.WhenAll(waitForExitTask, standardOutputTask, standardErrorTask);
                     }
-                    catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                    catch (OperationCanceledException)
                     {
                         TryKillProcess(process);
-                        throw;
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            throw;
+                        }
+
+                        throw new LocalOcrFailedException("Local OCR command timed out.");
                     }
 
                     var standardOutput = await standardOutputTask;

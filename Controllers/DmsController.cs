@@ -240,7 +240,7 @@ namespace Document_Management.Controllers
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
-                TempData["success"] = "File uploaded successfully. OCR processing has been queued.";
+                TempData["success"] = "File uploaded successfully. Search text may take a while to appear while text extraction completes.";
 
                 return View(fileDocument);
             }
@@ -582,7 +582,9 @@ namespace Document_Management.Controllers
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
-                TempData["success"] = "File document updated successfully";
+                TempData["success"] = fileChanged
+                    ? "File document updated successfully. Search text may take a while to refresh while text extraction completes."
+                    : "File document updated successfully";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
