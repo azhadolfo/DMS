@@ -153,9 +153,22 @@ namespace Document_Management.Service
                     using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     timeoutCts.CancelAfter(TimeSpan.FromSeconds(timeout));
 
-                    await process.WaitForExitAsync(timeoutCts.Token);
-                    var standardOutput = await process.StandardOutput.ReadToEndAsync(timeoutCts.Token);
-                    var standardError = await process.StandardError.ReadToEndAsync(timeoutCts.Token);
+                    var standardOutputTask = process.StandardOutput.ReadToEndAsync(timeoutCts.Token);
+                    var standardErrorTask = process.StandardError.ReadToEndAsync(timeoutCts.Token);
+                    var waitForExitTask = process.WaitForExitAsync(timeoutCts.Token);
+
+                    try
+                    {
+                        await Task.WhenAll(waitForExitTask, standardOutputTask, standardErrorTask);
+                    }
+                    catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                    {
+                        TryKillProcess(process);
+                        throw;
+                    }
+
+                    var standardOutput = await standardOutputTask;
+                    var standardError = await standardErrorTask;
 
                     if (process.ExitCode != 0)
                     {
@@ -242,6 +255,24 @@ namespace Document_Management.Service
             catch (Exception ex)
             {
                 _logger.LogDebug(ex, "Failed to clean OCR temp directory {TempDirectory}", path);
+            }
+        }
+
+        private void TryKillProcess(Process process)
+        {
+            try
+            {
+                if (process.HasExited)
+                {
+                    return;
+                }
+
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit();
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException or Win32Exception)
+            {
+                _logger.LogDebug(ex, "Failed to terminate OCR process {ProcessId}", process.Id);
             }
         }
 
