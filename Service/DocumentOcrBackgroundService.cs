@@ -4,16 +4,18 @@ namespace Document_Management.Service
 {
     public sealed class DocumentOcrBackgroundService : BackgroundService
     {
-        private static readonly TimeSpan IdleDelay = TimeSpan.FromSeconds(10);
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<DocumentOcrBackgroundService> _logger;
+        private readonly TimeSpan _idleDelay;
 
         public DocumentOcrBackgroundService(
             IServiceScopeFactory serviceScopeFactory,
-            ILogger<DocumentOcrBackgroundService> logger)
+            ILogger<DocumentOcrBackgroundService> logger,
+            IConfiguration configuration)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
+            _idleDelay = TimeSpan.FromSeconds(configuration.GetValue("OcrWorker:PollIntervalSeconds", 10));
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -26,7 +28,7 @@ namespace Document_Management.Service
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     if (!await dbContext.Database.CanConnectAsync(stoppingToken))
                     {
-                        await Task.Delay(IdleDelay, stoppingToken);
+                        await Task.Delay(_idleDelay, stoppingToken);
                         continue;
                     }
 
@@ -35,7 +37,7 @@ namespace Document_Management.Service
 
                     if (!documentId.HasValue)
                     {
-                        await Task.Delay(IdleDelay, stoppingToken);
+                        await Task.Delay(_idleDelay, stoppingToken);
                         continue;
                     }
 
@@ -48,7 +50,7 @@ namespace Document_Management.Service
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Unhandled error in OCR background worker.");
-                    await Task.Delay(IdleDelay, stoppingToken);
+                    await Task.Delay(_idleDelay, stoppingToken);
                 }
             }
         }

@@ -9,6 +9,7 @@ namespace Document_Management.Service
     {
         Task<int?> TryClaimNextDocumentAsync(CancellationToken cancellationToken);
         Task ProcessDocumentAsync(int documentId, CancellationToken cancellationToken);
+        Task<int> ProcessPendingDocumentsAsync(int maxDocuments, CancellationToken cancellationToken);
     }
 
     public sealed class DocumentOcrService : IDocumentOcrService
@@ -93,6 +94,25 @@ namespace Document_Management.Service
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 _logger.LogError(ex, "OCR processing failed for document {DocumentId}", documentId);
             }
+        }
+
+        public async Task<int> ProcessPendingDocumentsAsync(int maxDocuments, CancellationToken cancellationToken)
+        {
+            var processedCount = 0;
+
+            while (processedCount < maxDocuments)
+            {
+                var documentId = await TryClaimNextDocumentAsync(cancellationToken);
+                if (!documentId.HasValue)
+                {
+                    break;
+                }
+
+                await ProcessDocumentAsync(documentId.Value, cancellationToken);
+                processedCount += 1;
+            }
+
+            return processedCount;
         }
 
         private static string TruncateError(string error)

@@ -1,5 +1,16 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
-USER $APP_UID
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ghostscript \
+        python3 \
+        python3-pip \
+        qpdf \
+        tesseract-ocr \
+        tesseract-ocr-eng \
+    && python3 -m pip install --no-cache-dir --break-system-packages ocrmypdf \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 EXPOSE 8080
 
@@ -19,5 +30,6 @@ RUN dotnet publish "./DocumentManagement.csproj" -c $BUILD_CONFIGURATION -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+USER $APP_UID
 
 ENTRYPOINT ["dotnet", "DocumentManagement.dll"]
