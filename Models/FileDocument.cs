@@ -55,6 +55,17 @@ namespace Document_Management.Models
         [Display(Name = "Box Number")]
         public string BoxNumber { get; set; } = string.Empty;
 
+        public string ExtractedText { get; set; } = string.Empty;
+        public string OcrStatus { get; set; } = OcrStatuses.NotRequested;
+        [Column(TypeName = "timestamp without time zone")]
+        public DateTime? OcrQueuedAt { get; set; }
+        [Column(TypeName = "timestamp without time zone")]
+        public DateTime? OcrStartedAt { get; set; }
+        [Column(TypeName = "timestamp without time zone")]
+        public DateTime? OcrCompletedAt { get; set; }
+        public int OcrAttemptCount { get; set; }
+        public string OcrError { get; set; } = string.Empty;
+
         [Display(Name = "Submitted By")]
         public string SubmittedBy { get; set; } = string.Empty;
 

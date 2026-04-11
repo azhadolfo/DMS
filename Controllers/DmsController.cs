@@ -216,6 +216,13 @@ namespace Document_Management.Controllers
                 fileDocument.Username = _accessService.Username!;
                 fileDocument.OriginalFilename = file.FileName;
                 fileDocument.IsInCloudStorage = true;
+                fileDocument.ExtractedText = string.Empty;
+                fileDocument.OcrStatus = OcrStatuses.Pending;
+                fileDocument.OcrQueuedAt = DateTimeHelper.GetCurrentPhilippineTime();
+                fileDocument.OcrStartedAt = null;
+                fileDocument.OcrCompletedAt = null;
+                fileDocument.OcrAttemptCount = 0;
+                fileDocument.OcrError = string.Empty;
 
                 await _dbContext.FileDocuments.AddAsync(fileDocument, cancellationToken);
 
@@ -233,7 +240,7 @@ namespace Document_Management.Controllers
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
-                TempData["success"] = "File uploaded successfully to Cloud Storage";
+                TempData["success"] = "File uploaded successfully. OCR processing has been queued.";
 
                 return View(fileDocument);
             }
@@ -532,6 +539,13 @@ namespace Document_Management.Controllers
                     file.Location = replaceResult.ObjectName;
                     file.FileSize = replaceResult.FileSize;
                     file.OriginalFilename = replaceResult.OriginalFileName;
+                    file.ExtractedText = string.Empty;
+                    file.OcrStatus = OcrStatuses.Pending;
+                    file.OcrQueuedAt = DateTimeHelper.GetCurrentPhilippineTime();
+                    file.OcrStartedAt = null;
+                    file.OcrCompletedAt = null;
+                    file.OcrAttemptCount = 0;
+                    file.OcrError = string.Empty;
                     fileChanged = true;
                 }
 

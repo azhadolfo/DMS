@@ -51,7 +51,10 @@ builder.Services.AddScoped<ILogQueryService, LogQueryService>();
 builder.Services.AddScoped<IDmsSearchService, DmsSearchService>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
 builder.Services.AddScoped<IDocumentStorageWorkflowService, DocumentStorageWorkflowService>();
+builder.Services.AddScoped<IPdfTextExtractionService, PdfTextExtractionService>();
+builder.Services.AddScoped<IDocumentOcrService, DocumentOcrService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
+builder.Services.AddHostedService<DocumentOcrBackgroundService>();
 
 if (builder.Environment.IsProduction())
 {

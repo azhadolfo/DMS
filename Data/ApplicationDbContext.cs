@@ -30,6 +30,9 @@ namespace Document_Management.Data
                 f.HasIndex(f => f.Year);
                 f.HasIndex(f => f.Category);
                 f.HasIndex(f => f.DateUploaded);
+                f.HasIndex(f => f.OcrStatus);
+                f.Property(f => f.ExtractedText).HasColumnType("text");
+                f.Property(f => f.OcrError).HasColumnType("text");
             });
 
             builder.Entity<LogsModel>(l => l.HasIndex(l => l.Date));
