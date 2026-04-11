@@ -34,7 +34,7 @@ steps:
       - '--memory'
       - '4Gi'
       - '--task-timeout'
-      - '3600'
+      - '9600'
       - '--max-retries'
       - '1'
       - '--set-env-vars'

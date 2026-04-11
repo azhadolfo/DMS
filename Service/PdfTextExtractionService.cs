@@ -5,6 +5,19 @@ using UglyToad.PdfPig;
 
 namespace Document_Management.Service
 {
+    public sealed class LocalOcrFailedException : Exception
+    {
+        public LocalOcrFailedException(string message)
+            : base(message)
+        {
+        }
+
+        public LocalOcrFailedException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+    }
+
     public interface IPdfTextExtractionService
     {
         Task<string> ExtractTextAsync(byte[] fileBytes, string contentType, CancellationToken cancellationToken);
@@ -151,13 +164,13 @@ namespace Document_Management.Service
                             process.ExitCode,
                             standardOutput,
                             standardError);
-                        return string.Empty;
+                        throw new LocalOcrFailedException($"Local OCR command failed with exit code {process.ExitCode}.");
                     }
 
                     if (!File.Exists(sidecarPath))
                     {
                         _logger.LogWarning("Local OCR command completed but did not create a sidecar text file.");
-                        return string.Empty;
+                        throw new LocalOcrFailedException("Local OCR command completed without creating a sidecar text file.");
                     }
 
                     var sidecarText = await File.ReadAllTextAsync(sidecarPath, cancellationToken);
@@ -171,12 +184,12 @@ namespace Document_Management.Service
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
                 _logger.LogWarning("Local OCR command timed out after {TimeoutSeconds} seconds.", timeout);
-                return string.Empty;
+                throw new LocalOcrFailedException($"Local OCR command timed out after {timeout} seconds.");
             }
             catch (Exception ex) when (ex is InvalidOperationException or Win32Exception or IOException)
             {
                 _logger.LogWarning(ex, "Local OCR command is unavailable or failed to start.");
-                return string.Empty;
+                throw new LocalOcrFailedException("Local OCR command is unavailable or failed to start.", ex);
             }
         }
 

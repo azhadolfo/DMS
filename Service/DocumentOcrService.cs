@@ -73,17 +73,32 @@ namespace Document_Management.Service
 
             try
             {
-                await using var downloadStream = await _cloudStorageService.DownloadFileStreamAsync(document.Location, cancellationToken);
+                await using var downloadStream =
+                    await _cloudStorageService.DownloadFileStreamAsync(document.Location, cancellationToken);
                 using var memoryStream = new MemoryStream();
                 await downloadStream.CopyToAsync(memoryStream, cancellationToken);
                 var fileBytes = memoryStream.ToArray();
 
-                document.ExtractedText = await _pdfTextExtractionService.ExtractTextAsync(fileBytes, "application/pdf", cancellationToken);
+                document.ExtractedText =
+                    await _pdfTextExtractionService.ExtractTextAsync(fileBytes, "application/pdf", cancellationToken);
                 document.OcrStatus = OcrStatuses.Completed;
                 document.OcrCompletedAt = DateTimeHelper.GetCurrentPhilippineTime();
                 document.OcrError = string.Empty;
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch (LocalOcrFailedException ex)
+            {
+                document.OcrStatus = OcrStatuses.Failed;
+                document.OcrCompletedAt = DateTimeHelper.GetCurrentPhilippineTime();
+                document.OcrError = TruncateError(ex.Message);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                _logger.LogWarning(ex, "OCR processing could not complete for document {DocumentId}", documentId);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {

@@ -15,7 +15,13 @@ namespace Document_Management.Service
         {
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
-            _idleDelay = TimeSpan.FromSeconds(configuration.GetValue("OcrWorker:PollIntervalSeconds", 10));
+            var pollIntervalSeconds = configuration.GetValue("OcrWorker:PollIntervalSeconds", 10);
+            if (pollIntervalSeconds <= 0)
+            {
+                pollIntervalSeconds = 10;
+            }
+
+            _idleDelay = TimeSpan.FromSeconds(pollIntervalSeconds);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
