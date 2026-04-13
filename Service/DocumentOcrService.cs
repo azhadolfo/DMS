@@ -43,7 +43,7 @@ namespace Document_Management.Service
                     file.IsInCloudStorage &&
                     (file.OcrStatus == OcrStatuses.Pending ||
                      (file.OcrStatus == OcrStatuses.Processing && file.OcrStartedAt != null && file.OcrStartedAt < staleProcessingCutoff)))
-                .OrderBy(file => file.OcrQueuedAt ?? file.DateUploaded)
+                .OrderByDescending(file => file.Id)
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (document == null)

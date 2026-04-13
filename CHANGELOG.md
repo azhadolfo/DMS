@@ -5,6 +5,20 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v7.0.0] - 2026-04-13
+### Added
+- Added PDF content search support using extracted document text.
+- Added OCR processing state tracking for file documents.
+- Added asynchronous OCR processing through a background worker and Cloud Run Job execution mode.
+- Added production OCR deployment configuration for Cloud Run and Cloud Scheduler integration support.
+
+## Changed
+- Changed file upload and replace flows to queue OCR instead of processing it inline.
+- Changed the production deployment design so the web service stays request-based while OCR runs as a separate job.
+- Changed OCR job processing limits to use a 2-hour execution window for backlog handling.
+
+---
+
 ## [v6.0.0] - 2026-04-10
 ### Changed
 - Modified and refactor the existing code base.
