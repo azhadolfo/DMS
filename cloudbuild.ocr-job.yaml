@@ -41,6 +41,8 @@ steps:
       - 'ASPNETCORE_ENVIRONMENT=Production,OcrWorker__Enabled=false,OcrWorker__ExecutionMode=Job,OcrWorker__MaxDocumentsPerRun=10'
       - '--set-secrets'
       - 'ConnectionStrings__DefaultConnection=DefaultConnection:latest'
+      - '--set-cloudsql-instances'
+      - 'vfos-demo:us-central1:dms-instance-v3'
       - '--quiet'
 
 timeout: 1200s
