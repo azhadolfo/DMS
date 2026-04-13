@@ -604,6 +604,11 @@ namespace Document_Management.Controllers
             string sortOrder = "desc",
             CancellationToken cancellationToken = default)
         {
+            if (!_accessService.IsAuthenticated())
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (string.IsNullOrEmpty(search))
             {
                 return RedirectToAction("Index", "Home");
