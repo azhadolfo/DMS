@@ -163,7 +163,7 @@ namespace Document_Management.Service
                     }
                     catch (OperationCanceledException)
                     {
-                        TryKillProcess(process);
+                        await TryKillProcess(process);
                         if (cancellationToken.IsCancellationRequested)
                         {
                             throw;
@@ -263,7 +263,7 @@ namespace Document_Management.Service
             }
         }
 
-        private void TryKillProcess(Process process)
+        private async Task TryKillProcess(Process process)
         {
             try
             {
@@ -273,7 +273,7 @@ namespace Document_Management.Service
                 }
 
                 process.Kill(entireProcessTree: true);
-                process.WaitForExit();
+                await process.WaitForExitAsync(CancellationToken.None);
             }
             catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException or Win32Exception)
             {
