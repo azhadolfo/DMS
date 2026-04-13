@@ -51,7 +51,16 @@ builder.Services.AddScoped<ILogQueryService, LogQueryService>();
 builder.Services.AddScoped<IDmsSearchService, DmsSearchService>();
 builder.Services.AddScoped<ICloudStorageService, GoogleCloudStorageService>();
 builder.Services.AddScoped<IDocumentStorageWorkflowService, DocumentStorageWorkflowService>();
+builder.Services.AddScoped<IPdfTextExtractionService, PdfTextExtractionService>();
+builder.Services.AddScoped<IDocumentOcrService, DocumentOcrService>();
 builder.Services.AddScoped<CloudStorageMigrationService>();
+
+var ocrWorkerEnabled = builder.Configuration.GetValue("OcrWorker:Enabled", true);
+var ocrExecutionMode = builder.Configuration["OcrWorker:ExecutionMode"] ?? "Web";
+if (ocrWorkerEnabled && string.Equals(ocrExecutionMode, "Web", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddHostedService<DocumentOcrBackgroundService>();
+}
 
 if (builder.Environment.IsProduction())
 {
@@ -73,6 +82,17 @@ if (builder.Environment.IsProduction())
 var app = builder.Build();
 
 await ApplicationDbSeeder.SeedAsync(app.Services);
+
+if (string.Equals(ocrExecutionMode, "Job", StringComparison.OrdinalIgnoreCase))
+{
+    using var scope = app.Services.CreateScope();
+    var documentOcrService = scope.ServiceProvider.GetRequiredService<IDocumentOcrService>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("OcrJob");
+    var maxDocumentsPerRun = builder.Configuration.GetValue("OcrWorker:MaxDocumentsPerRun", 10);
+    var processedCount = await documentOcrService.ProcessPendingDocumentsAsync(maxDocumentsPerRun, CancellationToken.None);
+    logger.LogInformation("OCR job completed. Processed {ProcessedCount} document(s).", processedCount);
+    return;
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -3,6 +3,7 @@ using System;
 using Document_Management.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Document_Management.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260410074439_AddExtractedTextForPdfSearch")]
+    partial class AddExtractedTextForPdfSearch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -250,26 +253,6 @@ namespace Document_Management.Migrations
                     b.Property<int>("NumberOfPages")
                         .HasColumnType("integer");
 
-                    b.Property<int>("OcrAttemptCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("OcrCompletedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("OcrError")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("OcrQueuedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime?>("OcrStartedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("OcrStatus")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("OriginalFilename")
                         .IsRequired()
                         .HasColumnType("text");
@@ -300,8 +283,6 @@ namespace Document_Management.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique();
-
-                    b.HasIndex("OcrStatus");
 
                     b.HasIndex("OriginalFilename")
                         .IsUnique();

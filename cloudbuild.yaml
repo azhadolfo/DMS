@@ -26,6 +26,25 @@ steps:
       - $_DEPLOY_REGION
       - '--platform'
       - $_PLATFORM
+      - '--cpu'
+      - '1'
+      - '--memory'
+      - '1Gi'
+      - '--concurrency'
+      - '80'
+      - '--timeout'
+      - '300'
+      - '--max-instances'
+      - '20'
+      - '--min-instances'
+      - '0'
+      - '--cpu-throttling'
+      - '--execution-environment'
+      - 'gen2'
+      - '--set-env-vars'
+      - 'ASPNETCORE_ENVIRONMENT=Production,OcrWorker__Enabled=false,OcrWorker__ExecutionMode=Web'
+      - '--set-secrets'
+      - 'ConnectionStrings__DefaultConnection=DefaultConnection:latest'
       - '--quiet'
 
 timeout: 1200s

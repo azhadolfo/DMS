@@ -43,11 +43,12 @@ namespace Document_Management.Service
 
             foreach (var keyword in keywords)
             {
-                var currentKeyword = keyword;
+                var currentKeyword = $"%{keyword}%";
                 query = query.Where(file =>
-                    file.Description.Contains(currentKeyword) ||
-                    file.OriginalFilename.Contains(currentKeyword) ||
-                    file.BoxNumber.Contains(currentKeyword));
+                    EF.Functions.ILike(file.Description, currentKeyword) ||
+                    EF.Functions.ILike(file.OriginalFilename, currentKeyword) ||
+                    EF.Functions.ILike(file.BoxNumber, currentKeyword) ||
+                    EF.Functions.ILike(file.ExtractedText, currentKeyword));
             }
 
             var results = await query.ToListAsync(cancellationToken);

@@ -1,0 +1,53 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '--no-cache'
+      - '-t'
+      - '$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$_JOB_NAME/$_JOB_NAME:$COMMIT_SHA'
+      - '-f'
+      - 'Dockerfile'
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - '$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$_JOB_NAME/$_JOB_NAME:$COMMIT_SHA'
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - jobs
+      - deploy
+      - $_JOB_NAME
+      - '--image'
+      - '$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$_JOB_NAME/$_JOB_NAME:$COMMIT_SHA'
+      - '--region'
+      - $_DEPLOY_REGION
+      - '--tasks'
+      - '1'
+      - '--parallelism'
+      - '1'
+      - '--cpu'
+      - '2'
+      - '--memory'
+      - '4Gi'
+      - '--task-timeout'
+      - '9600'
+      - '--max-retries'
+      - '1'
+      - '--set-env-vars'
+      - 'ASPNETCORE_ENVIRONMENT=Production,OcrWorker__Enabled=false,OcrWorker__ExecutionMode=Job,OcrWorker__MaxDocumentsPerRun=10'
+      - '--set-secrets'
+      - 'ConnectionStrings__DefaultConnection=DefaultConnection:latest'
+      - '--quiet'
+
+timeout: 1200s
+
+images:
+  - '$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$_JOB_NAME/$_JOB_NAME:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
