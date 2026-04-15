@@ -104,7 +104,7 @@ namespace Document_Management.Controllers
                 return Json(new
                 {
                     success = true,
-                    pendingCount = pendingCount
+                    pendingCount
                 });
             }
             catch (Exception ex)

@@ -45,7 +45,7 @@ namespace Document_Management.Service
 
             var fileName = BuildStoredFileName(existingDocument.Department, newFile.FileName, DateTimeHelper.GetCurrentPhilippineTime());
             var storagePath = BuildStoragePath(existingDocument.Company, existingDocument.Year, existingDocument.Department, existingDocument.Category, existingDocument.SubCategory, fileName);
-            var objectName = await _cloudStorageService.UploadFileAsync(newFile, storagePath);
+            var objectName = await _cloudStorageService.UploadFileAsync(newFile, storagePath, cancellationToken);
 
             return new ReplaceDocumentResult(fileName, objectName, newFile.Length, newFile.FileName);
         }

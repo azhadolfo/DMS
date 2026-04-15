@@ -115,14 +115,9 @@ namespace Document_Management.Service
                                && file.Category == category
                                && !file.IsDeleted);
 
-            if (!string.IsNullOrEmpty(subCategory))
-            {
-                query = query.Where(file => file.SubCategory == subCategory);
-            }
-            else
-            {
-                query = query.Where(file => file.SubCategory == "N/A" || string.IsNullOrEmpty(file.SubCategory));
-            }
+            query = !string.IsNullOrEmpty(subCategory)
+                ? query.Where(file => file.SubCategory == subCategory)
+                : query.Where(file => file.SubCategory == "N/A" || string.IsNullOrEmpty(file.SubCategory));
 
             if (!string.IsNullOrEmpty(fileName))
             {

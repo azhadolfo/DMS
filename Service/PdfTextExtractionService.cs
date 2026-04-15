@@ -25,8 +25,8 @@ namespace Document_Management.Service
 
     public sealed class PdfTextExtractionService : IPdfTextExtractionService
     {
-        private const int MaxExtractedTextLength = 200000;
-        private const int MinimumNativeTextLength = 80;
+        private const int _maxExtractedTextLength = 200000;
+        private const int _minimumNativeTextLength = 80;
         private readonly ILogger<PdfTextExtractionService> _logger;
         private readonly IConfiguration _configuration;
 
@@ -46,7 +46,7 @@ namespace Document_Management.Service
             }
 
             var nativeText = ExtractNativeText(fileBytes);
-            if (nativeText.Length >= MinimumNativeTextLength)
+            if (nativeText.Length >= _minimumNativeTextLength)
             {
                 return nativeText;
             }
@@ -83,7 +83,7 @@ namespace Document_Management.Service
 
                     builder.Append(text);
 
-                    if (builder.Length >= MaxExtractedTextLength)
+                    if (builder.Length >= _maxExtractedTextLength)
                     {
                         break;
                     }
@@ -147,7 +147,8 @@ namespace Document_Management.Service
                     processStartInfo.ArgumentList.Add(inputPath);
                     processStartInfo.ArgumentList.Add(outputPath);
 
-                    using var process = new Process { StartInfo = processStartInfo };
+                    using var process = new Process();
+                    process.StartInfo = processStartInfo;
                     process.Start();
 
                     using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -239,7 +240,7 @@ namespace Document_Management.Service
                     previousWasWhitespace = false;
                 }
 
-                if (builder.Length >= MaxExtractedTextLength)
+                if (builder.Length >= _maxExtractedTextLength)
                 {
                     break;
                 }

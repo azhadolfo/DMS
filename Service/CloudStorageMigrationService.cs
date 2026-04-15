@@ -2,31 +2,28 @@ using Document_Management.Data;
 using Document_Management.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Document_Management.Service;
-
-public class CloudStorageMigrationService
+namespace Document_Management.Service
+{
+    public class CloudStorageMigrationService
     {
         private readonly ApplicationDbContext _context;
         private readonly ICloudStorageService _cloudStorage;
-        private readonly IWebHostEnvironment _environment;
         private readonly ILogger<CloudStorageMigrationService> _logger;
 
         public CloudStorageMigrationService(
             ApplicationDbContext context,
             ICloudStorageService cloudStorage,
-            IWebHostEnvironment environment,
             ILogger<CloudStorageMigrationService> logger)
         {
             _context = context;
             _cloudStorage = cloudStorage;
-            _environment = environment;
             _logger = logger;
         }
 
         public async Task<MigrationResult> MigrateAllFilesToCloudAsync(CancellationToken cancellationToken = default)
         {
             var result = new MigrationResult();
-            
+
             try
             {
                 // Get all files that are not yet in cloud storage
@@ -42,7 +39,7 @@ public class CloudStorageMigrationService
                     {
                         await MigrateFileToCloudAsync(fileDocument, cancellationToken);
                         result.SuccessCount++;
-                        
+
                         // Log progress every 10 files
                         if (result.SuccessCount % 10 == 0)
                         {
@@ -54,7 +51,7 @@ public class CloudStorageMigrationService
                         result.FailedFiles.Add(new FailedMigration
                         {
                             FileId = fileDocument.Id,
-                            FileName = fileDocument.Name ?? "Unknown",
+                            FileName = fileDocument.Name,
                             Error = ex.Message
                         });
                         result.FailureCount++;
@@ -63,7 +60,7 @@ public class CloudStorageMigrationService
                 }
 
                 await _context.SaveChangesAsync(cancellationToken);
-                
+
                 _logger.LogInformation($"Migration completed. Success: {result.SuccessCount}, Failed: {result.FailureCount}");
             }
             catch (Exception ex)
@@ -92,15 +89,15 @@ public class CloudStorageMigrationService
             // Read local file and create IFormFile
             var fileBytes = await File.ReadAllBytesAsync(localFilePath, cancellationToken);
             using var stream = new MemoryStream(fileBytes);
-            
-            var formFile = new FormFile(stream, 0, fileBytes.Length, "file", fileDocument.Name ?? "file")
+
+            var formFile = new FormFile(stream, 0, fileBytes.Length, "file", fileDocument.Name)
             {
                 Headers = new HeaderDictionary(),
                 ContentType = "application/pdf"
             };
 
             // Upload to Cloud Storage
-            var objectName = await _cloudStorage.UploadFileAsync(formFile, cloudStoragePath);
+            var objectName = await _cloudStorage.UploadFileAsync(formFile, cloudStoragePath, cancellationToken);
 
             // Update database record
             fileDocument.Location = objectName;
@@ -133,3 +130,4 @@ public class CloudStorageMigrationService
         public string FileName { get; set; } = string.Empty;
         public string Error { get; set; } = string.Empty;
     }
+}

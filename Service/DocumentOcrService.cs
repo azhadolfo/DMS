@@ -14,7 +14,7 @@ namespace Document_Management.Service
 
     public sealed class DocumentOcrService : IDocumentOcrService
     {
-        private static readonly TimeSpan StaleProcessingThreshold = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan _staleProcessingThreshold = TimeSpan.FromMinutes(30);
         private readonly ApplicationDbContext _dbContext;
         private readonly ICloudStorageService _cloudStorageService;
         private readonly IPdfTextExtractionService _pdfTextExtractionService;
@@ -35,7 +35,7 @@ namespace Document_Management.Service
         public async Task<int?> TryClaimNextDocumentAsync(CancellationToken cancellationToken)
         {
             var timeNow = DateTimeHelper.GetCurrentPhilippineTime();
-            var staleProcessingCutoff = timeNow.Subtract(StaleProcessingThreshold);
+            var staleProcessingCutoff = timeNow.Subtract(_staleProcessingThreshold);
 
             var document = await _dbContext.FileDocuments
                 .Where(file =>
