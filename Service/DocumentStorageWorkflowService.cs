@@ -29,7 +29,7 @@ namespace Document_Management.Service
             var uploadedAt = DateTimeHelper.GetCurrentPhilippineTime();
             var fileName = BuildStoredFileName(document.Department, file.FileName, uploadedAt);
             var storagePath = BuildStoragePath(document.Company, document.Year, document.Department, document.Category, document.SubCategory, fileName);
-            var objectName = await _cloudStorageService.UploadFileAsync(file, storagePath);
+            var objectName = await _cloudStorageService.UploadFileAsync(file, storagePath, cancellationToken);
 
             return new UploadDocumentResult(
                 fileName,
@@ -53,7 +53,7 @@ namespace Document_Management.Service
         public async Task<TransferDocumentResult> TransferAsync(FileDocument existingDocument, FileDocument destination, CancellationToken cancellationToken)
         {
             var oldLocation = existingDocument.Location;
-            await using var fileStream = await _cloudStorageService.DownloadFileStreamAsync(oldLocation);
+            await using var fileStream = await _cloudStorageService.DownloadFileStreamAsync(oldLocation, cancellationToken);
 
             var fileName = BuildStoredFileName(destination.Department, existingDocument.OriginalFilename, existingDocument.DateUploaded);
             var storagePath = BuildStoragePath(destination.Company, destination.Year, destination.Department, destination.Category, destination.SubCategory, fileName);
@@ -69,8 +69,8 @@ namespace Document_Management.Service
                 ContentType = "application/pdf"
             };
 
-            var newObjectName = await _cloudStorageService.UploadFileAsync(formFile, storagePath);
-            await _cloudStorageService.DeleteFileAsync(oldLocation);
+            var newObjectName = await _cloudStorageService.UploadFileAsync(formFile, storagePath, cancellationToken);
+            await _cloudStorageService.DeleteFileAsync(oldLocation, cancellationToken);
 
             return new TransferDocumentResult(fileName, oldLocation, newObjectName);
         }
