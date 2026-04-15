@@ -54,6 +54,7 @@ substitutions:
   _AR_HOSTNAME: us-central1-docker.pkg.dev
   _DEPLOY_REGION: us-central1
   _JOB_NAME: ocr-job
+  _PLATFORM: managed
 
 options:
   logging: CLOUD_LOGGING_ONLY
