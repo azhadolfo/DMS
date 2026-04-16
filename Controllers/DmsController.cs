@@ -18,6 +18,7 @@ namespace Document_Management.Controllers
         private readonly ICloudStorageService _cloudStorage;
         private readonly IDmsAccessService _accessService;
         private readonly IDocumentStorageWorkflowService _documentStorageWorkflowService;
+        private readonly IPdfUploadValidationService _pdfUploadValidationService;
         private readonly IDmsQueryService _dmsQueryService;
         private readonly IDmsSearchService _dmsSearchService;
 
@@ -28,6 +29,7 @@ namespace Document_Management.Controllers
             ICloudStorageService cloudStorage,
             IDmsAccessService accessService,
             IDocumentStorageWorkflowService documentStorageWorkflowService,
+            IPdfUploadValidationService pdfUploadValidationService,
             IDmsQueryService dmsQueryService,
             IDmsSearchService dmsSearchService)
         {
@@ -37,6 +39,7 @@ namespace Document_Management.Controllers
             _cloudStorage = cloudStorage;
             _accessService = accessService;
             _documentStorageWorkflowService = documentStorageWorkflowService;
+            _pdfUploadValidationService = pdfUploadValidationService;
             _dmsQueryService = dmsQueryService;
             _dmsSearchService = dmsSearchService;
         }
@@ -189,15 +192,10 @@ namespace Document_Management.Controllers
                     return View(fileDocument);
                 }
 
-                if (file.ContentType != "application/pdf")
+                var pdfValidationResult = await _pdfUploadValidationService.ValidateAsync(file, cancellationToken);
+                if (!pdfValidationResult.IsValid)
                 {
-                    TempData["error"] = "Please upload pdf file only!";
-                    return View(fileDocument);
-                }
-
-                if (file.Length > 20000000)
-                {
-                    TempData["error"] = "File is too large 20MB is the maximum size allowed.";
+                    TempData["error"] = pdfValidationResult.ErrorMessage;
                     return View(fileDocument);
                 }
 
@@ -215,6 +213,7 @@ namespace Document_Management.Controllers
                 fileDocument.FileSize = uploadResult.FileSize;
                 fileDocument.Username = _accessService.Username!;
                 fileDocument.OriginalFilename = file.FileName;
+                fileDocument.NumberOfPages = pdfValidationResult.PageCount;
                 fileDocument.IsInCloudStorage = true;
                 fileDocument.ExtractedText = string.Empty;
                 fileDocument.OcrStatus = OcrStatuses.Pending;
@@ -521,15 +520,10 @@ namespace Document_Management.Controllers
 
                 if (newFile?.Length > 0)
                 {
-                    if (newFile.ContentType != "application/pdf")
+                    var pdfValidationResult = await _pdfUploadValidationService.ValidateAsync(newFile, cancellationToken);
+                    if (!pdfValidationResult.IsValid)
                     {
-                        TempData["error"] = "Please upload pdf file only!";
-                        return RedirectToAction("Edit", new { id = model.Id });
-                    }
-
-                    if (newFile.Length > 20000000)
-                    {
-                        TempData["error"] = "File is too large 20MB is the maximum size allowed.";
+                        TempData["error"] = pdfValidationResult.ErrorMessage;
                         return RedirectToAction("Edit", new { id = model.Id });
                     }
 
@@ -539,6 +533,7 @@ namespace Document_Management.Controllers
                     file.Location = replaceResult.ObjectName;
                     file.FileSize = replaceResult.FileSize;
                     file.OriginalFilename = replaceResult.OriginalFileName;
+                    file.NumberOfPages = pdfValidationResult.PageCount;
                     file.ExtractedText = string.Empty;
                     file.OcrStatus = OcrStatuses.Pending;
                     file.OcrQueuedAt = DateTimeHelper.GetCurrentPhilippineTime();

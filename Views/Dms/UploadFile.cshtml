@@ -29,7 +29,7 @@
             <label class="form-label">File Name:</label>
             <span id="selectedFileName" class="text-muted">No file selected</span>
         </div>
-        
+
         <div class="mb-3">
             <label asp-for="BoxNumber" class="form-label"></label>
             <input asp-for="BoxNumber" class="form-control" placeholder="ex. 001" required/>
@@ -75,7 +75,7 @@
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
         </div>
-        
+
         <div class="mb-3" id="subCategoryContainer" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
@@ -86,12 +86,6 @@
             </div>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="NumberOfPages" class="form-label"></label>
-            <input asp-for="NumberOfPages" class="form-control" required min="1" step="1"/>
-            <span asp-validation-for="NumberOfPages" class="text-danger"></span>
-        </div>
-        
         <div class="mb-3">
             <label asp-for="SubmittedBy" class="form-label"></label>
             <input asp-for="SubmittedBy" class="form-control" placeholder="ex. Juan" required/>
@@ -138,7 +132,7 @@
             const hiddenFileNameInput = document.querySelector('input[type="hidden"][name="OriginalFilename"]');
             const uploadButton = document.getElementById('uploadButton');
             const form = document.querySelector('form');
-    
+
             // Function to update the selected file name
             function updateSelectedFileName() {
                 if (fileInput.files.length > 0) {
@@ -151,10 +145,10 @@
                     uploadButton.setAttribute('disabled', 'disabled');
                 }
             }
-    
+
             updateSelectedFileName();
             fileInput.addEventListener('change', updateSelectedFileName);
-    
+
             // Handle form submission - disable button only AFTER validation passes
             form.addEventListener('submit', function(e) {
                 // Check if form is valid
@@ -172,38 +166,38 @@
             var categoryDropdown = $('#Category');
             var subCategoryDropdown = $('#SubCategory');
             var subCategoryContainer = $('#subCategoryContainer');
-            
+
             // Function to load subcategories
             function loadSubCategories(categoryName, selectedSubCategory) {
                 if (!categoryName) {
                     subCategoryContainer.hide();
                     return;
                 }
-                
+
                 // Clear existing options
                 subCategoryDropdown.empty();
                 subCategoryDropdown.append('<option value="" selected disabled>-- Select the sub category --</option>');
-                
+
                 $.ajax({
                     url: '@Url.Action("GetSubCategories", "Dms")',
                     type: 'GET',
                     data: { categoryName: categoryName },
                     dataType: 'json',
                     success: function (data) {
-                        
+
                         if (data && data.length > 0) {
                             // Populate subcategory dropdown
                             $.each(data, function (index, item) {
                                 var option = $('<option></option>').val(item.value).text(item.text);
-                                
+
                                 // Set selected if it matches the model value
                                 if (selectedSubCategory && item.value == selectedSubCategory) {
                                     option.attr('selected', 'selected');
                                 }
-                                
+
                                 subCategoryDropdown.append(option);
                             });
-                            
+
                             // Show the subcategory field
                             subCategoryContainer.show();
                         } else {
@@ -218,15 +212,15 @@
                     }
                 });
             }
-            
+
             // Load subcategories on page load if category is already selected
             var initialCategoryName = categoryDropdown.val();
             var initialSubCategory = '@Model.SubCategory';
-            
+
             if (initialCategoryName) {
                 loadSubCategories(initialCategoryName, initialSubCategory);
             }
-            
+
             // Handle category change event
             categoryDropdown.on('change', function () {
                 var categoryName = $(this).val();
