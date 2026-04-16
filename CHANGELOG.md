@@ -64,7 +64,7 @@ The format is based on Semantic Versioning.
 - Added new feature to check the company access.
 - Added new extenstion for removing commas in string.
 
-## Changed
+### Changed
 - Modified the edit user to retain the company access.
 - Redesign the user interface for the user management module.
 
