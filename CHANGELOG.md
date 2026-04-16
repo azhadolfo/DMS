@@ -5,6 +5,15 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v7.0.1] - 2026-04-16
+## Changed
+- Modified and refactor the validation of uploaded/replace of file.
+
+## Added
+- Added method to capture the actual number of pages. 
+
+---
+
 ## [v7.0.0] - 2026-04-13
 ### Added
 - Added PDF content search support using extracted document text.
