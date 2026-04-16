@@ -19,10 +19,10 @@ The format is based on Semantic Versioning.
 ---
 
 ## [v7.0.1] - 2026-04-16
-## Changed
+### Changed
 - Modified and refactor the validation of uploaded/replace of file.
 
-## Added
+### Added
 - Added method to capture the actual number of pages. 
 
 ---

@@ -194,12 +194,12 @@ namespace Document_Management.Controllers
                     ModelState.AddModelError("file", "Please select a PDF file to upload.");
                 }
 
-                if (string.IsNullOrWhiteSpace(fileDocument.BoxNumber))
+                if (string.IsNullOrEmpty(fileDocument.BoxNumber))
                 {
                     ModelState.AddModelError(nameof(FileDocument.BoxNumber), "Box Number is required.");
                 }
 
-                if (string.IsNullOrWhiteSpace(fileDocument.SubmittedBy))
+                if (string.IsNullOrEmpty(fileDocument.SubmittedBy))
                 {
                     ModelState.AddModelError(nameof(FileDocument.SubmittedBy), "Submitted By is required.");
                 }
@@ -532,6 +532,25 @@ namespace Document_Management.Controllers
                     return documentAccessResult;
                 }
 
+                if (string.IsNullOrEmpty(model.BoxNumber))
+                {
+                    ModelState.AddModelError(nameof(FileDocument.BoxNumber), "");
+                    TempData["error"] = "Box Number is required.";
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+
+                if (string.IsNullOrEmpty(model.SubmittedBy))
+                {
+                    TempData["error"] = "Submitted By is required.";
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+
+                if (model.DateSubmitted == null)
+                {
+                    TempData["error"] = "Date Submitted is required.";
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+
                 var detailsChanged = false;
                 var fileChanged = false;
                 var oldFileName = file.OriginalFilename;
@@ -557,7 +576,8 @@ namespace Document_Management.Controllers
                         return RedirectToAction("Edit", new { id = model.Id });
                     }
 
-                    if (await _userRepo.CheckIfFileExists(newFile.FileName, cancellationToken))
+                    if (newFile.FileName != file.OriginalFilename &&
+                        await _userRepo.CheckIfFileExists(newFile.FileName, cancellationToken))
                     {
                         TempData["error"] = "This file already exists in our database!";
                         return RedirectToAction("Edit", new { id = model.Id });
