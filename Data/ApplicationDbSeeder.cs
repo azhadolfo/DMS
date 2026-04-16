@@ -6,8 +6,8 @@ namespace Document_Management.Data
 {
     public static class ApplicationDbSeeder
     {
-        private const string AdminUsername = "azh";
-        private const string AdminPassword = "azh";
+        private const string _adminUsername = "azh";
+        private const string _adminPassword = "azh";
 
         public static async Task SeedAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
         {
@@ -15,7 +15,7 @@ namespace Document_Management.Data
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             var adminExists = await dbContext.Accounts
-                .AnyAsync(x => x.Username == AdminUsername, cancellationToken);
+                .AnyAsync(x => x.Username == _adminUsername, cancellationToken);
 
             if (adminExists)
             {
@@ -27,7 +27,7 @@ namespace Document_Management.Data
                 EmployeeNumber = 9999,
                 FirstName = "AZH",
                 LastName = "ADMIN",
-                Username = AdminUsername,
+                Username = _adminUsername,
                 Role = "admin",
                 Department = "MIS",
                 AccessDepartments = string.Empty,
@@ -37,7 +37,7 @@ namespace Document_Management.Data
             };
 
             var passwordHasher = new PasswordHasher<Account>();
-            adminAccount.Password = passwordHasher.HashPassword(adminAccount, AdminPassword);
+            adminAccount.Password = passwordHasher.HashPassword(adminAccount, _adminPassword);
 
             await dbContext.Accounts.AddAsync(adminAccount, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
