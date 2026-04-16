@@ -6,23 +6,24 @@ namespace Document_Management.Repository
 {
     public class UserRepo
     {
-        private readonly ApplicationDbContext dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
         public UserRepo(ApplicationDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            _dbContext = dbContext;
         }
 
-        public async Task<bool> CheckIfFileExists(string originalfile, CancellationToken cancellationToken = default)
+        public async Task<bool> CheckIfFileExists(string originalFile, CancellationToken cancellationToken = default)
         {
-            return await dbContext
+            return await _dbContext
                 .FileDocuments
-                .AnyAsync(f => f.OriginalFilename == originalfile, cancellationToken);
+                .AnyAsync(f => f.OriginalFilename == originalFile, cancellationToken);
         }
 
         public async Task<FileDocument?> GetUploadedFiles(int id, CancellationToken cancellationToken = default)
         {
-            return await dbContext.FileDocuments.FindAsync(id, cancellationToken);
+            return await _dbContext.FileDocuments
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
     }
 }

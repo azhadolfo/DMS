@@ -4,32 +4,55 @@
     ViewData["Title"] = "Upload";
 }
 
+<style>
+    .submit-loading-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1055;
+    }
+
+    .submit-loading-overlay.d-none {
+        display: none !important;
+    }
+
+    .submit-loading-card {
+        min-width: 220px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
+</style>
+
+<div id="uploadLoadingOverlay" class="submit-loading-overlay d-none">
+    <div class="submit-loading-card">
+        <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+        <div id="uploadLoadingMessage">Uploading file...</div>
+    </div>
+</div>
+
 <h2><b>UPLOAD FILE</b></h2>
 <hr />
 
 <div class="row">
     <div class="col">
-    <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
+    <form id="uploadForm" asp-action="UploadFile" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3">
-            <label asp-for="Name" class="form-label"></label>
+            <label for="fileInput" class="form-label">File</label>
             <div class="col">
-                <input id ="fileInput" name="file" type="file" class="form-control w-" accept=".pdf" style="width:110px" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <input id="fileInput" name="file" type="file" class="form-control" accept=".pdf" required />
+                <span data-valmsg-for="file" class="text-danger"></span>
                 <small class="text-muted">Maximum file size allowed: 20MB</small>
             </div>
         </div>
 
-        <!-- Add a hidden field to store the selected file name -->
-        <input type="hidden" asp-for="OriginalFilename" />
-
-        <!-- Add the following span element to display the selected file name -->
-        <div class="mb-3">
-            <label class="form-label">File Name:</label>
-            <span id="selectedFileName" class="text-muted">No file selected</span>
-        </div>
-        
         <div class="mb-3">
             <label asp-for="BoxNumber" class="form-label"></label>
             <input asp-for="BoxNumber" class="form-control" placeholder="ex. 001" required/>
@@ -75,7 +98,7 @@
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
         </div>
-        
+
         <div class="mb-3" id="subCategoryContainer" style="display: none;">
             <label asp-for="SubCategory" class="form-label"></label>
             <div class="col">
@@ -86,12 +109,6 @@
             </div>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="NumberOfPages" class="form-label"></label>
-            <input asp-for="NumberOfPages" class="form-control" required min="1" step="1"/>
-            <span asp-validation-for="NumberOfPages" class="text-danger"></span>
-        </div>
-        
         <div class="mb-3">
             <label asp-for="SubmittedBy" class="form-label"></label>
             <input asp-for="SubmittedBy" class="form-control" placeholder="ex. Juan" required/>
@@ -115,7 +132,10 @@
 
         <div class="row">
             <div class="col-md-3">
-                <button id="uploadButton" type="submit" class="btn btn-primary form-control">Upload</button>
+                <button id="uploadButton" type="submit" class="btn btn-primary form-control d-inline-flex align-items-center justify-content-center gap-2">
+                    <span class="button-text">Upload</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
             </div>
             <div class="col-md-3">
                 <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary form-control">Back to Homepage</a>
@@ -133,37 +153,43 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const fileInput = document.querySelector('#fileInput');
-            const selectedFileNameSpan = document.getElementById('selectedFileName');
-            const hiddenFileNameInput = document.querySelector('input[type="hidden"][name="OriginalFilename"]');
+            const uploadLoadingOverlay = document.getElementById('uploadLoadingOverlay');
+            const uploadLoadingMessage = document.getElementById('uploadLoadingMessage');
+            const form = document.getElementById('uploadForm');
             const uploadButton = document.getElementById('uploadButton');
-            const form = document.querySelector('form');
-    
-            // Function to update the selected file name
-            function updateSelectedFileName() {
-                if (fileInput.files.length > 0) {
-                    const fileName = fileInput.files[0].name;
-                    selectedFileNameSpan.textContent = fileName;
-                    hiddenFileNameInput.value = fileName;
-                    uploadButton.removeAttribute('disabled');
-                } else {
-                    selectedFileNameSpan.textContent = hiddenFileNameInput.value || 'No file selected';
-                    uploadButton.setAttribute('disabled', 'disabled');
+            const uploadButtonText = uploadButton.querySelector('.button-text');
+            const uploadButtonSpinner = uploadButton.querySelector('.spinner-border');
+            let isSubmitting = false;
+
+            form.addEventListener('submit', function (event) {
+                if (isSubmitting) {
+                    event.preventDefault();
+                    return;
                 }
-            }
-    
-            updateSelectedFileName();
-            fileInput.addEventListener('change', updateSelectedFileName);
-    
-            // Handle form submission - disable button only AFTER validation passes
-            form.addEventListener('submit', function(e) {
-                // Check if form is valid
-                if (form.checkValidity()) {
-                    // Only disable if validation passed
-                    uploadButton.disabled = true;
-                    uploadButton.textContent = 'Uploading...'; // Optional: show feedback
+
+                const isValid = typeof $ !== 'undefined' && $.validator
+                    ? $(form).valid()
+                    : form.checkValidity();
+
+                if (!isValid) {
+                    return;
                 }
-                // If invalid, browser will show validation messages automatically
+
+                event.preventDefault();
+                isSubmitting = true;
+                uploadButton.disabled = true;
+                uploadButtonText.textContent = 'Uploading...';
+                uploadButtonSpinner.classList.remove('d-none');
+                uploadLoadingMessage.textContent = 'Uploading file...';
+                uploadLoadingOverlay.classList.remove('d-none');
+
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        window.setTimeout(function () {
+                            form.submit();
+                        }, 150);
+                    });
+                });
             });
         });
     </script>
@@ -172,38 +198,38 @@
             var categoryDropdown = $('#Category');
             var subCategoryDropdown = $('#SubCategory');
             var subCategoryContainer = $('#subCategoryContainer');
-            
+
             // Function to load subcategories
             function loadSubCategories(categoryName, selectedSubCategory) {
                 if (!categoryName) {
                     subCategoryContainer.hide();
                     return;
                 }
-                
+
                 // Clear existing options
                 subCategoryDropdown.empty();
                 subCategoryDropdown.append('<option value="" selected disabled>-- Select the sub category --</option>');
-                
+
                 $.ajax({
                     url: '@Url.Action("GetSubCategories", "Dms")',
                     type: 'GET',
                     data: { categoryName: categoryName },
                     dataType: 'json',
                     success: function (data) {
-                        
+
                         if (data && data.length > 0) {
                             // Populate subcategory dropdown
                             $.each(data, function (index, item) {
                                 var option = $('<option></option>').val(item.value).text(item.text);
-                                
+
                                 // Set selected if it matches the model value
                                 if (selectedSubCategory && item.value == selectedSubCategory) {
                                     option.attr('selected', 'selected');
                                 }
-                                
+
                                 subCategoryDropdown.append(option);
                             });
-                            
+
                             // Show the subcategory field
                             subCategoryContainer.show();
                         } else {
@@ -218,15 +244,15 @@
                     }
                 });
             }
-            
+
             // Load subcategories on page load if category is already selected
             var initialCategoryName = categoryDropdown.val();
             var initialSubCategory = '@Model.SubCategory';
-            
+
             if (initialCategoryName) {
                 loadSubCategories(initialCategoryName, initialSubCategory);
             }
-            
+
             // Handle category change event
             categoryDropdown.on('change', function () {
                 var categoryName = $(this).val();

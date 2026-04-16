@@ -2,7 +2,7 @@
 @{
     var userRole = Context.Session.GetString("userRole")?.ToLower();
 
-    ViewBag.AppVersion = "7.0.0";
+    ViewBag.AppVersion = "7.1.0";
 
 }
 
@@ -12,7 +12,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DMS ▪ @ViewData["Title"]</title>
-    @*  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link href="~/svg/dms-icon.svg" rel="shortcut icon" type="image/svg" />
     <link rel="stylesheet" href="~/css/site.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />

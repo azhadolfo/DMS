@@ -4,13 +4,45 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    .submit-loading-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1055;
+    }
+
+    .submit-loading-overlay.d-none {
+        display: none !important;
+    }
+
+    .submit-loading-card {
+        min-width: 220px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
+</style>
+
+<div id="editLoadingOverlay" class="submit-loading-overlay d-none">
+    <div class="submit-loading-card">
+        <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+        <div id="editLoadingMessage">Saving changes...</div>
+    </div>
+</div>
+
 <h1>Edit</h1>
 
 <h4>File Document Details</h4>
 <hr />
 <div class="row">
     <div class="col-md-8">
-        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <form id="editForm" asp-action="Edit" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
@@ -20,7 +52,7 @@
                 <textarea asp-for="Description" class="form-control" rows="5" placeholder="Enter some words or keywords that will help us find the file later."></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            
+
             <div class="form-group mb-3">
                 <label asp-for="BoxNumber" class="control-label"></label>
                 <input asp-for="BoxNumber" placeholder="ex. 001" class="form-control" />
@@ -28,17 +60,11 @@
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="NumberOfPages" class="control-label"></label>
-                <input asp-for="NumberOfPages" class="form-control" />
-                <span asp-validation-for="NumberOfPages" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group mb-3">
                 <label asp-for="SubmittedBy" class="control-label"></label>
                 <input asp-for="SubmittedBy" placeholder="ex. Juan" class="form-control" />
                 <span asp-validation-for="SubmittedBy" class="text-danger"></span>
             </div>
-            
+
             <div class="form-group mb-3">
                 <label asp-for="DateSubmitted" class="control-label"></label>
                 <input asp-for="DateSubmitted" type="date" class="form-control" />
@@ -47,7 +73,7 @@
 
             <div class="form-group mb-3">
                 <label class="control-label">Current File</label>
-                <div>@Model.Name</div>
+                <div>@Model.OriginalFilename</div>
             </div>
 
             <div class="form-group mb-3">
@@ -57,7 +83,10 @@
             </div>
 
             <div class="form-group mb-4">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <button id="saveButton" type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2">
+                    <span class="button-text">Save</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
                 <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
@@ -68,4 +97,47 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById('editForm');
+            const editLoadingOverlay = document.getElementById('editLoadingOverlay');
+            const editLoadingMessage = document.getElementById('editLoadingMessage');
+            const saveButton = document.getElementById('saveButton');
+            const saveButtonText = saveButton.querySelector('.button-text');
+            const saveButtonSpinner = saveButton.querySelector('.spinner-border');
+            let isSubmitting = false;
+
+            form.addEventListener('submit', function (event) {
+                if (isSubmitting) {
+                    event.preventDefault();
+                    return;
+                }
+
+                const isValid = typeof $ !== 'undefined' && $.validator
+                    ? $(form).valid()
+                    : form.checkValidity();
+
+                if (!isValid) {
+                    return;
+                }
+
+                event.preventDefault();
+                isSubmitting = true;
+                saveButton.disabled = true;
+                saveButtonText.textContent = 'Saving...';
+                saveButtonSpinner.classList.remove('d-none');
+                editLoadingMessage.textContent = 'Saving changes...';
+                editLoadingOverlay.classList.remove('d-none');
+
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        window.setTimeout(function () {
+                            form.submit();
+                        }, 150);
+                    });
+                });
+            });
+        });
+    </script>
 }

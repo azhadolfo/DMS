@@ -5,6 +5,28 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v7.1.0] - 2026-04-16
+### Added
+- Added loading spinners and submission overlays for upload, edit, transfer, trash, and file list actions.
+- Added duplicate file validation when replacing a file from the edit module.
+### Fixed
+- Fixed the edit form to display the original file name as the current file.
+### Changed
+- Redesigned the upload and edit pages to simplify the file input flow and remove unnecessary UI code.
+- Added required validation for upload fields including file, box number, submitted by, and date submitted.
+- Updated edit handling so box number, submitted by, and date submitted changes are saved correctly.
+
+---
+
+## [v7.0.1] - 2026-04-16
+### Changed
+- Modified and refactor the validation of uploaded/replace of file.
+
+### Added
+- Added method to capture the actual number of pages. 
+
+---
+
 ## [v7.0.0] - 2026-04-13
 ### Added
 - Added PDF content search support using extracted document text.
@@ -42,7 +64,7 @@ The format is based on Semantic Versioning.
 - Added new feature to check the company access.
 - Added new extenstion for removing commas in string.
 
-## Changed
+### Changed
 - Modified the edit user to retain the company access.
 - Redesign the user interface for the user management module.
 

@@ -18,6 +18,7 @@ namespace Document_Management.Controllers
         private readonly ICloudStorageService _cloudStorage;
         private readonly IDmsAccessService _accessService;
         private readonly IDocumentStorageWorkflowService _documentStorageWorkflowService;
+        private readonly IPdfUploadValidationService _pdfUploadValidationService;
         private readonly IDmsQueryService _dmsQueryService;
         private readonly IDmsSearchService _dmsSearchService;
 
@@ -28,6 +29,7 @@ namespace Document_Management.Controllers
             ICloudStorageService cloudStorage,
             IDmsAccessService accessService,
             IDocumentStorageWorkflowService documentStorageWorkflowService,
+            IPdfUploadValidationService pdfUploadValidationService,
             IDmsQueryService dmsQueryService,
             IDmsSearchService dmsSearchService)
         {
@@ -37,6 +39,7 @@ namespace Document_Management.Controllers
             _cloudStorage = cloudStorage;
             _accessService = accessService;
             _documentStorageWorkflowService = documentStorageWorkflowService;
+            _pdfUploadValidationService = pdfUploadValidationService;
             _dmsQueryService = dmsQueryService;
             _dmsSearchService = dmsSearchService;
         }
@@ -167,7 +170,10 @@ namespace Document_Management.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile? file, CancellationToken cancellationToken)
+        public async Task<IActionResult> UploadFile(
+            FileDocument fileDocument,
+            IFormFile? file,
+            CancellationToken cancellationToken)
         {
             var uploadAccessResult = EnsureUploadAccess();
             if (uploadAccessResult != null)
@@ -183,38 +189,56 @@ namespace Document_Management.Controllers
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                if (!ModelState.IsValid || file == null || file.Length == 0)
+                if (file == null || file.Length == 0)
+                {
+                    ModelState.AddModelError("file", "Please select a PDF file to upload.");
+                }
+
+                if (string.IsNullOrEmpty(fileDocument.BoxNumber))
+                {
+                    ModelState.AddModelError(nameof(FileDocument.BoxNumber), "Box Number is required.");
+                }
+
+                if (string.IsNullOrEmpty(fileDocument.SubmittedBy))
+                {
+                    ModelState.AddModelError(nameof(FileDocument.SubmittedBy), "Submitted By is required.");
+                }
+
+                if (fileDocument.DateSubmitted == null)
+                {
+                    ModelState.AddModelError(nameof(FileDocument.DateSubmitted), "Date Submitted is required.");
+                }
+
+                if (!ModelState.IsValid)
                 {
                     TempData["error"] = "Please fill out all the required data.";
                     return View(fileDocument);
                 }
 
-                if (file.ContentType != "application/pdf")
+                var uploadedFile = file!;
+
+                var pdfValidationResult = await _pdfUploadValidationService.ValidateAsync(uploadedFile, cancellationToken);
+                if (!pdfValidationResult.IsValid)
                 {
-                    TempData["error"] = "Please upload pdf file only!";
+                    TempData["error"] = pdfValidationResult.ErrorMessage;
                     return View(fileDocument);
                 }
 
-                if (file.Length > 20000000)
-                {
-                    TempData["error"] = "File is too large 20MB is the maximum size allowed.";
-                    return View(fileDocument);
-                }
-
-                if (await _userRepo.CheckIfFileExists(file.FileName, cancellationToken))
+                if (await _userRepo.CheckIfFileExists(uploadedFile.FileName, cancellationToken))
                 {
                     TempData["error"] = "This file already exists in our database!";
                     return View(fileDocument);
                 }
 
-                var uploadResult = await _documentStorageWorkflowService.UploadAsync(fileDocument, file, cancellationToken);
+                var uploadResult = await _documentStorageWorkflowService.UploadAsync(fileDocument, uploadedFile, cancellationToken);
 
                 fileDocument.DateUploaded = uploadResult.UploadedAt;
                 fileDocument.Name = uploadResult.StoredFileName;
                 fileDocument.Location = uploadResult.ObjectName;
                 fileDocument.FileSize = uploadResult.FileSize;
                 fileDocument.Username = _accessService.Username!;
-                fileDocument.OriginalFilename = file.FileName;
+                fileDocument.OriginalFilename = uploadedFile.FileName;
+                fileDocument.NumberOfPages = pdfValidationResult.PageCount;
                 fileDocument.IsInCloudStorage = true;
                 fileDocument.ExtractedText = string.Empty;
                 fileDocument.OcrStatus = OcrStatuses.Pending;
@@ -228,11 +252,11 @@ namespace Document_Management.Controllers
 
                 stopwatch.Stop();
                 var duration = stopwatch.Elapsed;
-                var fileSizeInMb = (file.Length / (1024.0 * 1024.0));
+                var fileSizeInMb = uploadedFile.Length / (1024.0 * 1024.0);
 
                 var logs = new LogsModel(
                     _accessService.Username!,
-                    $"Upload {file.FileName} to Cloud Storage in {uploadResult.FolderPath} {fileDocument.NumberOfPages} page(s). " +
+                    $"Upload {uploadedFile.FileName} to Cloud Storage in {uploadResult.FolderPath} {fileDocument.NumberOfPages} page(s). " +
                     $"Size: {fileSizeInMb:F2} MB. Duration: {duration.TotalSeconds:F2} seconds."
                 );
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
@@ -508,28 +532,54 @@ namespace Document_Management.Controllers
                     return documentAccessResult;
                 }
 
+                if (string.IsNullOrEmpty(model.BoxNumber))
+                {
+                    ModelState.AddModelError(nameof(FileDocument.BoxNumber), "");
+                    TempData["error"] = "Box Number is required.";
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+
+                if (string.IsNullOrEmpty(model.SubmittedBy))
+                {
+                    TempData["error"] = "Submitted By is required.";
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+
+                if (model.DateSubmitted == null)
+                {
+                    TempData["error"] = "Date Submitted is required.";
+                    return RedirectToAction("Edit", new { id = model.Id });
+                }
+
                 var detailsChanged = false;
                 var fileChanged = false;
                 var oldFileName = file.OriginalFilename;
 
-                if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
+                if (file.Description != model.Description ||
+                    file.BoxNumber != model.BoxNumber ||
+                    file.SubmittedBy != model.SubmittedBy ||
+                    file.DateSubmitted != model.DateSubmitted)
                 {
                     file.Description = model.Description;
-                    file.NumberOfPages = model.NumberOfPages;
+                    file.BoxNumber = model.BoxNumber;
+                    file.SubmittedBy = model.SubmittedBy;
+                    file.DateSubmitted = model.DateSubmitted;
                     detailsChanged = true;
                 }
 
                 if (newFile?.Length > 0)
                 {
-                    if (newFile.ContentType != "application/pdf")
+                    var pdfValidationResult = await _pdfUploadValidationService.ValidateAsync(newFile, cancellationToken);
+                    if (!pdfValidationResult.IsValid)
                     {
-                        TempData["error"] = "Please upload pdf file only!";
+                        TempData["error"] = pdfValidationResult.ErrorMessage;
                         return RedirectToAction("Edit", new { id = model.Id });
                     }
 
-                    if (newFile.Length > 20000000)
+                    if (newFile.FileName != file.OriginalFilename &&
+                        await _userRepo.CheckIfFileExists(newFile.FileName, cancellationToken))
                     {
-                        TempData["error"] = "File is too large 20MB is the maximum size allowed.";
+                        TempData["error"] = "This file already exists in our database!";
                         return RedirectToAction("Edit", new { id = model.Id });
                     }
 
@@ -539,6 +589,7 @@ namespace Document_Management.Controllers
                     file.Location = replaceResult.ObjectName;
                     file.FileSize = replaceResult.FileSize;
                     file.OriginalFilename = replaceResult.OriginalFileName;
+                    file.NumberOfPages = pdfValidationResult.PageCount;
                     file.ExtractedText = string.Empty;
                     file.OcrStatus = OcrStatuses.Pending;
                     file.OcrQueuedAt = DateTimeHelper.GetCurrentPhilippineTime();

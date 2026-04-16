@@ -30,10 +30,39 @@
     .dropdown-menu {
         z-index: 9999; /* Ensure it's above DataTables or modals */
     }
+
+    .submit-loading-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1055;
+    }
+
+    .submit-loading-overlay.d-none {
+        display: none !important;
+    }
+
+    .submit-loading-card {
+        min-width: 220px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
 </style>
 
 <div class="content">
     <partial name="_Notification" />
+    <div id="indexLoadingOverlay" class="submit-loading-overlay d-none">
+        <div class="submit-loading-card">
+            <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+            <div id="indexLoadingMessage">Moving file to Trash...</div>
+        </div>
+    </div>
     <form id="delete-file-form" method="post" class="d-none">
         @Html.AntiForgeryToken()
         <input type="hidden" name="id" id="delete-file-id" />
@@ -157,7 +186,12 @@
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    submitMutationForm('delete-file-form', '@Url.Action("Delete", "Dms")', id, 'delete-file-id');
+                    submitMutationForm(
+                        'delete-file-form',
+                        '@Url.Action("Delete", "Dms")',
+                        id,
+                        'delete-file-id',
+                        'Moving file to Trash...');
                 }
             });
         }
@@ -165,10 +199,25 @@
         function submitMutationForm(formId, actionUrl, id, inputId) {
             const form = document.getElementById(formId);
             const idInput = document.getElementById(inputId);
+            const loadingOverlay = document.getElementById('indexLoadingOverlay');
+            const loadingMessage = document.getElementById('indexLoadingMessage');
+            const message = arguments.length > 4 ? arguments[4] : '';
 
             form.action = actionUrl;
             idInput.value = id;
-            form.submit();
+
+            if (message) {
+                loadingMessage.textContent = message;
+                loadingOverlay.classList.remove('d-none');
+            }
+
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    window.setTimeout(function () {
+                        form.submit();
+                    }, 150);
+                });
+            });
         }
     </script>
 }
