@@ -170,7 +170,10 @@ namespace Document_Management.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadFile(FileDocument fileDocument, IFormFile? file, CancellationToken cancellationToken)
+        public async Task<IActionResult> UploadFile(
+            FileDocument fileDocument,
+            IFormFile? file,
+            CancellationToken cancellationToken)
         {
             var uploadAccessResult = EnsureUploadAccess();
             if (uploadAccessResult != null)
@@ -186,33 +189,55 @@ namespace Document_Management.Controllers
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                if (!ModelState.IsValid || file == null || file.Length == 0)
+                if (file == null || file.Length == 0)
+                {
+                    ModelState.AddModelError("file", "Please select a PDF file to upload.");
+                }
+
+                if (string.IsNullOrWhiteSpace(fileDocument.BoxNumber))
+                {
+                    ModelState.AddModelError(nameof(FileDocument.BoxNumber), "Box Number is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(fileDocument.SubmittedBy))
+                {
+                    ModelState.AddModelError(nameof(FileDocument.SubmittedBy), "Submitted By is required.");
+                }
+
+                if (fileDocument.DateSubmitted == null)
+                {
+                    ModelState.AddModelError(nameof(FileDocument.DateSubmitted), "Date Submitted is required.");
+                }
+
+                if (!ModelState.IsValid)
                 {
                     TempData["error"] = "Please fill out all the required data.";
                     return View(fileDocument);
                 }
 
-                var pdfValidationResult = await _pdfUploadValidationService.ValidateAsync(file, cancellationToken);
+                var uploadedFile = file!;
+
+                var pdfValidationResult = await _pdfUploadValidationService.ValidateAsync(uploadedFile, cancellationToken);
                 if (!pdfValidationResult.IsValid)
                 {
                     TempData["error"] = pdfValidationResult.ErrorMessage;
                     return View(fileDocument);
                 }
 
-                if (await _userRepo.CheckIfFileExists(file.FileName, cancellationToken))
+                if (await _userRepo.CheckIfFileExists(uploadedFile.FileName, cancellationToken))
                 {
                     TempData["error"] = "This file already exists in our database!";
                     return View(fileDocument);
                 }
 
-                var uploadResult = await _documentStorageWorkflowService.UploadAsync(fileDocument, file, cancellationToken);
+                var uploadResult = await _documentStorageWorkflowService.UploadAsync(fileDocument, uploadedFile, cancellationToken);
 
                 fileDocument.DateUploaded = uploadResult.UploadedAt;
                 fileDocument.Name = uploadResult.StoredFileName;
                 fileDocument.Location = uploadResult.ObjectName;
                 fileDocument.FileSize = uploadResult.FileSize;
                 fileDocument.Username = _accessService.Username!;
-                fileDocument.OriginalFilename = file.FileName;
+                fileDocument.OriginalFilename = uploadedFile.FileName;
                 fileDocument.NumberOfPages = pdfValidationResult.PageCount;
                 fileDocument.IsInCloudStorage = true;
                 fileDocument.ExtractedText = string.Empty;
@@ -227,11 +252,11 @@ namespace Document_Management.Controllers
 
                 stopwatch.Stop();
                 var duration = stopwatch.Elapsed;
-                var fileSizeInMb = (file.Length / (1024.0 * 1024.0));
+                var fileSizeInMb = uploadedFile.Length / (1024.0 * 1024.0);
 
                 var logs = new LogsModel(
                     _accessService.Username!,
-                    $"Upload {file.FileName} to Cloud Storage in {uploadResult.FolderPath} {fileDocument.NumberOfPages} page(s). " +
+                    $"Upload {uploadedFile.FileName} to Cloud Storage in {uploadResult.FolderPath} {fileDocument.NumberOfPages} page(s). " +
                     $"Size: {fileSizeInMb:F2} MB. Duration: {duration.TotalSeconds:F2} seconds."
                 );
                 await _dbContext.Logs.AddAsync(logs, cancellationToken);
@@ -511,10 +536,15 @@ namespace Document_Management.Controllers
                 var fileChanged = false;
                 var oldFileName = file.OriginalFilename;
 
-                if (file.Description != model.Description || file.NumberOfPages != model.NumberOfPages)
+                if (file.Description != model.Description ||
+                    file.BoxNumber != model.BoxNumber ||
+                    file.SubmittedBy != model.SubmittedBy ||
+                    file.DateSubmitted != model.DateSubmitted)
                 {
                     file.Description = model.Description;
-                    file.NumberOfPages = model.NumberOfPages;
+                    file.BoxNumber = model.BoxNumber;
+                    file.SubmittedBy = model.SubmittedBy;
+                    file.DateSubmitted = model.DateSubmitted;
                     detailsChanged = true;
                 }
 

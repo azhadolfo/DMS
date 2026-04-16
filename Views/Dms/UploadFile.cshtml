@@ -13,21 +13,12 @@
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3">
-            <label asp-for="Name" class="form-label"></label>
+            <label for="fileInput" class="form-label">File</label>
             <div class="col">
-                <input id ="fileInput" name="file" type="file" class="form-control w-" accept=".pdf" style="width:110px" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <input id="fileInput" name="file" type="file" class="form-control" accept=".pdf" required />
+                <span data-valmsg-for="file" class="text-danger"></span>
                 <small class="text-muted">Maximum file size allowed: 20MB</small>
             </div>
-        </div>
-
-        <!-- Add a hidden field to store the selected file name -->
-        <input type="hidden" asp-for="OriginalFilename" />
-
-        <!-- Add the following span element to display the selected file name -->
-        <div class="mb-3">
-            <label class="form-label">File Name:</label>
-            <span id="selectedFileName" class="text-muted">No file selected</span>
         </div>
 
         <div class="mb-3">
@@ -127,27 +118,8 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const fileInput = document.querySelector('#fileInput');
-            const selectedFileNameSpan = document.getElementById('selectedFileName');
-            const hiddenFileNameInput = document.querySelector('input[type="hidden"][name="OriginalFilename"]');
             const uploadButton = document.getElementById('uploadButton');
             const form = document.querySelector('form');
-
-            // Function to update the selected file name
-            function updateSelectedFileName() {
-                if (fileInput.files.length > 0) {
-                    const fileName = fileInput.files[0].name;
-                    selectedFileNameSpan.textContent = fileName;
-                    hiddenFileNameInput.value = fileName;
-                    uploadButton.removeAttribute('disabled');
-                } else {
-                    selectedFileNameSpan.textContent = hiddenFileNameInput.value || 'No file selected';
-                    uploadButton.setAttribute('disabled', 'disabled');
-                }
-            }
-
-            updateSelectedFileName();
-            fileInput.addEventListener('change', updateSelectedFileName);
 
             // Handle form submission - disable button only AFTER validation passes
             form.addEventListener('submit', function(e) {
