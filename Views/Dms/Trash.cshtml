@@ -11,10 +11,36 @@
     .dropdown-menu {
         z-index: 9999; /* Ensure it's above DataTables or modals */
     }
+    .submit-loading-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1055;
+    }
+    .submit-loading-overlay.d-none {
+        display: none !important;
+    }
+    .submit-loading-card {
+        min-width: 240px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
 </style>
 
 <div class="content">
     <partial name="_Notification" />
+    <div id="trashLoadingOverlay" class="submit-loading-overlay d-none">
+        <div class="submit-loading-card">
+            <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+            <div id="trashLoadingMessage">Deleting file permanently...</div>
+        </div>
+    </div>
     <form id="permanent-delete-form" method="post" class="d-none">
         @Html.AntiForgeryToken()
         <input type="hidden" name="id" id="permanent-delete-id" />
@@ -121,7 +147,12 @@
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    submitMutationForm('permanent-delete-form', '@Url.Action("PermanentDelete", "Dms")', id, 'permanent-delete-id');
+                    submitMutationForm(
+                        'permanent-delete-form',
+                        '@Url.Action("PermanentDelete", "Dms")',
+                        id,
+                        'permanent-delete-id',
+                        'Deleting file permanently...');
                 }
             });
         }
@@ -138,7 +169,12 @@
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    submitMutationForm('restore-file-form', '@Url.Action("Restore", "Dms")', id, 'restore-file-id');
+                    submitMutationForm(
+                        'restore-file-form',
+                        '@Url.Action("Restore", "Dms")',
+                        id,
+                        'restore-file-id',
+                        'Restoring file...');
                 }
             });
         }
@@ -146,10 +182,25 @@
         function submitMutationForm(formId, actionUrl, id, inputId) {
             const form = document.getElementById(formId);
             const idInput = document.getElementById(inputId);
+            const loadingOverlay = document.getElementById('trashLoadingOverlay');
+            const loadingMessage = document.getElementById('trashLoadingMessage');
+            const message = arguments.length > 4 ? arguments[4] : '';
 
             form.action = actionUrl;
             idInput.value = id;
-            form.submit();
+
+            if (message) {
+                loadingMessage.textContent = message;
+                loadingOverlay.classList.remove('d-none');
+            }
+
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    window.setTimeout(function () {
+                        form.submit();
+                    }, 150);
+                });
+            });
         }
     </script>
 }

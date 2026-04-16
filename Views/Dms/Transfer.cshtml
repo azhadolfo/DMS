@@ -7,11 +7,43 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    .submit-loading-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1055;
+    }
+
+    .submit-loading-overlay.d-none {
+        display: none !important;
+    }
+
+    .submit-loading-card {
+        min-width: 220px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
+</style>
+
+<div id="transferLoadingOverlay" class="submit-loading-overlay d-none">
+    <div class="submit-loading-card">
+        <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+        <div id="transferLoadingMessage">Transferring file...</div>
+    </div>
+</div>
+
 <h1>Transfer Files</h1>
 <hr />
 <div class="row">
     <div class="col">
-    <form asp-action="Transfer">
+    <form id="transferForm" asp-action="Transfer">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
@@ -68,7 +100,10 @@
         </div>
         
         <div class="form-group mb-3">
-                <input type="submit" value="Transfer" class="btn btn-secondary" />
+                <button id="transferButton" type="submit" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-2">
+                    <span class="button-text">Transfer</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
                 <a asp-action="Index" class="btn btn-primary">Back</a>
         </div>
     </form>
@@ -144,6 +179,47 @@
             categoryDropdown.on('change', function () {
                 var categoryName = $(this).val();
                 loadSubCategories(categoryName, null);
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById('transferForm');
+            const transferLoadingOverlay = document.getElementById('transferLoadingOverlay');
+            const transferLoadingMessage = document.getElementById('transferLoadingMessage');
+            const transferButton = document.getElementById('transferButton');
+            const transferButtonText = transferButton.querySelector('.button-text');
+            const transferButtonSpinner = transferButton.querySelector('.spinner-border');
+            let isSubmitting = false;
+
+            form.addEventListener('submit', function (event) {
+                if (isSubmitting) {
+                    event.preventDefault();
+                    return;
+                }
+
+                const isValid = typeof $ !== 'undefined' && $.validator
+                    ? $(form).valid()
+                    : form.checkValidity();
+
+                if (!isValid) {
+                    return;
+                }
+
+                event.preventDefault();
+                isSubmitting = true;
+                transferButton.disabled = true;
+                transferButtonText.textContent = 'Transferring...';
+                transferButtonSpinner.classList.remove('d-none');
+                transferLoadingMessage.textContent = 'Transferring file...';
+                transferLoadingOverlay.classList.remove('d-none');
+
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        window.setTimeout(function () {
+                            form.submit();
+                        }, 150);
+                    });
+                });
             });
         });
     </script>

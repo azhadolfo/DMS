@@ -4,12 +4,44 @@
     ViewData["Title"] = "Upload";
 }
 
+<style>
+    .submit-loading-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1055;
+    }
+
+    .submit-loading-overlay.d-none {
+        display: none !important;
+    }
+
+    .submit-loading-card {
+        min-width: 220px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
+</style>
+
+<div id="uploadLoadingOverlay" class="submit-loading-overlay d-none">
+    <div class="submit-loading-card">
+        <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+        <div id="uploadLoadingMessage">Uploading file...</div>
+    </div>
+</div>
+
 <h2><b>UPLOAD FILE</b></h2>
 <hr />
 
 <div class="row">
     <div class="col">
-    <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
+    <form id="uploadForm" asp-action="UploadFile" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="mb-3">
@@ -100,7 +132,10 @@
 
         <div class="row">
             <div class="col-md-3">
-                <button id="uploadButton" type="submit" class="btn btn-primary form-control">Upload</button>
+                <button id="uploadButton" type="submit" class="btn btn-primary form-control d-inline-flex align-items-center justify-content-center gap-2">
+                    <span class="button-text">Upload</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </button>
             </div>
             <div class="col-md-3">
                 <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary form-control">Back to Homepage</a>
@@ -118,18 +153,43 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            const uploadLoadingOverlay = document.getElementById('uploadLoadingOverlay');
+            const uploadLoadingMessage = document.getElementById('uploadLoadingMessage');
+            const form = document.getElementById('uploadForm');
             const uploadButton = document.getElementById('uploadButton');
-            const form = document.querySelector('form');
+            const uploadButtonText = uploadButton.querySelector('.button-text');
+            const uploadButtonSpinner = uploadButton.querySelector('.spinner-border');
+            let isSubmitting = false;
 
-            // Handle form submission - disable button only AFTER validation passes
-            form.addEventListener('submit', function(e) {
-                // Check if form is valid
-                if (form.checkValidity()) {
-                    // Only disable if validation passed
-                    uploadButton.disabled = true;
-                    uploadButton.textContent = 'Uploading...'; // Optional: show feedback
+            form.addEventListener('submit', function (event) {
+                if (isSubmitting) {
+                    event.preventDefault();
+                    return;
                 }
-                // If invalid, browser will show validation messages automatically
+
+                const isValid = typeof $ !== 'undefined' && $.validator
+                    ? $(form).valid()
+                    : form.checkValidity();
+
+                if (!isValid) {
+                    return;
+                }
+
+                event.preventDefault();
+                isSubmitting = true;
+                uploadButton.disabled = true;
+                uploadButtonText.textContent = 'Uploading...';
+                uploadButtonSpinner.classList.remove('d-none');
+                uploadLoadingMessage.textContent = 'Uploading file...';
+                uploadLoadingOverlay.classList.remove('d-none');
+
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        window.setTimeout(function () {
+                            form.submit();
+                        }, 150);
+                    });
+                });
             });
         });
     </script>
