@@ -557,6 +557,12 @@ namespace Document_Management.Controllers
                         return RedirectToAction("Edit", new { id = model.Id });
                     }
 
+                    if (await _userRepo.CheckIfFileExists(newFile.FileName, cancellationToken))
+                    {
+                        TempData["error"] = "This file already exists in our database!";
+                        return RedirectToAction("Edit", new { id = model.Id });
+                    }
+
                     var replaceResult = await _documentStorageWorkflowService.ReplaceFileAsync(file, newFile, cancellationToken);
 
                     file.Name = replaceResult.StoredFileName;
