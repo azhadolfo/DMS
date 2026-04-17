@@ -56,4 +56,5 @@ substitutions:
   _PLATFORM: managed
 
 options:
+  machineType: e2-standard-2
   logging: CLOUD_LOGGING_ONLY
