@@ -1,7 +1,9 @@
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER root
-RUN apt-get update \
+RUN sed -i 's|http://archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g; s|http://security.ubuntu.com/ubuntu|https://security.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources \
+    && apt-get update -o Acquire::Retries=5 \
     && apt-get install -y --no-install-recommends \
+        -o Acquire::Retries=5 \
         ghostscript \
         python3 \
         python3-pip \
