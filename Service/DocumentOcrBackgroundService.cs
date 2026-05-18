@@ -26,39 +26,39 @@ namespace Document_Management.Service
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                try
-                {
-                    using var scope = _serviceScopeFactory.CreateScope();
-                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    if (!await dbContext.Database.CanConnectAsync(stoppingToken))
-                    {
-                        await Task.Delay(_idleDelay, stoppingToken);
-                        continue;
-                    }
-
-                    var documentOcrService = scope.ServiceProvider.GetRequiredService<IDocumentOcrService>();
-                    var documentId = await documentOcrService.TryClaimNextDocumentAsync(stoppingToken);
-
-                    if (!documentId.HasValue)
-                    {
-                        await Task.Delay(_idleDelay, stoppingToken);
-                        continue;
-                    }
-
-                    await documentOcrService.ProcessDocumentAsync(documentId.Value, stoppingToken);
-                }
-                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                {
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Unhandled error in OCR background worker.");
-                    await Task.Delay(_idleDelay, stoppingToken);
-                }
-            }
+            // while (!stoppingToken.IsCancellationRequested)
+            // {
+            //     try
+            //     {
+            //         using var scope = _serviceScopeFactory.CreateScope();
+            //         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            //         if (!await dbContext.Database.CanConnectAsync(stoppingToken))
+            //         {
+            //             await Task.Delay(_idleDelay, stoppingToken);
+            //             continue;
+            //         }
+            //
+            //         var documentOcrService = scope.ServiceProvider.GetRequiredService<IDocumentOcrService>();
+            //         var documentId = await documentOcrService.TryClaimNextDocumentAsync(stoppingToken);
+            //
+            //         if (!documentId.HasValue)
+            //         {
+            //             await Task.Delay(_idleDelay, stoppingToken);
+            //             continue;
+            //         }
+            //
+            //         await documentOcrService.ProcessDocumentAsync(documentId.Value, stoppingToken);
+            //     }
+            //     catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            //     {
+            //         break;
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         _logger.LogError(ex, "Unhandled error in OCR background worker.");
+            //         await Task.Delay(_idleDelay, stoppingToken);
+            //     }
+            // }
         }
     }
 }
