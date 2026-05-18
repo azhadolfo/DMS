@@ -7,37 +7,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<style>
-    .submit-loading-overlay {
-        position: fixed;
-        inset: 0;
-        background-color: rgba(255, 255, 255, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1055;
-    }
-
-    .submit-loading-overlay.d-none {
-        display: none !important;
-    }
-
-    .submit-loading-card {
-        min-width: 220px;
-        padding: 1rem 1.5rem;
-        border-radius: 0.5rem;
-        background-color: #fff;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        text-align: center;
-    }
-</style>
-
-<div id="transferLoadingOverlay" class="submit-loading-overlay d-none">
-    <div class="submit-loading-card">
-        <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
-        <div id="transferLoadingMessage">Transferring file...</div>
-    </div>
-</div>
+<partial name="_SubmitLoadingOverlay" view-data='new ViewDataDictionary(ViewData) { ["OverlayId"] = "transferLoadingOverlay", ["MessageId"] = "transferLoadingMessage", ["MessageText"] = "Transferring file..." }' />
 
 <h1>Transfer Files</h1>
 <hr />

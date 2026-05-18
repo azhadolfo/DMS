@@ -153,9 +153,25 @@ else
 
 <script>
 function changePageSize(newPageSize) {
+    if (window.showGlobalLoading) {
+        window.showGlobalLoading('Loading search results...');
+    }
+
     var searchTerm = '@searchTerm';
     var sortBy = '@sortBy';
     var sortOrder = '@sortOrder';
     window.location.href = '@Url.Action("GeneralSearch")?search=' + encodeURIComponent(searchTerm) + '&page=1&pageSize=' + newPageSize + '&sortBy=' + sortBy + '&sortOrder=' + sortOrder;
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    var searchLinks = document.querySelectorAll('a[href*="GeneralSearch"]');
+
+    searchLinks.forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.showGlobalLoading) {
+                window.showGlobalLoading('Loading search results...');
+            }
+        });
+    });
+});
 </script>

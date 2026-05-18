@@ -1,0 +1,12 @@
+@{
+    var overlayId = ViewData["OverlayId"]?.ToString() ?? "submitLoadingOverlay";
+    var messageId = ViewData["MessageId"]?.ToString() ?? "submitLoadingMessage";
+    var messageText = ViewData["MessageText"]?.ToString() ?? "Loading...";
+}
+
+<div id="@overlayId" class="submit-loading-overlay d-none">
+    <div class="submit-loading-card">
+        <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+        <div id="@messageId">@messageText</div>
+    </div>
+</div>

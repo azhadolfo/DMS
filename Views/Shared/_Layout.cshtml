@@ -23,6 +23,12 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
+    <div id="globalLoadingOverlay" class="submit-loading-overlay d-none">
+        <div class="submit-loading-card" role="status" aria-live="polite" aria-label="Loading">
+            <div class="spinner-border text-primary mb-3" aria-hidden="true"></div>
+            <div id="globalLoadingMessage" class="mt-3">Loading...</div>
+        </div>
+    </div>
     <header>
         <nav class="navbar navbar-expand-lg" data-bs-theme="dark" style="background-color:#00008B;">
             <div class="container-fluid">
@@ -81,9 +87,9 @@
                     </ul>
                     @if (!string.IsNullOrEmpty(userRole))
                     {
-                        <form class="d-flex" asp-controller="Dms" asp-action="GeneralSearch">
+                        <form id="generalSearchForm" class="d-flex" asp-controller="Dms" asp-action="GeneralSearch" data-loading-message="Searching file metadata and extracted PDF text...">
                             <input name="search" class="form-control me-sm-2" type="search" placeholder="Search">
-                            <button class="btn btn-secondary my-2 my-sm-0 rounded" type="submit">Search</button>
+                            <button id="generalSearchSubmitButton" class="btn btn-secondary my-2 my-sm-0 rounded" type="submit">Search</button>
                         </form>
                     }
                     <partial name="_LoginPartial" />
@@ -113,6 +119,36 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script>
+        (function () {
+            const overlay = document.getElementById('globalLoadingOverlay');
+            const messageElement = document.getElementById('globalLoadingMessage');
+
+            window.showGlobalLoading = function (message) {
+                if (!overlay || !messageElement) {
+                    return;
+                }
+
+                messageElement.textContent = message || 'Loading...';
+                overlay.classList.remove('d-none');
+            };
+
+            const searchForm = document.getElementById('generalSearchForm');
+            const searchButton = document.getElementById('generalSearchSubmitButton');
+
+            if (!searchForm) {
+                return;
+            }
+
+            searchForm.addEventListener('submit', function () {
+                if (searchButton) {
+                    searchButton.disabled = true;
+                }
+
+                window.showGlobalLoading(searchForm.dataset.loadingMessage || 'Searching documents...');
+            });
+        })();
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
