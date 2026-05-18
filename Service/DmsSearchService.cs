@@ -34,12 +34,48 @@ namespace Document_Management.Service
             string sortOrder,
             CancellationToken cancellationToken)
         {
+            page = Math.Max(1, page);
+            pageSize = pageSize switch
+            {
+                <= 10 => 10,
+                <= 25 => 25,
+                <= 50 => 50,
+                _ => 100
+            };
+
             var keywords = search
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             var query = _dbContext.FileDocuments
                 .AsNoTracking()
                 .Where(file => !file.IsDeleted);
+
+            if (!_accessService.IsAdmin())
+            {
+                var accessibleCompanies = _accessService.GetAccessibleCompanies()
+                    .ToArray();
+                var accessibleDepartments = _accessService.GetAccessibleDepartments()
+                    .ToArray();
+
+                if (accessibleCompanies.Length == 0 || accessibleDepartments.Length == 0)
+                {
+                    return new GeneralSearchViewModel
+                    {
+                        Results = [],
+                        CurrentPage = page,
+                        TotalPages = 0,
+                        TotalRecords = 0,
+                        PageSize = pageSize,
+                        SearchTerm = search,
+                        SortBy = sortBy,
+                        SortOrder = sortOrder
+                    };
+                }
+
+                query = query.Where(file =>
+                    accessibleCompanies.Contains(file.Company) &&
+                    accessibleDepartments.Contains(file.Department));
+            }
 
             foreach (var keyword in keywords)
             {
@@ -51,26 +87,30 @@ namespace Document_Management.Service
                     EF.Functions.ILike(file.ExtractedText, currentKeyword));
             }
 
-            var results = await query.ToListAsync(cancellationToken);
+            query = ApplySorting(query, sortBy, sortOrder);
 
-            if (!_accessService.IsAdmin())
-            {
-                results = results
-                    .Where(file => _accessService.CanAccessCompany(file.Company) && _accessService.CanAccessDepartment(file.Department))
-                    .ToList();
-            }
-
-            results = ApplySorting(results, sortBy, sortOrder);
-
-            var totalRecords = results.Count;
+            var totalRecords = await query.CountAsync(cancellationToken);
             var totalPages = totalRecords == 0
                 ? 0
                 : (int)Math.Ceiling(totalRecords / (double)pageSize);
 
-            var pagedResults = results
+            var pagedResults = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToList();
+                .Select(file => new FileDocument
+                {
+                    Id = file.Id,
+                    Company = file.Company,
+                    Year = file.Year,
+                    Department = file.Department,
+                    Category = file.Category,
+                    BoxNumber = file.BoxNumber,
+                    OriginalFilename = file.OriginalFilename,
+                    Description = file.Description,
+                    Username = file.Username,
+                    DateUploaded = file.DateUploaded
+                })
+                .ToListAsync(cancellationToken);
 
             return new GeneralSearchViewModel
             {
@@ -85,26 +125,26 @@ namespace Document_Management.Service
             };
         }
 
-        private static List<FileDocument> ApplySorting(List<FileDocument> results, string sortBy, string sortOrder)
+        private static IQueryable<FileDocument> ApplySorting(IQueryable<FileDocument> query, string sortBy, string sortOrder)
         {
             return sortBy switch
             {
                 "BoxNumber" => sortOrder == "asc"
-                    ? results.OrderBy(file => file.BoxNumber).ToList()
-                    : results.OrderByDescending(file => file.BoxNumber).ToList(),
+                    ? query.OrderBy(file => file.BoxNumber)
+                    : query.OrderByDescending(file => file.BoxNumber),
                 "OriginalFilename" => sortOrder == "asc"
-                    ? results.OrderBy(file => file.OriginalFilename).ToList()
-                    : results.OrderByDescending(file => file.OriginalFilename).ToList(),
+                    ? query.OrderBy(file => file.OriginalFilename)
+                    : query.OrderByDescending(file => file.OriginalFilename),
                 "Description" => sortOrder == "asc"
-                    ? results.OrderBy(file => file.Description).ToList()
-                    : results.OrderByDescending(file => file.Description).ToList(),
+                    ? query.OrderBy(file => file.Description)
+                    : query.OrderByDescending(file => file.Description),
                 "Username" => sortOrder == "asc"
-                    ? results.OrderBy(file => file.Username).ToList()
-                    : results.OrderByDescending(file => file.Username).ToList(),
+                    ? query.OrderBy(file => file.Username)
+                    : query.OrderByDescending(file => file.Username),
                 "DateUploaded" => sortOrder == "asc"
-                    ? results.OrderBy(file => file.DateUploaded).ToList()
-                    : results.OrderByDescending(file => file.DateUploaded).ToList(),
-                _ => results.OrderByDescending(file => file.DateUploaded).ToList()
+                    ? query.OrderBy(file => file.DateUploaded)
+                    : query.OrderByDescending(file => file.DateUploaded),
+                _ => query.OrderByDescending(file => file.DateUploaded)
             };
         }
     }

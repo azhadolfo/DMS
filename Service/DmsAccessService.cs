@@ -7,6 +7,8 @@ namespace Document_Management.Service
         string? Username { get; }
         bool IsAuthenticated();
         bool IsAdmin();
+        IReadOnlyCollection<string> GetAccessibleCompanies();
+        IReadOnlyCollection<string> GetAccessibleDepartments();
         bool CanAccessCompany(string company);
         bool CanAccessDepartment(string department);
         bool CanUpload();
@@ -37,6 +39,16 @@ namespace Document_Management.Service
             return UserRole == "admin";
         }
 
+        public IReadOnlyCollection<string> GetAccessibleCompanies()
+        {
+            return GetAccessValues("userAccessCompanies");
+        }
+
+        public IReadOnlyCollection<string> GetAccessibleDepartments()
+        {
+            return GetAccessValues("userAccessDepartments");
+        }
+
         public bool CanAccessCompany(string company)
         {
             if (!IsAuthenticated())
@@ -49,7 +61,7 @@ namespace Document_Management.Service
                 return true;
             }
 
-            return GetAccessValues("userAccessCompanies").Contains(company, StringComparer.OrdinalIgnoreCase);
+            return GetAccessibleCompanies().Contains(company, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool CanAccessDepartment(string department)
@@ -64,7 +76,7 @@ namespace Document_Management.Service
                 return true;
             }
 
-            return GetAccessValues("userAccessDepartments").Contains(department, StringComparer.OrdinalIgnoreCase);
+            return GetAccessibleDepartments().Contains(department, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool CanUpload()
