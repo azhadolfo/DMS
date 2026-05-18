@@ -5,6 +5,17 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v7.1.1] - 2026-05-18
+### Added
+- Added PostgreSQL search indexes to improve general search performance.
+- Added a shared loading overlay partial for DMS views.
+### Fixed
+- Fixed the general search flow to run filtering, sorting, counting, and paging in the database instead of in memory.
+### Changed
+- Changed general search to use a reusable global loading spinner for search submission and result navigation.
+
+---
+
 ## [v7.1.0] - 2026-04-16
 ### Added
 - Added loading spinners and submission overlays for upload, edit, transfer, trash, and file list actions.
