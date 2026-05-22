@@ -17,6 +17,11 @@
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
+        <input type="hidden" id="currentCompany" value="@Model.Company" />
+        <input type="hidden" id="currentYear" value="@Model.Year" />
+        <input type="hidden" id="currentDepartment" value="@Model.Department" />
+        <input type="hidden" id="currentCategory" value="@Model.Category" />
+        <input type="hidden" id="currentSubCategory" value="@Model.SubCategory" />
         <div class="form-group mb-3">
             <label asp-for="OriginalFilename" class="form-label"></label>
             <input asp-for="OriginalFilename" class="form-control" disabled readonly />
@@ -68,6 +73,10 @@
                 <span asp-validation-for="SubCategory" class="text-danger"></span>
             </div>
         </div>
+
+        <div id="samePathWarning" class="alert alert-warning d-none" role="alert">
+            The selected destination matches the current storage path. Change the destination before transferring.
+        </div>
         
         <div class="form-group mb-3">
                 <button id="transferButton" type="submit" class="btn btn-secondary d-inline-flex align-items-center justify-content-center gap-2">
@@ -90,11 +99,52 @@
             var categoryDropdown = $('#Category');
             var subCategoryDropdown = $('#SubCategory');
             var subCategoryContainer = $('#subCategoryContainer');
+            var samePathWarning = $('#samePathWarning');
+            var transferButton = $('#transferButton');
+
+            function sanitizePathPart(input) {
+                if (!input || !input.trim()) {
+                    return 'N_A';
+                }
+
+                return input
+                    .replace(/[\/\\ #?%&+:;=|\"<>*]/g, '_')
+                    .replace(/^_+|_+$/g, '');
+            }
+
+            function getNormalizedSubCategoryValue(value) {
+                return value && value.trim() ? value : 'N/A';
+            }
+
+            function updateTransferAvailability() {
+                var currentCompany = $('#currentCompany').val();
+                var currentYear = $('#currentYear').val();
+                var currentDepartment = $('#currentDepartment').val();
+                var currentCategory = $('#currentCategory').val();
+                var currentSubCategory = getNormalizedSubCategoryValue($('#currentSubCategory').val());
+
+                var selectedCompany = $('#Company').val();
+                var selectedYear = $('#Year').val();
+                var selectedDepartment = $('#Department').val();
+                var selectedCategory = $('#Category').val();
+                var selectedSubCategory = getNormalizedSubCategoryValue($('#SubCategory').val());
+
+                var samePath =
+                    sanitizePathPart(currentCompany) === sanitizePathPart(selectedCompany) &&
+                    sanitizePathPart(currentYear) === sanitizePathPart(selectedYear) &&
+                    sanitizePathPart(currentDepartment) === sanitizePathPart(selectedDepartment) &&
+                    sanitizePathPart(currentCategory) === sanitizePathPart(selectedCategory) &&
+                    sanitizePathPart(currentSubCategory) === sanitizePathPart(selectedSubCategory);
+
+                samePathWarning.toggleClass('d-none', !samePath);
+                transferButton.prop('disabled', samePath);
+            }
             
             // Function to load subcategories
             function loadSubCategories(categoryName, selectedSubCategory) {
                 if (!categoryName) {
                     subCategoryContainer.hide();
+                    updateTransferAvailability();
                     return;
                 }
                 
@@ -128,11 +178,14 @@
                             // Hide if no subcategories
                             subCategoryContainer.hide();
                         }
+
+                        updateTransferAvailability();
                     },
                     error: function (xhr, status, error) {
                         console.error('Error fetching subcategories:', error);
                         console.error('Response:', xhr.responseText);
                         subCategoryContainer.hide();
+                        updateTransferAvailability();
                     }
                 });
             }
@@ -143,6 +196,8 @@
             
             if (initialCategoryName) {
                 loadSubCategories(initialCategoryName, initialSubCategory);
+            } else {
+                updateTransferAvailability();
             }
             
             // Handle category change event
@@ -150,6 +205,9 @@
                 var categoryName = $(this).val();
                 loadSubCategories(categoryName, null);
             });
+
+            $('#Company, #Year, #Department').on('change', updateTransferAvailability);
+            subCategoryDropdown.on('change', updateTransferAvailability);
         });
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -172,6 +230,11 @@
                     : form.checkValidity();
 
                 if (!isValid) {
+                    return;
+                }
+
+                if (transferButton.disabled) {
+                    event.preventDefault();
                     return;
                 }
 

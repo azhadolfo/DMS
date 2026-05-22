@@ -9,6 +9,7 @@ namespace Document_Management.Service
         Task<UploadDocumentResult> UploadAsync(FileDocument document, IFormFile file, CancellationToken cancellationToken);
         Task<ReplaceDocumentResult> ReplaceFileAsync(FileDocument existingDocument, IFormFile newFile, CancellationToken cancellationToken);
         Task<TransferDocumentResult> TransferAsync(FileDocument existingDocument, FileDocument destination, CancellationToken cancellationToken);
+        bool IsSameTransferLocation(FileDocument existingDocument, FileDocument destination);
     }
 
     public sealed class DocumentStorageWorkflowService : IDocumentStorageWorkflowService
@@ -53,10 +54,15 @@ namespace Document_Management.Service
         public async Task<TransferDocumentResult> TransferAsync(FileDocument existingDocument, FileDocument destination, CancellationToken cancellationToken)
         {
             var oldLocation = existingDocument.Location;
-            await using var fileStream = await _cloudStorageService.DownloadFileStreamAsync(oldLocation, cancellationToken);
-
             var fileName = BuildStoredFileName(destination.Department, existingDocument.OriginalFilename, existingDocument.DateUploaded);
             var storagePath = BuildStoragePath(destination.Company, destination.Year, destination.Department, destination.Category, destination.SubCategory, fileName);
+
+            if (string.Equals(oldLocation, storagePath, StringComparison.Ordinal))
+            {
+                return new TransferDocumentResult(existingDocument.Name, oldLocation, oldLocation);
+            }
+
+            await using var fileStream = await _cloudStorageService.DownloadFileStreamAsync(oldLocation, cancellationToken);
 
             using var memoryStream = new MemoryStream();
             await fileStream.CopyToAsync(memoryStream, cancellationToken);
@@ -73,6 +79,14 @@ namespace Document_Management.Service
             await _cloudStorageService.DeleteFileAsync(oldLocation, cancellationToken);
 
             return new TransferDocumentResult(fileName, oldLocation, newObjectName);
+        }
+
+        public bool IsSameTransferLocation(FileDocument existingDocument, FileDocument destination)
+        {
+            var fileName = BuildStoredFileName(destination.Department, existingDocument.OriginalFilename, existingDocument.DateUploaded);
+            var storagePath = BuildStoragePath(destination.Company, destination.Year, destination.Department, destination.Category, destination.SubCategory, fileName);
+
+            return string.Equals(existingDocument.Location, storagePath, StringComparison.Ordinal);
         }
 
         private async Task TryDeleteExistingObjectAsync(string? objectName)

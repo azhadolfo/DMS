@@ -867,6 +867,12 @@ namespace Document_Management.Controllers
 
             model = await GetModelSelectList(model, cancellationToken);
 
+            if (_documentStorageWorkflowService.IsSameTransferLocation(existingModel, model))
+            {
+                ModelState.AddModelError(string.Empty, "The selected destination matches the current storage path. Change the destination before transferring.");
+                return View(model);
+            }
+
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             try
             {

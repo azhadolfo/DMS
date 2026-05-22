@@ -5,6 +5,15 @@ The format is based on Semantic Versioning.
 
 ---
 
+## [v7.1.2] - 2026-05-22
+### Fixed
+- Fixed file transfer so selecting the same storage path no longer deletes the document in Cloud Storage.
+
+### Changed
+- Blocked no-op transfers in the transfer form and server-side validation when the selected destination matches the current storage path.
+
+---
+
 ## [v7.1.1] - 2026-05-18
 ### Added
 - Added PostgreSQL search indexes to improve general search performance.
